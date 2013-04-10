@@ -1,0 +1,14 @@
+# vi:set ft=python:
+SConscript('../../SCommon')
+Import('SCommonEnvironment')
+env_t=SCommonEnvironment()
+
+env=env_t.Clone()
+
+# We will build it in this one instance
+env.ApplySConscript(env.Root('nx.scons'))
+# and use it, too
+env.UseSConscript(env.Root('nx.scons'))
+
+
+env.Program('working', source=['main.cpp'])

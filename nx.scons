@@ -1,0 +1,25 @@
+# vi:set ft=python:
+
+Import('env')
+
+libname = 'nx'
+
+# binaries
+env.NXLibrary(target=libname, source=[
+#'src/WHATEVER.cpp',
+])
+
+# add our include path 
+env.Append(CPPPATH=[env.Root('include')])
+
+# dependencies
+#env.UseSystemLibrary(['resolv'],shared=True)
+
+#if env.Defined('WHATEVER'):
+
+#env.UseSConscript(
+#  env.Root([
+#   'path/WHATEVER.scons',
+#  ])
+#)
+

@@ -1,0 +1,757 @@
+# vi:set ft=python:
+#
+# add "set modeline" to ~/.vimrc to enable vim to read the modeline above
+
+
+############################################
+#
+# The following command line options are available via env_t['value']
+#  cmdvars (the Variables instance that defines SCommon's command line options)
+#  debug
+#  arch
+#  verbose
+#  forcecolor
+#  shared
+#  depcheck
+#  cross
+#
+#  Refer to 'scons -h' for more information on these flags and their values.
+#
+# The following additional values are also available via env_t['value']
+#  colorize (True if we are colorizing output)
+#  x64 (True if building 64-bit)
+#  x86 (True if building 32-bit)
+#
+############################################
+
+import os
+import os.path
+import inspect
+import sys
+import platform
+import subprocess
+import time
+
+import SCons.Util
+# --- create our own derivation of Environment
+class SCommonEnvironment(Environment):
+  # NOTE: UPDATE THIS IF YOU MOVE THIS FILE, THIS IS HOW IT KNOWS WHERE THE SVN
+  # ROOT IS!
+  _SVN_DEPTH=0
+
+  def FindPrefixedBinary(self,prefix_list,binary):
+    """ Looks in PATH for the first match in prefix_list where the binary name
+    prepended with the prefix is an actual existing binary. """
+    for prefix in prefix_list:
+      if self.WhereIs(prefix+binary) != None:
+        return prefix
+    return None
+
+  @staticmethod
+  def listize(obj):
+    """ If the value is a list/tuple, it returns a copy of it as a list.  If
+    it's not a list, it puts it in a new list and returns that. """
+    if SCons.Util.is_Sequence(obj):
+      # copy it
+      return list(obj)
+    if obj is None:
+      return []
+    return [obj]
+
+  @staticmethod
+  def SuffixDirName(name):
+    """ Adds a directory separator to the end of a directory name if it is not
+    already present. """
+    if not name.endswith(os.sep):
+      return name + os.sep
+    return name
+  
+  @staticmethod
+  def UnPrefixDirName(name):
+    """ Removes any leading directory separator, if present. """
+    if name.startswith(os.sep):
+      return name[len(os.sep):]
+    return name
+
+  # Custom tests
+  @staticmethod
+  def CustomCheckBuild(context,message,**kw):
+    """ A custom test extension. """
+    # print message
+    context.Message('Checking build capability "%s"...' % str(message))
+
+    # backup original flags then add the flag
+    orig_env=context.env
+    context.env=orig_env.Override(kw)
+
+    # compile an empty .cpp file with this flag to see if the compiler barks
+    result=context.TryCompile('','.cpp')
+
+    # restore flags
+    context.env=orig_env
+
+    # print and return result
+    context.Result(result)
+    return result
+
+  @staticmethod
+  def gcovSharedLibrary(env, library, sources, **args):
+    """ Allows gcov to check libraries. """
+    # this doesn't have to be static, but it keeps us from having to re-type
+    # the class name where we use it below.
+    env.gcov(source=sources)
+    return env.OriginalStaticLibrary(library, sources, **args)
+
+  @staticmethod
+  def ExecuteCommand(arg_list,get_output=False):
+    """ Executes the provided command/argument list and returns either the
+    return code if get_output=False, or a tuple of the return code
+    and the program output as a list if get_output=True
+
+    Keyword arguments:
+      arg_list -- a list with the first element being the command name and the
+                  rest being arguments to that command
+      get_output -- True to capture the program output (default False)
+    """
+    # Allow strings to be passed for no-arg commands
+    arg_list=SCommonEnvironment.listize(arg_list)
+      
+    if get_output:
+      stdout=subprocess.PIPE;
+    else:
+      stdout=None
+
+    child=subprocess.Popen(arg_list,close_fds=True,stdout=stdout)
+    child.wait()
+
+    if get_output:
+      return (child.returncode, child.stdout.readlines())
+    return child.returncode
+
+  @staticmethod
+  def GCCVersion(gcc_binary):
+    """ Attempts to retrieve gcc's version; returns an empty string if it
+    could not be determined. """ 
+    # get gcc's version
+    exec_pair=SCommonEnvironment.ExecuteCommand(
+        [gcc_binary, '--version'],get_output=True)
+    # if gcc ran, and we got output
+    if exec_pair[0] == 0 and exec_pair[1]:
+      # get the last token of the first line
+      return exec_pair[1][0].split(' ')[-1].strip()
+    print "WARNING: couldn't retrieve gcc's version number (in SCommon)"
+    time.sleep(1)
+    # users should check for a blank condition value
+    return ''
+
+  @staticmethod
+  def qmakeQuery(prop):
+    """ Convenient method to invoke qmake to query about Qt's installation.
+    If the prop ends with VERSION, any result is returned.  Otherwise, only if
+    the output is an existing path will it be returned.  If the path does not
+    exist, None is returned.
+
+    Keyword arguments:
+      prop -- a string representing the property you are inquiring about.
+    """
+    # TODO: figure out how to not re-specify the class name?
+    exec_pair=(
+      SCommonEnvironment.ExecuteCommand(
+        ['qmake','-query',prop],
+        get_output=True)
+    )
+    if exec_pair[0] == 0:
+      value=exec_pair[1][0].strip() # assuming only one line of output
+      if prop.endswith('VERSION') or os.path.exists(value):
+        return value
+    return None
+
+  def UseSystemLibrary(self,libname,extra_flags=None,shared=None,append=False):
+    """ Uses a system library, if shared, removes any symlink and adds the lib
+    to the linker line.  If not shared, it finds any static library, makes a
+    symlink to it, and adds it. """
+    if shared is None:
+      shared=self.IsShared()
+    if shared:
+      self.StaticLibSearch(libname,extra_flags,symlink=None,append=False)
+      self.Append(LIBS=libname)
+    else:
+      self.AppendUnique(self.Dir('.'))
+      self.StaticLibSearch(libname,extra_flags,symlink=True,append=True)
+
+  def StaticLibSearch(
+      self,
+      libname,
+      extra_flags=None,
+      symlink=False,
+      append=False):
+    """ Returns a dict of libnames to either their filenames or None if none
+    could be found.
+
+    Keyword arguments:
+      libname -- A name or list of names of libs
+      extra_flags -- A list of any extra flags desired on the command line to
+                     g++'s -print-file-name (default None)
+      symlink -- If True, libs that are found will have symlinks created in the
+                 CWD, and the relative path to the symlink will be provided as
+                 the filepath.  This allows users to add '.' to LIBPATH to
+                 simplify logic.  If None, any existing symlink will be
+                 removed. (default False)
+      append -- If True, the library is automatically appended to LIBS, but it
+                is still up to the caller to ensure that LIBPATH includes the
+                library's directory.  Most useful when combined with
+                symlink=True (default False)
+
+    """
+    if extra_flags is None:
+      extra_flags=[]
+
+    libname_list=self.listize(libname)
+
+    ret={}
+    for libname in libname_list:
+
+      if not libname.startswith('lib'):
+        base_libname=libname
+        libname = 'lib'+libname
+      else:
+        base_libname=libname[3:]
+
+      if not libname.endswith('.a'):
+        libname += '.a'
+      else:
+        base_libname=base_libname[0:-2]
+
+      # Use gcc -print-file-name to locate the proper .a files.  Using
+      # env.subst() here instead of env['VAR'] like previously because of 7.2.3
+      # on http://www.scons.org/doc/1.2.0/HTML/scons-user/x1392.html
+      cmd=self.subst(['$CXX','$CCFLAGS','$CXXFLAGS'])
+      cmd.extend(['-B/usr/X11R6/lib64','-B/usr/X11R6/lib']) # common locations
+      cmd.extend(extra_flags)
+      cmd.append('-print-file-name=%s' % libname)
+
+      exec_pair=self.ExecuteCommand(cmd,get_output=True)
+      output=exec_pair[1]
+      filename = None
+      if output:
+        first_line=output[0].strip()
+        if os.path.exists(first_line):
+          filename=first_line
+          basename=os.path.basename(filename)
+          if os.path.exists(basename):
+            if os.path.islink(basename):
+              # remove unwanted symlinks to prevent the linker choosing this
+              # instead, if we want a so
+              os.unlink(basename)
+            else:
+              raise Exception('A non-symlink already exists for %s'%filename)
+          if symlink:
+            try:
+              os.symlink(filename, basename)
+              filename=basename
+            except OSError, e:
+              print 'WARNING: error creating symlink: %s' % e
+      if append:
+        if filename is not None:
+          self.Append(LIBS = filename)
+        else:
+          print (
+              'WARNING: could not find static %s, falling back on dynamic'
+              % libname)
+          time.sleep(1)
+          self.Append(LIBS = base_libname)
+
+      ret[libname] = filename
+
+    return ret
+
+  def Configure(self, *args, **kw):
+    """ Method to add our custom tests to the configuration environment """
+    newkw=kw;
+    if not 'custom_tests' in newkw:
+      newkw['custom_tests']={}
+
+    newkw['custom_tests']['CheckBuild']=self.CustomCheckBuild
+    return Environment.Configure(self,*args,**newkw)
+
+  # TODO: add a SetDefaultShared that does not propagate to children
+  def SetUsing(self,use):
+    """ Sets the value returned by IsUsing() """
+    self['SCOMMON_USING']=use
+    return use
+  def IsUsing(self):
+    """ Loaded scripts can check this to determine if they should add
+    dependencies. """
+    return self.get('SCOMMON_USING',False)
+
+  def SetShared(self,shared):
+    """ Sets the value returned by IsShared() """
+    self['SCOMMON_SHARED']=shared
+    return shared
+  def SetDefaultShared(self,shared):
+    self['SCOMMON_DEFAULT_SHARED']=shared
+  def GetDefaultShared(self):
+    """ Returns the type of lib that should be built if no value is passed
+    for 'shared'. """ 
+    return self.get('SCOMMON_DEFAULT_SHARED',False)
+  def IsShared(self):
+    """ Loaded scripts can check this to determine if they should build as a
+    shared library. """
+    val=self.get('SCOMMON_SHARED',None)
+    if val is None:
+      val=self.GetDefaultShared()
+    return val
+
+  def SetOutputPrefix(self,prefix):
+    """ Stores the prefix, and appends it to existing prefixes the system
+    may have. """
+    for key in [
+        'SHLIBPREFIX', 'LIBPREFIX', 'PROGPREFIX',
+        'SHOBJPREFIX', 'OBJPREFIX' ]:
+      self[key] = (
+          self.RemoveOutputPrefix(self.subst(self.get(key,''))) + prefix)
+    self['SCOMMON_OUTPREFIX'] = prefix
+
+  def GetOutputPrefix(self):
+    return self.get('SCOMMON_OUTPREFIX','')
+
+  def RemoveOutputPrefix(self,value):
+    """ Removes any suffix that is our output prefix. Used to get
+    original prefixes. """
+    prefix=self.GetOutputPrefix()
+    if prefix and value.endswith(prefix):
+      return value[:-len(prefix)]
+    return value
+
+  def UseSConscript(self,filename_or_list,shared=None):
+    """ Loads the passed script(s) for use (without building them). """
+    return self.ApplySConscript(filename_or_list,shared=shared,use=True)
+
+  # TODO: make this "BuildSConscript"
+  def ApplySConscript(self, filename_or_list,shared=None,use=False):
+    """ Method to match newsons behavior, to avoid having to refactor.
+
+    Additionally adds the capability of passing a list of scripts, instead of
+    just one, as well as the ability to tell the applied scripts whether or not
+    they are being used or built (useful for libraries).
+
+    If sandbox is True, each element in the list will be loaded in its own
+    environment.  If you would like to sandbox an entire list of scripts, you
+    should Clone() the environment yourself and call this function
+    with sandbox=False.
+    
+    Keyword Arguments:
+      filename_or_list -- a filename or list of filenames
+      use -- If True, this script will be USED, otherwise it will be built in a
+             sandbox (and not USED) (default False)
+      shared -- If True, library SConscripts are expected to build shared
+                libraries if possible. (default self.GetDefaultShared())
+    """
+    
+    filename_or_list = self.listize(filename_or_list)
+
+    for filename in filename_or_list:
+      if not use:
+        # sandbox the environment if we won't be using it
+        env=self.Clone()
+      else:
+        env=self
+
+      old_using=env.IsUsing()
+      old_shared=env.IsShared()
+      try:
+        env.SetUsing(use)
+        env.SetShared(shared)
+        if not os.path.exists(filename):
+          raise Exception("Missing script: %s"%filename)
+        env.SConscript(filename, exports={'env': env})
+      finally:
+        env.SetUsing(old_using)
+        env.SetShared(old_shared)
+  
+  def Root(self,filename_or_list):
+    """ Prefixes a string or list of strings with the self['svn_root']. """
+    if SCons.Util.is_String(filename_or_list):
+      first_only=True
+      filename_or_list=[filename_or_list]
+    else:
+      first_only=False
+
+    root=self['svn_root']
+    ret=[]
+    for filename in filename_or_list:
+      ret.append(root + self.UnPrefixDirName(filename))
+    if first_only:
+      return ret[0]
+    return ret
+
+  def ParseConfig(self, command, function=None, unique=1):
+    """ Method to perform extra processing after a ParseConfig """
+    old_len=len(self['CCFLAGS'])
+    ret=Environment.ParseConfig(self, command, function, unique)
+    # in reverse, traverse the _new elements of the list only_
+    for i in range(len(self['CCFLAGS'])-1,old_len-1,-1):
+      val=self['CCFLAGS'][i]
+      # move flags that belong in CXXFLAGS rather than CCFLAGS
+      if val == '-Wno-non-virtual-dtor':
+        # not moving it to CXXFLAGS, just deleting this one.
+        #self.MergeFlags(dict(CXXFLAGS=[val])) # store in CXXFLAGS
+        del self['CCFLAGS'][i]
+    return ret
+ 
+  @staticmethod
+  def DefaultVariables():
+    """ Returns the default/expected Variables() object. """
+    # setup the command line options. NOTE: default specified here is just for
+    # documentation, actual defaults must be changed below where we
+    # make calls to ARGUMENTS.get().
+    cmdvars=Variables()
+    cmdvars.AddVariables(
+      BoolVariable(
+          'debug',
+          'Add "debug=1" to the command line for a debug build. '
+          ' Omit this flag for a release build.',
+          False),
+      EnumVariable(
+          'arch',
+          'Add arch="x86" for a 32bit build or arch="x64" for a 64bit build. '
+          ' Omit this flag to build as the machine\'s native architecture,'
+          ' defaulting to x86 if it cannot be identified.',
+          '',
+          allowed_values=('x64','x86','')),
+      BoolVariable(
+        'verbose',
+        'Add "verbose=0" to build with extremely short build messages. '
+        ' Omit this flag for full command line build messages.',
+        True),
+      BoolVariable(
+        'forcecolor',
+        'Add "forcecolor=1" to force colorized output even if not outputting'
+        'to a TTY.  Omit this flag for automatic colorization.',
+        False),
+      BoolVariable(
+        'shared',
+        'Add shared="1" to make non-explicitly-set SConscripts build as shared'
+        ' libraries if possible. '
+        ' Omit this flag to default to static libraries.',
+        False),
+      BoolVariable(
+        'depcheck',
+        'Add depcheck="1" to make gcc try to resolve all required definitions'
+        ' when linking shared libraries.  Omit this flag to link normally. '
+        ' This is useful for finding circular dependencies.',
+        False),
+      EnumVariable(
+        'cross',
+        'Add cross="win" to build for windows.  Omit this flag to build for'
+        ' the machine\'s native platform.',
+        '',
+        allowed_values=('win','')),
+    )
+    return cmdvars
+
+  def Defined(self,defs):
+    """ Returns True if all the specified defines are set.  Does not check
+    for '=1', etc... just the symbol name. """
+    defines=self.get('CPPDEFINES',[])
+    for key in self.listize(defs):
+      if key not in defines:
+        return False
+    return True
+
+  def __init__(
+      self,
+      platform=None,
+      tools=None,
+      toolpath=None,
+      variables=None,
+      parse_flags=None,
+      **kw): 
+    """ Constructor, just like scons Environment(), except with an
+    added argument.
+    
+    Special keyword arguments:
+      gen_help -- If True, help text generation will be automatically done
+                  after initialization (default True)
+      Qt -- If True, the environment is set up to support Qt (default False)
+    """ 
+    return self.__inner_init(
+        platform,tools,toolpath,variables,parse_flags,**kw)
+
+  def __inner_init(self,pform,tools,toolpath,variables,parse_flags,**kw): 
+    """ Inner constructor, used SPECIFICALLY to rename platform to 'pform' so
+    it doesn't hide the platform module.  Chose this approach to avoid renaming
+    the keyword argument. """
+    if tools is None:
+      tools=[]
+    if toolpath is None:
+      toolpath=[]
+    if variables is None:
+      variables=self.DefaultVariables()
+    if 'ENV' not in kw.keys():
+      kw['ENV'] = os.environ
+
+    gen_help = bool(kw.get('gen_help',True))
+
+    # check if the user wants us to use Qt
+    use_qt=bool(kw.get('Qt',False))
+
+    # store the path to this sconstruct, appending a separator if necessary
+    scommon_path = self.SuffixDirName(
+        os.path.dirname(inspect.currentframe().f_code.co_filename))
+
+    # determine the svn root using the constant this class has defined 
+    svn_root = scommon_path
+    for i in range(self._SVN_DEPTH):
+      svn_root=os.path.join(scommon_path,'..')
+    # Normalize it and suffix it
+    svn_root = self.SuffixDirName(os.path.normpath(svn_root))
+
+    build_scons_path=os.path.join(svn_root,'build','scons')
+    toolpath.extend([
+      os.path.join(build_scons_path,'tools'),
+    ])
+    tools.extend(['default', 'library_builder' ])
+    
+    # Set the qtdir first, because otherwise the Qt tool gives a warning
+    if use_qt:
+      tools.append('qt')
+      if 'QTDIR' not in kw.keys():
+        qtdir=self.qmakeQuery('QT_INSTALL_PREFIX')
+        if qtdir:
+          kw['QTDIR'] = qtdir
+        else:
+          raise Exception('Could not find Qt installation prefix!')
+
+    # We want to do this before doing hardly anything else, to be safe.
+    Environment.__init__(self,pform,tools,toolpath,variables,parse_flags,**kw)
+
+    # Set default library type to build
+    self.SetDefaultShared(self['shared'])
+
+    # enable stdc++0x if it's avilable
+    conf=self.Configure()
+
+    cpp11_flags=[(
+        'C++11', {
+          'CXXFLAGS' : '-std=c++11',
+          'LINKFLAGS' : '-std=c++11',
+      }), (
+        'GNU++0x', {
+          'CXXFLAGS' : '-std=gnu++0x',
+          'LINKFLAGS' : '-std=gnu++0x',
+      }), (
+        'C++0x', {
+          'CXXFLAGS' : '-std=c++0x',
+          'LINKFLAGS' : '-std=c++0x',
+      })
+    ]
+    for (check_name,current_flags) in cpp11_flags:
+      if conf.CheckBuild(check_name,**current_flags):
+        self.Append(**current_flags)
+        # we found one!
+        break
+    # allow checking dependencies at the shared library level
+    if self['depcheck']:
+      gnudef_flags={'LINKFLAGS' : '-Wl,--no-undefined'}
+      solarisdef_flags={'LINKFLAGS' : '-Wl,-z,defs'}
+      if conf.CheckBuild('GNU style definition checking',**gnudef_flags):
+        self.Append(**gnudef_flags)
+      elif conf.CheckBuild('Solaris style definition checking',
+          **solarisdef_flags):
+        self.Append(**solarisdef_flags)
+
+    # only care about things we need
+    self.Append(LINKFLAGS=['-Wl,--as-needed'])
+    conf.Finish()
+
+    # store useful values in the environment
+    self['scommon_path'] = scommon_path
+    self['svn_root'] = svn_root
+    self['variables']=variables
+    self['scommon']=True
+
+    # we want to build all programs existing anywhere underneath the root of
+    # the source tree (not just under where this SConstruct lives)
+    self.Default(svn_root)
+
+    # enable/disable colorization
+    self['colorize']=self['forcecolor'] or sys.stdout.isatty()
+    self['ENV']['CGCC_FORCE_COLOR']=str(int(self['colorize']))
+
+    # if no arch specified, determine it automatically
+    if self['arch'] == '':
+      self['arch'] = { 'x86_64' : 'x64' }.get(platform.machine(),'x86')
+      
+    # set lazier flags for those who don't want to check arch.
+    self['x64'] = (self['arch'] == 'x64')
+    self['x86'] = (self['arch'] == 'x86')
+
+    # set flags for x86 or x64 build
+    if self['x64']:
+      self.Append(
+        CCFLAGS=['-m64','-march=x86-64'],
+        LINKFLAGS=['-m64'],
+      )
+    else:
+      self.Append(
+        # by default, target pentium4... the caller can add an additional
+        # -march= to change it to something else
+        CCFLAGS=['-m32','-march=pentium4'],
+        LINKFLAGS=['-m32'],
+      )
+
+    # set flags for debug/release
+    if self['debug']:
+      self.Append(
+        CPPDEFINES=['__func__=__PRETTY_FUNCTION__','DEBUG=1', '_DEBUG=1'],
+        CCFLAGS=['-O0'],
+        CXXFLAGS=['-fno-inline']
+      )
+    else:
+      self.Append(CPPDEFINES=['NDEBUG'])
+      self.Append(CCFLAGS=['-O2'])
+
+    # add common compiler flags
+    self.Append(
+      CCFLAGS=['-Wall','-Wno-unused-function', '-Wno-unused-value', '-g3' ],
+      # Debug symbols in release builds too!  They can be stripped later.
+      # TODO(nacitar): add -mno-side-effects ?
+    )
+
+    # add platform defines
+    if self['PLATFORM'] == 'darwin':
+      self.Append(CPPDEFINES=['LINUX','OSX'])
+    elif self['PLATFORM'] == 'posix':
+      self.Append(CPPDEFINES=['LINUX'])
+
+    # allow cross compilation
+    if self['cross'] == 'win':
+      # find this platform's mingw
+      prefix_list=[]
+      if not self['x64']:
+        prefix_list.extend(['i686-pc-mingw32-', 'i586-mingw32msvc-'])
+      prefix_list.extend(['x86_64-w64-mingw32-', 'x86_64-pc-mingw32'])
+
+      prefix=self.FindPrefixedBinary(prefix_list,'gcc')
+      if prefix == None:
+        raise Exception, "ERROR: Couldn't find your cross compiler!"
+      self.Replace(CXX=prefix+'g++')
+      self.Replace(CC=prefix+'gcc')
+      self.Replace(AR=prefix+'ar')
+      self.Replace(AS=prefix+'as')
+      self.Replace(RANLIB=prefix+'ranlib')
+      self.Replace(RC=prefix+'windres')
+      self.Replace(LD=prefix+'ld')
+      self.Replace(NM=prefix+'nm')
+      self.Replace(STRIP=prefix+'strip')
+      self.Replace(DLLTOOL=prefix+'dlltool')
+      self.Replace(OBJDUMP=prefix+'objdump')
+
+    # enable qt if necessary
+    if use_qt:
+      # include directories
+      qtdir=self.qmakeQuery('QT_INSTALL_HEADERS')
+      if not qtdir:
+        raise Exception('No Qt headers detected.')
+      append_dirs=[qtdir]
+      for dirname in [ 'QtCore', 'QtGui' ]: # TODO: add more qt subfolders
+        subdir=os.path.join(qtdir,dirname)
+        if not os.path.exists(subdir):
+          raise Exception(
+              'No Qt header subdirectory detected for %s' % dirname)
+        append_dirs.append(subdir)
+      self.Append(CPPPATH=append_dirs)
+
+      # lib directories
+      qtdir=self.qmakeQuery('QT_INSTALL_LIBS')
+      if not qtdir:
+        raise Exception('No Qt libs detected.')
+      self.Append(LIBPATH=[qtdir])
+
+      # Unset the assumed lib name that the default qt tool assumes.
+      self['QT_LIB']=''
+
+      # Append the libs we actually want to use
+      self.Append(LIBS=['QtGui','QtCore'])
+
+    # set flags for output verbosity
+    if not self['verbose']: 
+      # use simpler, colored messages if we don't want verbose output
+      colors = {}
+      try:
+        # try curses first
+        import curses
+        curses.setupterm()
+        fgColorSequence = (
+            curses.tigetstr('setaf') or curses.tigetstr('setf') or '')
+        colors['cyan'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_CYAN')))
+        colors['magenta'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_MAGENTA')))
+        colors['blue'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_BLUE')))
+        colors['green'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_GREEN')))
+        colors['yellow'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_YELLOW')))
+        colors['red'] = (
+            curses.tparm(fgColorSequence,getattr(curses,'COLOR_RED')))
+        colors['end'] = curses.tigetstr('sgr0')
+      except:
+        # fallback to using ansi escape sequences
+        colors['cyan']   = '\033[96m'
+        colors['magenta'] = '\033[95m'
+        colors['blue']   = '\033[94m'
+        colors['green']  = '\033[92m'
+        colors['yellow'] = '\033[93m'
+        colors['red']    = '\033[91m'
+        colors['end']    = '\033[0m'
+
+      # If the output is not a terminal, remove the colors
+      if not self['colorize']:
+        for key, value in colors.iteritems():
+          colors[key] = ''
+
+      compile_source_message = '%sCompiling %s==> %s$SOURCE%s' % \
+          (colors['blue'], colors['magenta'], colors['green'], colors['end'])
+
+      compile_shared_source_message = (
+          '%sCompiling shared %s==> %s$SOURCE%s' % \
+          (colors['blue'], colors['magenta'], colors['green'], colors['end']))
+
+      link_program_message = '%sLinking Program %s==> %s$TARGET%s' % \
+          (colors['red'], colors['magenta'], colors['green'], colors['end'])
+
+      link_library_message = '%sLinking Static Library %s==> %s$TARGET%s' % \
+          (colors['red'], colors['magenta'], colors['green'], colors['end'])
+
+      ranlib_library_message = '%sRanlib Library %s==> %s$TARGET%s' % \
+          (colors['red'], colors['magenta'], colors['green'], colors['end'])
+
+      link_shared_library_message = (
+          '%sLinking Shared Library %s==> %s$TARGET%s' % \
+          (colors['red'], colors['magenta'], colors['green'], colors['end']))
+
+      java_library_message = '%sCreating Java Archive %s==> %s$TARGET%s' % \
+          (colors['red'], colors['magenta'], colors['green'], colors['end'])
+
+      self.Replace(
+        CXXCOMSTR = compile_source_message,
+        CCCOMSTR = compile_source_message,
+        SHCCCOMSTR = compile_shared_source_message,
+        SHCXXCOMSTR = compile_shared_source_message,
+        ARCOMSTR = link_library_message,
+        RANLIBCOMSTR = ranlib_library_message,
+        SHLINKCOMSTR = link_shared_library_message,
+        LINKCOMSTR = link_program_message,
+        JARCOMSTR = java_library_message,
+        JAVACCOMSTR = compile_source_message
+      )
+    # generate help text if supposed to do so
+    if gen_help:
+      Help(variables.GenerateHelpText(self))
+
+# --- export variables
+Export('SCommonEnvironment')
+

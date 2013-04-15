@@ -629,11 +629,6 @@ class SCommonEnvironment(Environment):
       # TODO(nacitar): add -mno-side-effects ?
     )
 
-    # add platform defines
-    if self['PLATFORM'] == 'darwin':
-      self.Append(CPPDEFINES=['LINUX','OSX'])
-    elif self['PLATFORM'] == 'posix':
-      self.Append(CPPDEFINES=['LINUX'])
 
     # allow cross compilation
     if self['cross'] == 'win':

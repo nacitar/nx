@@ -40,6 +40,7 @@ namespace nx
     //! A class used to hold platform-specific data that is sometimes pertinent
     //! that would typically be obtained in a tradtional main() function.
     struct PlatformData {
+      // These members are named matching winapi documentation.
       HINSTANCE hInstance;
       int nCmdShow;
     };

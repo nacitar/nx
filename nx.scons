@@ -6,7 +6,7 @@ libname = 'nx'
 
 # binaries
 env.NXLibrary(target=libname, source=[
-#'src/WHATEVER.cpp',
+  'src/application.cpp',
 ])
 
 # add our include path 

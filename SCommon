@@ -447,6 +447,12 @@ class SCommonEnvironment(Environment):
         ' the machine\'s native platform.',
         '',
         allowed_values=('win','')),
+      BoolVariable(
+        'static_runtime',
+        'Add "static_runtime=1" to link to libstdc++ and libgcc statically. '
+        ' Omit this flag to link according to the system default'
+        ' (probably dynamic).',
+        False),
     )
     return cmdvars
 
@@ -586,6 +592,10 @@ class SCommonEnvironment(Environment):
     # set lazier flags for those who don't want to check arch.
     self['x64'] = (self['arch'] == 'x64')
     self['x86'] = (self['arch'] == 'x86')
+
+    # statically link runtimes if asked
+    if self['static_runtime']:
+      self.Append(LINKFLAGS=['-static-libstdc++','-static-libgcc'])
 
     # set flags for x86 or x64 build
     if self['x64']:

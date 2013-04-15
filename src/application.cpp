@@ -68,7 +68,7 @@ int main(int argc, char*argv[]) {
   return nx::application.main();
 }
 
-#ifdef OS_WINDOWS_
+#ifdef NX_OS_WINDOWS
 #include <stdlib.h> // for __argc and __argv
 //! Windows main driver; invokes the Application instance for this app.
 int WINAPI WinMain(
@@ -76,8 +76,8 @@ int WINAPI WinMain(
     HINSTANCE hPrevInstance,
     LPSTR lpCmdLine,int nCmdShow) {
 	nx::Application::PlatformData * data = new nx::Application::PlatformData();
-	data.hInstance=hInstance;
-	data.nCmdShow=nCmdShow;
+	data->hInstance=hInstance;
+	data->nCmdShow=nCmdShow;
 
   nx::application.set_platform_data(data);
   // TODO: make this utf8 from GetCommandLine()

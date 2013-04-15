@@ -1,4 +1,3 @@
-#include <nx/core.hpp>
 #include <nx/application.hpp>
 
 #include <iostream>

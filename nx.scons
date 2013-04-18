@@ -7,13 +7,15 @@ libname = 'nx'
 # binaries
 env.NXLibrary(target=libname, source=[
   'src/application.cpp',
+  'src/time.cpp',
 ])
 
 # add our include path 
 env.Append(CPPPATH=[env.Root('include')])
 
 # dependencies
-#env.UseSystemLibrary(['resolv'],shared=True)
+if env['cross'] != 'win':
+  env.UseSystemLibrary(['rt'],shared=True)
 
 #if env.Defined('WHATEVER'):
 

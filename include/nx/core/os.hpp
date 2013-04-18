@@ -30,25 +30,18 @@
       has been removed.  If using gcc, this requires 4.7+
 #endif
 
-// TODO(nacitar): Toolchain macros; decide about using these later
-#if 0
 #if defined(__GNUC__)
-  #define NX_TC_GCC 1
-  #define NX_ALIGN_TO(bytes) __attribute__((aligned(bytes)))
-  #define NX_MAY_ALIAS __attribute__((__may_alias__))
+  //#define NX_ALIGN_TO(bytes) __attribute__((aligned(bytes)))
+  //#define NX_MAY_ALIAS __attribute__((__may_alias__))
   #define NX_LIKELY(x) __builtin_expect((x),1)
   #define NX_UNLIKELY(x) __builtin_expect((x),0)
 #else
   #define NX_LIKELY(x) (x)
   #define NX_UNLIKELY(x) (x)
-  // NOTE: NX_MAY_ALIAS - NOT DEFINING IT FOR NON-GCC, NOT EVEN EMPTILY.
-  // We want a compilation error, or for you to #ifdef it!
 #endif
-#if _MSC_VER > 1300 // .net 2002+
-  #define TC_VC_ 1
-  #define NX_ALIGN_TO(bytes) __declspec( align( bytes ) )
-#endif
-#endif
+//#if _MSC_VER > 1300 // .net 2002+
+  //#define NX_ALIGN_TO(bytes) __declspec( align( bytes ) )
+//#endif
 
 // OS detection 
 #if (\
@@ -71,8 +64,8 @@
 
 // OS initialization/ensuring important system defines are set 
 #if defined(NX_OS_WINDOWS)
-  #define WINVER 0x0500
-  #define _WIN32_WINNT 0x0501
+  #define WINVER 0x0601
+  #define _WIN32_WINNT 0x0601
   #ifndef NOMINMAX
     #define NOMINMAX
   #endif

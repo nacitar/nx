@@ -166,6 +166,17 @@ class SCommonEnvironment(Environment):
         return value
     return None
 
+
+  def substList(self,keyname):
+    """ Performs env.subst on a per-item basis for lists of items. """
+    result=[]
+    value_list=self.get(keyname,None)
+    if value_list is not None: 
+      value_list=self.listize(value_list)
+      for value in value_list:
+          result.append(self.subst(value))
+    return result 
+
   def UseSystemLibrary(self,libname,extra_flags=None,shared=None,append=False):
     """ Uses a system library, if shared, removes any symlink and adds the lib
     to the linker line.  If not shared, it finds any static library, makes a
@@ -225,7 +236,10 @@ class SCommonEnvironment(Environment):
       # Use gcc -print-file-name to locate the proper .a files.  Using
       # env.subst() here instead of env['VAR'] like previously because of 7.2.3
       # on http://www.scons.org/doc/1.2.0/HTML/scons-user/x1392.html
-      cmd=self.subst(['$CXX','$CCFLAGS','$CXXFLAGS'])
+
+      cmd=self.substList('CXX')
+      cmd.extend(self.substList('CCFLAGS'))
+      cmd.extend(self.substList('CXXFLAGS'))
       cmd.extend(['-B/usr/X11R6/lib64','-B/usr/X11R6/lib']) # common locations
       cmd.extend(extra_flags)
       cmd.append('-print-file-name=%s' % libname)

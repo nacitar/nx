@@ -35,11 +35,7 @@
 namespace nx {
   namespace detail {
     template <typename T,typename Preferred,typename=void>
-    struct PreferIntegralTypeInternal : public Identity<T>
-    {
-      static_assert(
-          DependentBool<false,T>::value,
-          "This only works for integral types.");
+    struct PreferIntegralTypeInternal : public Identity<T> {
     };
     template <typename T,typename Preferred>
     struct PreferIntegralTypeInternal<
@@ -52,6 +48,18 @@ namespace nx {
             T
           > {
     };
+
+    template <const bool kSigned, typename T,typename=void>
+    struct PreferIntegralSignInternal : public Identity<T> {
+    };
+    template <const bool kSigned, typename T>
+    struct PreferIntegralSignInternal<
+        kSigned,
+        T,
+        EnableIf<std::is_integral<T>>>
+        : public SetSigned<kSigned,T> {
+    };
+
   }
 
   //! If kType and kPreferred are integral and of the same size, use the
@@ -60,6 +68,50 @@ namespace nx {
   struct PreferIntegralType
       : public detail::PreferIntegralTypeInternal<T,Preferred> {
   };
+  //! If kType is integral, set its sign as specified.  Use the provided
+  //! type otherwise.
+  template <const bool kSigned, typename T>
+  struct PreferIntegralSign
+      : public detail::PreferIntegralSignInternal<kSigned,T> {
+  };
+
+  //! Searches for the smallest signed integral type within the specified bit
+  //! range.  Provides InvalidType if no such type exists.
+  template <
+      const bool kSigned,
+      const unsigned int kBitMin,
+      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+  struct IntegralLeastRangeSearch
+      : public PreferIntegralSign<
+          kSigned,
+          Invoke<PreferIntegralType<
+            Invoke<PreferIntegralType<
+              Conditional<
+                InRange<BitSize<char>::value,kBitMin,kBitMax>,
+                char,
+                Conditional<
+                  InRange<BitSize<short>::value,kBitMin,kBitMax>,
+                  short,
+                  Conditional<
+                    InRange<BitSize<int>::value,kBitMin,kBitMax>,
+                    int,
+                    Conditional<
+                      InRange<BitSize<long>::value,kBitMin,kBitMax>,
+                      long,
+                      Conditional<
+                        InRange<BitSize<long long>::value,kBitMin,kBitMax>,
+                        long long,
+                        InvalidType>
+                    >
+                  >
+                >
+              >,
+              short // prefer short over char
+            >>,
+            int // prefer int overall
+          >>
+        > {
+  };
 
   //! Provides the smallest integer type in the specified bit range, with a
   //! sign if requested.  Prefers short in cases where char is the same size as
@@ -67,39 +119,14 @@ namespace nx {
   //! sort of data.  Also, prefers int in all cases where the chosen type is
   //! the same size as an int.  Using this structure directly, instead of the
   //! aliased versions, means you have to get the type with ::type.
-  template <bool kSigned,const unsigned int kBitMin,const unsigned int kBitMax>
+  template <
+      const bool kSigned,
+      const unsigned int kBitMin,
+      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   struct IntegralLeastRangeTraits
-      : public SetSigned<
-          kSigned, // Match the sign requested.
-          Invoke<PreferIntegralType<
-            Invoke<PreferIntegralType<
-              Invoke<IsValidType<
-                Conditional<
-                  InRange<BitSize<char>::value,kBitMin,kBitMax>,
-                  char,
-                  Conditional<
-                    InRange<BitSize<short>::value,kBitMin,kBitMax>,
-                    short,
-                    Conditional<
-                      InRange<BitSize<int>::value,kBitMin,kBitMax>,
-                      int,
-                      Conditional<
-                        InRange<BitSize<long>::value,kBitMin,kBitMax>,
-                        long,
-                        Conditional<
-                          InRange<BitSize<long long>::value,kBitMin,kBitMax>,
-                          long long,
-                          InvalidType>
-                      >
-                    >
-                  >
-                >,
-                int // fallback type for when our static assert fails
-              >>,
-              short // prefer short over char
-            >>,
-            int // prefer int overall
-          >>
+      : public AssertValidType<
+          Invoke<IntegralLeastRangeSearch<kSigned,kBitMin,kBitMax>>,
+          int // fallback type for when our static assert fails
         > {
   };
 
@@ -108,13 +135,22 @@ namespace nx {
   // convention seen in other libraries of being lowercase with underscores.
 
   //! Provides the smallest integer type signed as requested in the specified
-  //! bit range.
+  //! bit range.  A static assertion fails if none exists.
   template <
       bool kSigned,
       const unsigned int kBitMin,
       const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   using integral_least_range_t =
       Invoke<IntegralLeastRangeTraits<kSigned,kBitMin,kBitMax>>;
+
+  //! Provides the smallest integer type signed as requested in the specified
+  //! bit range, or InvalidType if none exists.
+  template <
+      bool kSigned,
+      const unsigned int kBitMin,
+      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+  using integral_least_range_search_t =
+      Invoke<IntegralLeastRangeSearch<kSigned,kBitMin,kBitMax>>;
 
   //! Provides a signed exact-size integer type, if available.
   template <const unsigned int kBits>

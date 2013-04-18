@@ -27,7 +27,7 @@
 
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,
-// stack traces are more meaningful.
+// gcc's error messages are more meaningful. 
 namespace nx {
   //! Simple wrapper around an integral constant.  Can be used to make a value
   //! depend upon a template parameter by passing the types as additional
@@ -39,51 +39,51 @@ namespace nx {
   // No need to invoke integral constants... they resolve to themselves!
 
   //! Meta-constant boolean
-  template <bool kValue>
+  template <const bool kValue>
   struct Bool : public std::integral_constant<bool,kValue> {
   };
   //! Meta-constant char
-  template <char kValue>
+  template <const char kValue>
   struct Char : public std::integral_constant<char,kValue> {
   };
   //! Meta-constant short
-  template <short kValue>
+  template <const short kValue>
   struct Short : public std::integral_constant<short,kValue> {
   };
   //! Meta-constant int
-  template <int kValue>
+  template <const int kValue>
   struct Int : public std::integral_constant<int,kValue> {
   };
   //! Meta-constant long
-  template <long kValue>
+  template <const long kValue>
   struct Long : public std::integral_constant<long,kValue> {
   };
   //! Meta-constant long long
-  template <long long kValue>
+  template <const long long kValue>
   struct LongLong : public std::integral_constant<long long,kValue> {
   };
   //! Meta-constant unsigned char
-  template <char kValue>
+  template <const char kValue>
   struct UChar : public std::integral_constant<unsigned char,kValue> {
   };
   //! Meta-constant unsigned short
-  template <unsigned short kValue>
+  template <const unsigned short kValue>
   struct UShort : public std::integral_constant<unsigned short,kValue> {
   };
   //! Meta-constant unsigned int
-  template <unsigned int kValue>
+  template <const unsigned int kValue>
   struct UInt : public std::integral_constant<unsigned int,kValue> {
   };
   //! Meta-constant unsigned long
-  template <unsigned long kValue>
+  template <const unsigned long kValue>
   struct ULong : public std::integral_constant<unsigned long,kValue> {
   };
   //! Meta-constant unsigned long long
-  template <unsigned long long kValue>
+  template <const unsigned long long kValue>
   struct ULongLong : public std::integral_constant<unsigned long long,kValue> {
   };
   //! A dependent boolean type
-  template <bool kValue, typename... T>
+  template <const bool kValue, typename... T>
   struct DependentBool : public DependentIntegralConstant<bool, kValue, T...> {
   };
 
@@ -135,24 +135,118 @@ namespace nx {
   struct InvalidType {
   };
 
-  //! Checks if the type is a valid one via a static assertion.
-  template <typename T, typename Fallback=void>
-  struct IsValidType : public Identity<T> {
+  //! Checks if the provided type is valid, and if so provides it.  Otherwise
+  //! providing the Fallback type.  If kAssert is true, a static assertion
+  //! failure will also occur upon an invalid type.
+  template <const bool kAssert, typename T, typename Fallback=T>
+  struct CheckValidType : public Identity<T>, Bool<true> {
+    using Identity<T>::type;
   };
 
-  //! Specialization to detect InvalidType.  In order to minimize compilation
-  //! errors when the assertion fails, you can pass a fallback type that is
-  //! likely to help in that endeavor.
+  //! Specialization that fails a static assertion on invalid types.
   template <typename Fallback>
-  struct IsValidType<InvalidType,Fallback> : public Identity<Fallback> { 
+  struct CheckValidType<
+      true,
+      InvalidType,
+      Fallback>
+      : public Identity<Fallback>, Bool<false> {
+    using Identity<Fallback>::type;
     static_assert(
         DependentBool<false,Fallback>::value,
         "No type exists that fulfills the specified requirements.");
   };
 
+  //! Specialization that does not fail a static assertion on invalid types.
+  template <typename Fallback>
+  struct CheckValidType<
+      false,
+      InvalidType,
+      Fallback>
+      : public Identity<Fallback>, Bool<false> {
+        using Identity<Fallback>::type;
+  };
+
+  //! Shorthand for CheckValidType with static assertions.  Using this will
+  //! make the presence of assertions more clear to the reader.
+  template <typename T, typename Fallback=T>
+  struct AssertValidType : public CheckValidType<true,T,Fallback> {
+  };
+
+  //! Shorthand for CheckValidType without static assertions.
+  template <typename T, typename Fallback=T>
+  struct IsValidType : public CheckValidType<false,T,Fallback> { 
+  };
+
   //! Stores the size of the provided type in bits.
-  template <class T>
+  template <typename T>
   struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
+  };
+
+  namespace detail
+  {
+    template <
+        typename T,
+        const unsigned int kBits,
+        const bool kAllowPartial,
+        class Enable=void>
+    struct BitMaskInternal
+        : public std::integral_constant<
+            T,(static_cast<T>(1) << kBits)-1> {
+    };
+
+    template <typename T,const unsigned int kBits,const bool kAllowPartial>
+    struct BitMaskInternal<
+        T,
+        kBits,
+        kAllowPartial,
+        EnableIf<Not<std::is_integral<T>>>>
+        : public UInt<0> {
+      static_assert(
+          DependentBool<false,T>::value,
+          "The provided type is not integral.");
+    };
+    template <typename T,const unsigned int kBits,const bool kAllowPartial>
+    struct BitMaskInternal<
+        T,
+        kBits,
+        kAllowPartial,
+        EnableIf<All<
+            std::is_integral<T>,
+            Bool<(kBits == BitSize<T>::value)>>>>
+        : public std::integral_constant<T,~static_cast<T>(0)> {
+    };
+    // If we allow partial masks, we just max out what bits we have if we can't
+    // hold them all.
+    template <typename T,const unsigned int kBits>
+    struct BitMaskInternal<
+        T,
+        kBits,
+        true,
+        EnableIf<All<
+            std::is_integral<T>,
+            Bool<(kBits > BitSize<T>::value)>>>>
+        : public std::integral_constant<T,~static_cast<T>(0)> {
+    };
+    // If we don't allow partial masks, we fail a static assert if we can't
+    // hold all the bits.
+    template <typename T,const unsigned int kBits>
+    struct BitMaskInternal<
+        T,
+        kBits,
+        false,
+        EnableIf<All<
+            std::is_integral<T>,
+            Bool<(kBits > BitSize<T>::value)>>>>
+        : public std::integral_constant<T,0> {
+      static_assert(
+          DependentBool<false,T>::value,
+          "This type does not have enough bits to hold a mask of this size.");
+    };
+  }
+
+  //! Provides a bit mask of type T with the lowest kBits bits set.
+  template <typename T,const unsigned int kBits,const bool kAllowPartial=false>
+  struct BitMask : public detail::BitMaskInternal<T,kBits,kAllowPartial> {
   };
 
   //! Stores a true value if kValue is in the range [kMin,kMax]
@@ -162,7 +256,7 @@ namespace nx {
 
   //! Makes an integral type either signed or unsigned based upon the
   //! value of kSigned.
-  template <bool kSigned,typename T>
+  template <const bool kSigned,typename T>
   struct SetSigned
       : public std::conditional<
             kSigned,

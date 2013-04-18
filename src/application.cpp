@@ -34,8 +34,7 @@ namespace nx
   
   bool Application::set_arguments(
       const int argc,
-      const char* const * const argv
-  ) {
+      const char* const * const argv) {
     if (argc < 0) return false;
     arguments_.assign(argv,argv+argc);
     return true;

@@ -39,51 +39,51 @@ namespace nx {
   // No need to invoke integral constants... they resolve to themselves!
 
   //! Meta-constant boolean
-  template <const bool kValue>
+  template <bool kValue>
   struct Bool : public std::integral_constant<bool,kValue> {
   };
   //! Meta-constant char
-  template <const char kValue>
+  template <char kValue>
   struct Char : public std::integral_constant<char,kValue> {
   };
   //! Meta-constant short
-  template <const short kValue>
+  template <short kValue>
   struct Short : public std::integral_constant<short,kValue> {
   };
   //! Meta-constant int
-  template <const int kValue>
+  template <int kValue>
   struct Int : public std::integral_constant<int,kValue> {
   };
   //! Meta-constant long
-  template <const long kValue>
+  template <long kValue>
   struct Long : public std::integral_constant<long,kValue> {
   };
   //! Meta-constant long long
-  template <const long long kValue>
+  template <long long kValue>
   struct LongLong : public std::integral_constant<long long,kValue> {
   };
   //! Meta-constant unsigned char
-  template <const char kValue>
+  template <char kValue>
   struct UChar : public std::integral_constant<unsigned char,kValue> {
   };
   //! Meta-constant unsigned short
-  template <const unsigned short kValue>
+  template <unsigned short kValue>
   struct UShort : public std::integral_constant<unsigned short,kValue> {
   };
   //! Meta-constant unsigned int
-  template <const unsigned int kValue>
+  template <unsigned int kValue>
   struct UInt : public std::integral_constant<unsigned int,kValue> {
   };
   //! Meta-constant unsigned long
-  template <const unsigned long kValue>
+  template <unsigned long kValue>
   struct ULong : public std::integral_constant<unsigned long,kValue> {
   };
   //! Meta-constant unsigned long long
-  template <const unsigned long long kValue>
+  template <unsigned long long kValue>
   struct ULongLong : public std::integral_constant<unsigned long long,kValue> {
   };
   //! A dependent boolean type
-  template <const bool kValue, typename... T>
+  template <bool kValue, typename... T>
   struct DependentBool : public DependentIntegralConstant<bool, kValue, T...> {
   };
 
@@ -138,7 +138,7 @@ namespace nx {
   //! Checks if the provided type is valid, and if so provides it.  Otherwise
   //! providing the Fallback type.  If kAssert is true, a static assertion
   //! failure will also occur upon an invalid type.
-  template <const bool kAssert, typename T, typename Fallback=T>
+  template <bool kAssert, typename T, typename Fallback=T>
   struct CheckValidType : public Identity<T>, Bool<true> {
     using Identity<T>::type;
   };
@@ -186,15 +186,15 @@ namespace nx {
   {
     template <
         typename T,
-        const unsigned int kBits,
-        const bool kAllowPartial,
+        unsigned int kBits,
+        bool kAllowPartial,
         class Enable=void>
     struct BitMaskInternal
         : public std::integral_constant<
             T,(static_cast<T>(1) << kBits)-1> {
     };
 
-    template <typename T,const unsigned int kBits,const bool kAllowPartial>
+    template <typename T,unsigned int kBits,bool kAllowPartial>
     struct BitMaskInternal<
         T,
         kBits,
@@ -205,7 +205,7 @@ namespace nx {
           DependentBool<false,T>::value,
           "The provided type is not integral.");
     };
-    template <typename T,const unsigned int kBits,const bool kAllowPartial>
+    template <typename T,unsigned int kBits,bool kAllowPartial>
     struct BitMaskInternal<
         T,
         kBits,
@@ -217,7 +217,7 @@ namespace nx {
     };
     // If we allow partial masks, we just max out what bits we have if we can't
     // hold them all.
-    template <typename T,const unsigned int kBits>
+    template <typename T,unsigned int kBits>
     struct BitMaskInternal<
         T,
         kBits,
@@ -229,7 +229,7 @@ namespace nx {
     };
     // If we don't allow partial masks, we fail a static assert if we can't
     // hold all the bits.
-    template <typename T,const unsigned int kBits>
+    template <typename T,unsigned int kBits>
     struct BitMaskInternal<
         T,
         kBits,
@@ -245,7 +245,7 @@ namespace nx {
   }
 
   //! Provides a bit mask of type T with the lowest kBits bits set.
-  template <typename T,const unsigned int kBits,const bool kAllowPartial=false>
+  template <typename T,unsigned int kBits,bool kAllowPartial=false>
   struct BitMask : public detail::BitMaskInternal<T,kBits,kAllowPartial> {
   };
 
@@ -256,7 +256,7 @@ namespace nx {
 
   //! Makes an integral type either signed or unsigned based upon the
   //! value of kSigned.
-  template <const bool kSigned,typename T>
+  template <bool kSigned,typename T>
   struct SetSigned
       : public std::conditional<
             kSigned,
@@ -266,7 +266,7 @@ namespace nx {
   };
 
   //! Instantiates to be the specified number of bytes in size.
-  template<const unsigned int kSize>
+  template<unsigned int kSize>
   class SpecificSize {
     unsigned char buffer_[kSize];
   };

@@ -49,10 +49,10 @@ namespace nx {
           > {
     };
 
-    template <const bool kSigned, typename T,typename=void>
+    template <bool kSigned, typename T,typename=void>
     struct PreferIntegralSignInternal : public Identity<T> {
     };
-    template <const bool kSigned, typename T>
+    template <bool kSigned, typename T>
     struct PreferIntegralSignInternal<
         kSigned,
         T,
@@ -70,7 +70,7 @@ namespace nx {
   };
   //! If kType is integral, set its sign as specified.  Use the provided
   //! type otherwise.
-  template <const bool kSigned, typename T>
+  template <bool kSigned, typename T>
   struct PreferIntegralSign
       : public detail::PreferIntegralSignInternal<kSigned,T> {
   };
@@ -78,9 +78,9 @@ namespace nx {
   //! Searches for the smallest signed integral type within the specified bit
   //! range.  Provides InvalidType if no such type exists.
   template <
-      const bool kSigned,
-      const unsigned int kBitMin,
-      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+      bool kSigned,
+      unsigned int kBitMin,
+      unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   struct IntegralLeastRangeSearch
       : public PreferIntegralSign<
           kSigned,
@@ -120,9 +120,9 @@ namespace nx {
   //! the same size as an int.  Using this structure directly, instead of the
   //! aliased versions, means you have to get the type with ::type.
   template <
-      const bool kSigned,
-      const unsigned int kBitMin,
-      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+      bool kSigned,
+      unsigned int kBitMin,
+      unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   struct IntegralLeastRangeTraits
       : public AssertValidType<
           Invoke<IntegralLeastRangeSearch<kSigned,kBitMin,kBitMax>>,
@@ -138,8 +138,8 @@ namespace nx {
   //! bit range.  A static assertion fails if none exists.
   template <
       bool kSigned,
-      const unsigned int kBitMin,
-      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+      unsigned int kBitMin,
+      unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   using integral_least_range_t =
       Invoke<IntegralLeastRangeTraits<kSigned,kBitMin,kBitMax>>;
 
@@ -147,31 +147,31 @@ namespace nx {
   //! bit range, or InvalidType if none exists.
   template <
       bool kSigned,
-      const unsigned int kBitMin,
-      const unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
+      unsigned int kBitMin,
+      unsigned int kBitMax=std::numeric_limits<unsigned int>::max()>
   using integral_least_range_search_t =
       Invoke<IntegralLeastRangeSearch<kSigned,kBitMin,kBitMax>>;
 
   //! Provides a signed exact-size integer type, if available.
-  template <const unsigned int kBits>
+  template <unsigned int kBits>
   using int_t = integral_least_range_t<true,kBits,kBits>;
   //! Provides the smallest signed integer type with at least the specified
   //! number of bits.
-  template <const unsigned int kBits>
+  template <unsigned int kBits>
   using int_least_t = integral_least_range_t<true,kBits>;
   //! Provides the smallest signed integer type in the specified bit range.
-  template <const unsigned int kBitMin,const unsigned int kBitMax>
+  template <unsigned int kBitMin,unsigned int kBitMax>
   using int_least_range_t = integral_least_range_t<true,kBitMin,kBitMax>;
 
   //! Provides a unsigned exact-size integer type, if available.
-  template <const unsigned int kBits>
+  template <unsigned int kBits>
   using uint_t = integral_least_range_t<false,kBits,kBits>;
   //! Provides the smallest unsigned integer type with at least the specified
   //! number of bits.
-  template <const unsigned int kBits>
+  template <unsigned int kBits>
   using uint_least_t = integral_least_range_t<false,kBits>;
   //! Provides the smallest signed integer type in the specified bit range.
-  template <const unsigned int kBitMin,const unsigned int kBitMax>
+  template <unsigned int kBitMin,unsigned int kBitMax>
   using uint_least_range_t = integral_least_range_t<false,kBitMin,kBitMax>;
 
   //! The largest available unsigned integral type.

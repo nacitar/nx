@@ -23,10 +23,6 @@
 
 #include <nx/core.hpp>
 
-// NOTE: windows precision won't be 1ms precision; we aren't overriding the
-// system clock interval (as it is bad for the system to do that anyway; uses
-// battery a lot more).  Expect 12-16ms precision
-
 #ifndef NX_OS_WINDOWS
   // symbols telling me if clock_gettime/monotonic timers are available
   #include <time.h> 

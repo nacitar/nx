@@ -24,8 +24,9 @@
 
 #ifndef NX_OS_WINDOWS
   // symbols telling me if clock_gettime/monotonic timers are available
-  #include <time.h>
-  #include <unistd.h>
+  // suppressing lint errors because we aren't moving platform checks here
+  #include <time.h>  // NOLINT(build/include_order)
+  #include <unistd.h>  // NOLINT(build/include_order)
   #if _POSIX_TIMERS <= 0 || !defined(_POSIX_MONOTONIC_CLOCK) || \
       !defined(CLOCK_MONOTONIC_RAW)
     #error The timer library requires POSIX CLOCK_MONOTONIC_RAW support.

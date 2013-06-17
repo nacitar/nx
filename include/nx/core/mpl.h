@@ -20,9 +20,10 @@
 #ifndef INCLUDE_NX_CORE_MPL_H_
 #define INCLUDE_NX_CORE_MPL_H_
 
-#include "nx/core/os.h"
 
 #include <type_traits>
+
+#include "nx/core/os.h"
 
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,

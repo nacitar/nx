@@ -20,11 +20,12 @@
 #ifndef INCLUDE_NX_APPLICATION_H_
 #define INCLUDE_NX_APPLICATION_H_
 
-#include "nx/core.h"
 
 #include <memory>
 #include <vector>
 #include <string>
+
+#include "nx/core.h"
 
 namespace nx {
   /// A base class upon which an application can be built.

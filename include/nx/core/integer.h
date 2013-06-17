@@ -42,12 +42,8 @@ namespace nx {
         Preferred,
         EnableIf<All<std::is_integral<T>, std::is_integral<Preferred>>>>
         : public std::conditional<
-            sizeof(T) == sizeof(Preferred),
-            Preferred,
-            T
-          > {
+            sizeof(T) == sizeof(Preferred), Preferred, T> {
     };
-
     template <bool kSigned, typename T, typename = void>
     struct PreferIntegralSignInternal : public Identity<T> {
     };

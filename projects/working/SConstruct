@@ -10,5 +10,8 @@ env.ApplySConscript(env.Root('nx.scons'))
 # and use it, too
 env.UseSConscript(env.Root('nx.scons'))
 
+if env['cross'] == 'win':
+  env.UseSystemLibrary(['shlwapi'],shared=True)
 
-env.Program('working', source=['main.cpp'])
+
+env.Program('working', source=['main.cc'])

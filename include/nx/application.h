@@ -54,22 +54,28 @@ namespace nx {
     /// Constructs the application using the provided arguments.
     Application(const int argc, const char* const * const argv);
 
-    /// The driver function of the application.  This should be overridden in
-    /// a child class.
+    /// The driver function of the application; to be overriden by a subclass.
     virtual int main()=0;
 
     /// Populates the arguments using the argc/argv pair passed.
     bool set_arguments(const int argc, const char* const * const argv);
 
+    /// Returns a const reference to the arguments to the Application.
     const arg_vector& arguments() const;
+    /// Returns a reference to the arguments to the Application.
     arg_vector& arguments();
 
+    /// Returns a const pointer to platform specific data for this Application.
     const PlatformData* platform_data() const;
+    /// Returns a pointer to platform specific data for this Application.
     PlatformData* platform_data();
+    /// Sets the platform specific data for this Application.
     void set_platform_data(PlatformData*data);
 
    private:
+    /// The platform specific data.
     std::unique_ptr<PlatformData> platform_data_;
+    /// The arguments.
     arg_vector arguments_;
   };
 

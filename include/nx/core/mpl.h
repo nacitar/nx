@@ -56,18 +56,18 @@ namespace nx {
   struct UInt : public std::integral_constant<unsigned int, kValue> {
   };
 
-  /// Alias for removing typename and ::type from boilerplate.
+  /// Alias for removing typename and type members from boilerplate.
   template <typename T>
   using Invoke = typename T::type;
 
   /// Basic identity metafunction; provides the type unaltered.
-  /// Useful for passing raw types to templates expecting ::type.
+  /// Useful for passing raw types to templates expecting a type member.
   template <typename T>
   struct Identity {
     using type = T;
   };
 
-  /// Alias to get the conditional of something with a ::value member
+  /// Alias to get the conditional of something with a value member.
   template <typename If, typename Then, typename Else>
   using Conditional = Invoke<std::conditional<If::value, Then, Else>>;
 

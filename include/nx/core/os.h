@@ -32,10 +32,19 @@
 #if defined(__GNUC__)
   // #define NX_ALIGN_TO(bytes) __attribute__((aligned(bytes)))
   // #define NX_MAY_ALIAS __attribute__((__may_alias__))
+
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is true.
   #define NX_LIKELY(x) __builtin_expect((x), 1)
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is false.
   #define NX_UNLIKELY(x) __builtin_expect((x), 0)
 #else
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is true.
   #define NX_LIKELY(x) (x)
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is false.
   #define NX_UNLIKELY(x) (x)
 #endif
 // #if _MSC_VER > 1300 // .net 2002+
@@ -47,33 +56,43 @@
     defined(WINDOWS) || defined(WIN32) || defined(_WIN32) || \
     defined(WIN64) || defined(_WIN64) \
 )
+  /// Defined if build target is Windows
   #define NX_OS_WINDOWS 1
 #elif (\
     defined(__linux) || defined(__linux__) || \
     defined(linux) || defined(__gnu_linux__) || defined(LINUX) \
 )
+  /// Defined if build target is Linux
   #define NX_OS_LINUX 1
 #elif defined(__APPLE__)
+  /// Defined if build target is Mac
   #define NX_OS_MAC 1
 #elif defined (__SVR4) && defined (__sun)
+  /// Defined if build target is Solaris
   #define NX_OS_SOLARIS 1
 #else
+  /// Defined if build target is an unknown platform
   #define NX_OS_OTHER 1
 #endif
 
 // OS initialization/ensuring important system defines are set
 #if defined(NX_OS_WINDOWS)
+  /// Informs the windows headers we are targetting windows 7
   #define WINVER 0x0601
+  /// Informs the windows headers we are targetting windows 7
   #define _WIN32_WINNT 0x0601
   #ifndef NOMINMAX
+    /// Prevents the windows headers from defining min/max as macros.
     #define NOMINMAX
   #endif
   #include <windows.h>
   #ifndef PATH_MAX
+    /// Best guess per platform includes as to the maximum length of a path.
     #define PATH_MAX MAX_PATH
   #endif
 #else
   #include <limits.h>
+  /// Best guess per platform includes as to the maximum length of a path.
   #define MAX_PATH PATH_MAX
 #endif
 

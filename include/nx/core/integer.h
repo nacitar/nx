@@ -181,44 +181,78 @@ namespace nx {
   /// The largest available signed integral type.
   typedef signed long long intmax_t;  // NOLINT(runtime/int)
 
+  /// An unsigned integer type 8 bits in size.
   typedef uint_t<8>  uint8_t;
+  /// A signed integer type 8 bits in size.
   typedef int_t<8>   int8_t;
+  /// An unsigned integer type 16 bits in size.
   typedef uint_t<16> uint16_t;
+  /// A signed integer type 16 bits in size.
   typedef int_t<16>  int16_t;
+  /// An unsigned integer type 32 bits in size.
   typedef uint_t<32> uint32_t;
+  /// A signed integer type 32 bits in size.
   typedef int_t<32>  int32_t;
+  /// An unsigned integer type 64 bits in size.
   typedef uint_t<64> uint64_t;
+  /// A signed integer type 64 bits in size.
   typedef int_t<64>  int64_t;
 
+  /// The smallest unsigned integer type at least 8 bits in size.
   typedef uint_least_t<8>  uint_least8_t;
+  /// The fastest unsigned integer type at least 8 bits in size.
   typedef uint_least8_t    uint_fast8_t;
+  /// The smallest signed integer type at least 8 bits in size.
   typedef int_least_t<8>   int_least8_t;
+  /// The fastest signed integer type at least 8 bits in size.
   typedef int_least8_t     int_fast8_t;
+  /// The smallest unsigned integer type at least 16 bits in size.
   typedef uint_least_t<16> uint_least16_t;
+  /// The fastest unsigned integer type at least 16 bits in size.
   typedef uint_least16_t   uint_fast16_t;
+  /// The smallest signed integer type at least 16 bits in size.
   typedef int_least_t<16>  int_least16_t;
+  /// The fastest unsigned integer type at least 16 bits in size.
   typedef int_least16_t    int_fast16_t;
+  /// The smallest unsigned integer type at least 32 bits in size.
   typedef uint_least_t<32> uint_least32_t;
+  /// The fastest unsigned integer type at least 32 bits in size.
   typedef uint_least32_t   uint_fast32_t;
+  /// The smallest signed integer type at least 32 bits in size.
   typedef int_least_t<32>  int_least32_t;
+  /// The fastest unsigned integer type at least 32 bits in size.
   typedef int_least32_t    int_fast32_t;
+  /// The smallest unsigned integer type at least 64 bits in size.
   typedef uint_least_t<64> uint_least64_t;
+  /// The fastest unsigned integer type at least 64 bits in size.
   typedef uint_least64_t   uint_fast64_t;
+  /// The smallest signed integer type at least 64 bits in size.
   typedef int_least_t<64>  int_least64_t;
+  /// The fastest unsigned integer type at least 64 bits in size.
   typedef int_least64_t    int_fast64_t;
 
+  /// An unsigned integer type of the same bit size as that of a pointer.
   typedef uint_least_t<BitSize<void*>::value> uintptr_t;
+  /// A signed integer type of the same bit size as that of a pointer.
   typedef int_least_t<BitSize<void*>::value> intptr_t;
 
+  /// A signed integer type able to represent the result of any valid pointer
+  /// subtraction operation.
   typedef std::ptrdiff_t ptrdiff_t;
+  /// An unsigned integer type that can store the maximum size of a
+  /// theoretically possible object of any type (including array).
   typedef std::size_t size_t;
 
   #ifdef OS_WINDOWS_
+  /// A type capable of holding a process identifier.
   typedef DWORD pid_t;
   #else
+  /// A type capable of holding a process identifier.
   typedef pid_t pid_t;
   #endif
+  /// An unsigned integer type of the same bit size as that of a pid_t.
   typedef uint_least_t<BitSize<pid_t>::value> uintpid_t;
+  /// A signed integer type of the same bit size as that of a pid_t.
   typedef int_least_t<BitSize<pid_t>::value> intpid_t;
 }  // namespace nx
 

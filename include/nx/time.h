@@ -35,15 +35,18 @@
 namespace nx {
   #ifndef NX_OS_WINDOWS
   // Sized to match the "seconds" field in timespec
+  /// An unsigned integer type suitable to hold milliseconds for this api.
   typedef uint_t<BitSize<time_t>::value> msec_t;
   #else
   // Matches GetTickCount64's return value
+  /// An unsigned integer type suitable to hold milliseconds for this api.
   typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
   #endif
-  // Forward to the correct specialization
+  /// Returns a monotonically increasing millisecond counter.
   msec_t fixed_msec();
+  /// Returns the difference in milliseconds between two msec_t values.
   msec_t msec_elapsed(msec_t later, msec_t earlier);
-
+  /// A millisecond precision sleep command, where possible.
   void millisleep(const unsigned int millisecs);
 }  // namespace nx
 

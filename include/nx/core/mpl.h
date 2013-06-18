@@ -64,6 +64,7 @@ namespace nx {
   /// Useful for passing raw types to templates expecting a type member.
   template <typename T>
   struct Identity {
+    /// The type provided as a template argument.
     using type = T;
   };
 

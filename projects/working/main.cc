@@ -22,7 +22,8 @@
 #include "nx/time.h"
 
 #include <iostream>
-// Create my application
+
+/// The class for the test application
 struct MyApplication : nx::Application {
   int main() {
 

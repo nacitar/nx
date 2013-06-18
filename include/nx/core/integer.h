@@ -120,7 +120,7 @@ namespace nx {
   /// a short, due to "char" being interpreted by some things as a non-numeric
   /// sort of data.  Also, prefers int in all cases where the chosen type is
   /// the same size as an int.  Using this structure directly, instead of the
-  /// aliased versions, means you have to get the type with ::type.
+  /// aliased versions, means you have to access the type member.
   template <
       bool kSigned,
       unsigned int kBitMin,

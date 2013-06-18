@@ -33,13 +33,12 @@
   #endif
 #endif
 namespace nx {
+  /// An unsigned integer type suitable to hold milliseconds for this api.
   #ifndef NX_OS_WINDOWS
   // Sized to match the "seconds" field in timespec
-  /// An unsigned integer type suitable to hold milliseconds for this api.
   typedef uint_t<BitSize<time_t>::value> msec_t;
   #else
   // Matches GetTickCount64's return value
-  /// An unsigned integer type suitable to hold milliseconds for this api.
   typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
   #endif
   /// Returns a monotonically increasing millisecond counter.

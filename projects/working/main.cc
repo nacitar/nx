@@ -18,22 +18,19 @@
 /// Test project for things being worked on.
 
 
+#include <stdio.h>
 #include "nx/application.h"
 #include "nx/time.h"
 
-#include <iostream>
 
 /// The class for the test application
 struct MyApplication : nx::Application {
   int main() {
-
-    nx::msec_t last=0;
-    while (true)
-    {
-      nx::msec_t now=nx::fixed_msec();
-      if (last != now)
-      {
-        std::cout << +now << std::endl;
+    nx::msec_t last = 0;
+    while (true) {
+      nx::msec_t now = nx::fixed_msec();
+      if (last != now) {
+        printf("%d", static_cast<unsigned int>(now));
         last = now;
       }
     }

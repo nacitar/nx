@@ -42,6 +42,7 @@ namespace nx {
       7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
       7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
     };
+
     constexpr const uint_least8_t deBruijn32[32] = {
        0,  1, 28,  2, 29, 14, 24,  3,
       30, 22, 20, 15, 25, 17,  4,  8,
@@ -49,6 +50,7 @@ namespace nx {
       26, 12, 18,  6, 11,  5, 10,  9
     };
     constexpr const uint_least32_t deBruijn32Multiplier = 0x077CB531ul;
+
     constexpr const uint_least8_t deBruijn64[64] = {
        0,  1,  2, 53,  3,  7, 54, 27,
        4, 38, 41,  8, 34, 55, 48, 28,
@@ -61,6 +63,42 @@ namespace nx {
     };
     constexpr const uint_least64_t deBruijn64Multiplier = (
         (static_cast<uint_least64_t>(0x022FDD63ul)<<32)| 0xCC95386Dul);
+
+    constexpr const uint_least64_t pow10_64[20] = {
+                         1ull,
+                        10ull,
+                       100ull,
+                      1000ull,
+                     10000ull,
+                    100000ull,
+                   1000000ull,
+                  10000000ull,
+                 100000000ull,
+                1000000000ull,
+               10000000000ull,
+              100000000000ull,
+             1000000000000ull,
+            10000000000000ull,
+           100000000000000ull,
+          1000000000000000ull,
+         10000000000000000ull,
+        100000000000000000ull,
+       1000000000000000000ull,
+      10000000000000000000ull
+    };
+
+    constexpr const uint_least32_t pow10_32[10] = {
+               1ul,
+              10ul,
+             100ul,
+            1000ul,
+           10000ul,
+          100000ul,
+         1000000ul,
+        10000000ul,
+       100000000ul,
+      1000000000ul
+    };
   }
 }
 

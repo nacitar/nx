@@ -8,7 +8,7 @@ libname = 'nx'
 env.NXLibrary(target=libname, source=[
   'src/application.cc',
   'src/time.cc',
-  'src/constants.cc'
+  'src/constant.cc'
 ])
 
 # add our include path 

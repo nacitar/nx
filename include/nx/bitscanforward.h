@@ -66,7 +66,7 @@ namespace nx {
   // Generic bitScanForward
 
   namespace detail {
-    template <const unsigned int uVersion,class T>
+    template <unsigned int uVersion,class T>
     inline constexpr EnableIf<
       All<std::is_integral<T>,Bool<uVersion==64>>,
     unsigned int> bitScanForward(const T&val) {
@@ -86,7 +86,7 @@ namespace nx {
           ) & 0x3Fu
       ];
     }
-    template <const unsigned int uVersion,class T>
+    template <unsigned int uVersion,class T>
     inline constexpr EnableIf<
       All<std::is_integral<T>,Bool<uVersion==32>>,
     unsigned int> bitScanForward(const T&val) {

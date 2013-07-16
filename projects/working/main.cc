@@ -20,9 +20,10 @@
 #include <iostream>
 #include <sstream>
 #include <stdio.h>
+#include "nx/log10.h"
 #include "nx/application.h"
 #include "nx/time.h"
-#include "nx/constants.h"
+#include "nx/constant.h"
 #include "nx/bitscanreverse.h"
 #include "nx/bitscanforward.h"
 
@@ -45,11 +46,12 @@ class MyApplication : public nx::Application {
       std::cerr << "INVALID" << std::endl;
       return 1;
     }
-    unsigned int x;
+    nx::uint_least64_t x;
     std::stringstream ss(args[1]);
     ss >> x;
-    std::cout << nx::bitScanForward(x) << std::endl;
-    std::cout << nx::bitScanReverse(x) << std::endl;
+    std::cout << "BSF: " << nx::bitScanForward(x) << std::endl;
+    std::cout << "BSR: " << nx::bitScanReverse(x) << std::endl;
+    std::cout << "L10: " << nx::log10(x) << std::endl; 
     return 0;
   }
 };

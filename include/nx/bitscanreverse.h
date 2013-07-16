@@ -38,7 +38,7 @@ namespace nx {
         Not<IntegerFits<T, unsigned long>>
       >,
   unsigned int> bitScanReverse(const T&val) {
-    return (val ? BitSize<int>::value - 1 -__builtin_clzll(val) : 0);
+    return (val ? BitSize<T>::value - 1 -__builtin_clzll(val) : 0);
   }
   // unsigned long version
   template <class T>
@@ -49,7 +49,7 @@ namespace nx {
         Not<IntegerFits<T, unsigned int>>
       >,
   unsigned int> bitScanReverse(const T&val) {
-    return (val ? BitSize<int>::value - 1 -__builtin_clzl(val) : 0);
+    return (val ? BitSize<T>::value - 1 -__builtin_clzl(val) : 0);
   }
   // unsigned int version
   template <class T>
@@ -59,7 +59,7 @@ namespace nx {
         IntegerFits<T, unsigned int>
       >,
   unsigned int> bitScanReverse(const T&val) {
-    return (val ? BitSize<int>::value - 1 -__builtin_clz(val) : 0);
+    return (val ? BitSize<T>::value - 1 -__builtin_clz(val) : 0);
   }
   #else
   // Generic bitScanReverse - finds the highest set bit index

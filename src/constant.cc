@@ -15,9 +15,9 @@
 //
 
 /// @file
-/// Implementation for constants.h
+/// Implementation for constant.h
 
-#include "nx/constants.h"
+#include "nx/constant.h"
 
 namespace nx {
 

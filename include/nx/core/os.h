@@ -29,28 +29,6 @@
       has been removed.  If using gcc, this requires 4.7+
 #endif
 
-#if defined(__GNUC__)
-  // #define NX_ALIGN_TO(bytes) __attribute__((aligned(bytes)))
-  // #define NX_MAY_ALIAS __attribute__((__may_alias__))
-
-  /// Pass the conditional statement of an if statement to inform the
-  /// compiler to structure branches expecting that the value is true.
-  #define NX_LIKELY(x) __builtin_expect((x), 1)
-  /// Pass the conditional statement of an if statement to inform the
-  /// compiler to structure branches expecting that the value is false.
-  #define NX_UNLIKELY(x) __builtin_expect((x), 0)
-#else
-  /// Pass the conditional statement of an if statement to inform the
-  /// compiler to structure branches expecting that the value is true.
-  #define NX_LIKELY(x) (x)
-  /// Pass the conditional statement of an if statement to inform the
-  /// compiler to structure branches expecting that the value is false.
-  #define NX_UNLIKELY(x) (x)
-#endif
-// #if _MSC_VER > 1300 // .net 2002+
-  // #define NX_ALIGN_TO(bytes) __declspec( align( bytes ) )
-// #endif
-
 // OS detection
 #if (\
     defined(WINDOWS) || defined(WIN32) || defined(_WIN32) || \
@@ -73,6 +51,51 @@
 #else
   /// Defined if build target is an unknown platform
   #define NX_OS_OTHER 1
+#endif
+
+// Toolchain detection
+#if defined(__GNUC__)
+  /// Set if the toolchain in use is GCC
+  #define NX_TC_GCC
+
+#elif defined(_MSC_VER)
+  /// Set if the toolchain in use is visual studio
+  #define NX_TC_VS
+#endif
+
+// Compiler features
+#if defined(NX_TC_GCC)
+  // #define NX_ALIGN_TO(bytes) __attribute__((aligned(bytes)))
+  // #define NX_MAY_ALIAS __attribute__((__may_alias__))
+
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is true.
+  #define NX_LIKELY(x) __builtin_expect((x), 1)
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is false.
+  #define NX_UNLIKELY(x) __builtin_expect((x), 0)
+  /// Marks a function or variable as deprecated.
+  #define NX_DEPRECATED(decl, msg) decl __attribute__((deprecated(msg)))
+#else
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is true.
+  #define NX_LIKELY(x) (x)
+  /// Pass the conditional statement of an if statement to inform the
+  /// compiler to structure branches expecting that the value is false.
+  #define NX_UNLIKELY(x) (x)
+
+  #if defined(NX_TC_VS)
+    // #if _MSC_VER > 1300 // .net 2002+
+      // #define NX_ALIGN_TO(bytes) __declspec( align( bytes ) )
+    // #endif
+
+    /// Marks a function or variable as deprecated.
+    #define NX_DEPRECATED(decl, msg) __declspec(deprecated(msg)) decl
+  #else
+    /// Marks a function or variable as deprecated.  However, this macro is
+    /// NOT IMPLEMENTED on this platform.
+    #define NX_DEPRECATED(decl, msg) decl
+  #endif
 #endif
 
 // OS initialization/ensuring important system defines are set
@@ -104,4 +127,5 @@
         "define it here or include the appropriate header!"
   #endif
 #endif
+
 #endif  // INCLUDE_NX_CORE_OS_H_

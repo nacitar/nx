@@ -22,8 +22,29 @@
 
 
 #include <type_traits>
+#include <limits>
 
 #include "nx/core/os.h"
+
+/// Preprocessor text concatenation.
+#define NX_PP_CAT(x,y) NX_PP_CAT1(x,y)
+#define NX_PP_CAT1(x,y) x##y
+
+/// Simple static warning.
+#define NX_STATIC_WARNING(cond, msg) \
+struct NX_PP_CAT(static_warning,__LINE__) { \
+  NX_DEPRECATED(void _(::std::false_type const& ),msg) {}; \
+  void _(::std::true_type const& ) {}; \
+  NX_PP_CAT(static_warning,__LINE__)() {_(::nx::Bool<cond>());} \
+}
+
+/// Static warning at template level.
+/// Note: using NX_STATIC_WARNING_TEMPLATE changes the meaning of a program in a
+/// small way.  It introduces a member/variable declaration.  This means at
+/// least one byte of space in each structure/class instantiation.
+/// NX_STATIC_WARNING should be preferred in any non-template situation.
+#define NX_STATIC_WARNING_TEMPLATE(cond, msg) \
+    NX_STATIC_WARNING(cond, msg) NX_PP_CAT(_localvar_staticwarning,__LINE__)
 
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,
@@ -81,6 +102,8 @@ namespace nx {
   template <typename... T>
   struct Any : Bool<false> {
   };
+  /// Specialization for checking the truth of one condition before chaining
+  /// to check the other conditions.
   template <typename Head, typename... Tail>
   struct Any<Head, Tail...> : Conditional<Head, Bool<true>, Any<Tail...>> {
   };
@@ -89,6 +112,8 @@ namespace nx {
   template <typename... T>
   struct All : public Bool<true> {
   };
+  /// Specialization for checking the truth of one condition before chaining
+  /// to check the other conditions.
   template <typename Head, typename... Tail>
   struct All<Head, Tail...> : Conditional<Head, All<Tail...>, Bool<false>> {
   };
@@ -133,7 +158,7 @@ namespace nx {
       InvalidType,
       Fallback>
       : public Identity<Fallback>, Bool<false> {
-        using Identity<Fallback>::type;
+    using Identity<Fallback>::type;
   };
 
   /// Shorthand for CheckValidType with static assertions.  Using this will
@@ -150,6 +175,15 @@ namespace nx {
   /// Stores the size of the provided type in bits.
   template <typename T>
   struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
+  };
+
+  /// Checks if the size of the type T is within the requested range.
+  template <
+    typename T,
+    unsigned int Min,
+    unsigned int Max=std::numeric_limits<unsigned int>::max()>
+  struct BitRange
+      : public Bool<(BitSize<T>::value >= Min && BitSize<T>::value <= Max)> {
   };
 
   namespace detail {
@@ -221,6 +255,16 @@ namespace nx {
   /// Stores a true value if kValue is in the range [kMin,kMax]
   template <unsigned int kValue, unsigned int kMin, unsigned int kMax>
   struct InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
+  };
+
+  /// Determines if integer type T is <= the size of integer type TDest.
+  template <typename T, typename TDest>
+  struct IntegerFits
+      : public All<
+            std::is_integral<T>,
+            std::is_integral<TDest>,
+            InRange<BitSize<T>::value,0,BitSize<TDest>::value>
+        > {
   };
 
   /// Makes an integral type either signed or unsigned based upon the

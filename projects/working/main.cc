@@ -17,15 +17,19 @@
 /// @file
 /// Test project for things being worked on.
 
-
+#include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include "nx/application.h"
 #include "nx/time.h"
-
+#include "nx/constants.h"
+#include "nx/bitscanreverse.h"
+#include "nx/bitscanforward.h"
 
 /// The class for the test application
-struct MyApplication : nx::Application {
-  int main() {
+class MyApplication : public nx::Application {
+ public:
+  void timer_resolution_test() {
     nx::msec_t last = 0;
     while (true) {
       nx::msec_t now = nx::fixed_msec();
@@ -34,6 +38,18 @@ struct MyApplication : nx::Application {
         last = now;
       }
     }
+  }
+  int main() {
+    arg_vector&args=arguments();
+    if (args.size() != 2) {
+      std::cerr << "INVALID" << std::endl;
+      return 1;
+    }
+    unsigned int x;
+    std::stringstream ss(args[1]);
+    ss >> x;
+    std::cout << nx::bitScanForward(x) << std::endl;
+    std::cout << nx::bitScanReverse(x) << std::endl;
     return 0;
   }
 };

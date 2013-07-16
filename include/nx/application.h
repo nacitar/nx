@@ -34,9 +34,9 @@ namespace nx {
     /// The container type used to hold arguments.
     typedef std::vector<std::string> arg_vector;
 
-    #ifdef NX_OS_WINDOWS
     /// A class used to hold platform-specific data that is sometimes pertinent
     /// that would typically be obtained in a tradtional main() function.
+    #ifdef NX_OS_WINDOWS
     struct PlatformData {
       // These members are named matching winapi documentation.
       HINSTANCE hInstance;

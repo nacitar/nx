@@ -52,7 +52,7 @@ class MyApplication : public nx::Application {
     std::string buf;
     for (int i=0;i<100000000;++i)
     {
-      sum += nx::tos(-i,buf);
+      sum += nx::tos(-i,&buf);
       buf.clear();
     }
     return sum;

@@ -17,6 +17,9 @@
 /// @file
 /// Functions to convert integral values to strings.
 
+#ifndef INCLUDE_NX_TOA_H_
+#define INCLUDE_NX_TOA_H_
+
 #include <string>
 #include "nx/core.h"
 #include "nx/log10.h"
@@ -69,29 +72,29 @@ namespace nx {
   template <class T>
   EnableIf<
     std::is_unsigned<T>,
-  unsigned int> tos(T uVal, std::string&strBuf) {
-    const std::string::size_type uOffset = strBuf.size();
+  unsigned int> tos(T uVal, std::string*ptBuf) {
+    const std::string::size_type uOffset = ptBuf->size();
     // get size of textual data
     const unsigned int uSize = log10(uVal) + 1;
-    strBuf.resize(uOffset + uSize);
+    ptBuf->resize(uOffset + uSize);
     // convert the number
-    detail::toa(uVal, &strBuf[uOffset], uSize-1);
+    detail::toa(uVal, &((*ptBuf)[uOffset]), uSize-1);
     // return number of digits
     return uSize;
   }
   template <class T>
   EnableIf<
     std::is_signed<T>,
-  unsigned int> tos(T sVal, std::string&strBuf) {
+  unsigned int> tos(T sVal, std::string*ptBuf) {
     // Unsigned T
     typedef const typename std::make_unsigned<T>::type UT;
     if (sVal < 0) {
       // add the -
-      strBuf.push_back('-');
+      ptBuf->push_back('-');
       // adjust by 1 to account for the -
-      return tos(static_cast<UT>(-sVal), strBuf)+1;
+      return tos(static_cast<UT>(-sVal), ptBuf)+1;
     }
-    return tos(static_cast<UT>(sVal), strBuf);
+    return tos(static_cast<UT>(sVal), ptBuf);
   }
   // returns a copy of the string
   template <class T>
@@ -99,8 +102,10 @@ namespace nx {
     std::is_integral<T>,
   std::string> tos(T sVal) {
     std::string buffer;
-    tos(sVal,buffer);
+    tos(sVal, &buffer);
     return buffer;
   }
 
 }  // namespace nx
+
+#endif  // INCLUDE_NX_TOA_H_

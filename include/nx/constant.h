@@ -17,8 +17,8 @@
 /// @file
 /// Useful constants.
 
-#ifndef INCLUDE_NX_CONSTANTS_H_
-#define INCLUDE_NX_CONSTANTS_H_
+#ifndef INCLUDE_NX_CONSTANT_H_
+#define INCLUDE_NX_CONSTANT_H_
 
 #include "nx/core.h"
 
@@ -62,7 +62,7 @@ namespace nx {
       50, 31, 19, 15, 30, 14, 13, 12
     };
     constexpr const uint_least64_t deBruijn64Multiplier = (
-        (static_cast<uint_least64_t>(0x022FDD63ul)<<32)| 0xCC95386Dul);
+        (static_cast<uint_least64_t>(0x022FDD63ul) << 32) | 0xCC95386Dul);
 
     constexpr const uint_least64_t pow10_64[20] = {
                          1ull,
@@ -99,7 +99,7 @@ namespace nx {
        100000000ul,
       1000000000ul
     };
-  }
-}
+  }  // namespace constant
+}  // namespace nx
 
-#endif  // INCLUDE_NX_CONSTANTS_H_
+#endif  // INCLUDE_NX_CONSTANT_H_

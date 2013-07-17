@@ -17,9 +17,9 @@
 /// @file
 /// Test project for things being worked on.
 
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
-#include <stdio.h>
 #include "nx/log10.h"
 #include "nx/application.h"
 #include "nx/time.h"
@@ -41,7 +41,7 @@ class MyApplication : public nx::Application {
     }
   }
   int main() {
-    arg_vector&args=arguments();
+    arg_vector& args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;
       return 1;
@@ -49,9 +49,9 @@ class MyApplication : public nx::Application {
     nx::uint_least64_t x;
     std::stringstream ss(args[1]);
     ss >> x;
-    std::cout << "BSF: " << nx::bitScanForward(x) << std::endl;
-    std::cout << "BSR: " << nx::bitScanReverse(x) << std::endl;
-    std::cout << "L10: " << nx::log10(x) << std::endl; 
+    std::cout << "BSF: " << nx::BitScanForward(x) << std::endl;
+    std::cout << "BSR: " << nx::BitScanReverse(x) << std::endl;
+    std::cout << "L10: " << nx::log10(x) << std::endl;
     return 0;
   }
 };

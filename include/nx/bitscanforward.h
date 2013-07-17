@@ -25,20 +25,20 @@
 
 namespace nx {
   // Enable this define to not use compiler builtins.
-  //#define NX_USE_GENERIC_BITSCANFORWARD
+  // #define NX_USE_GENERIC_BITSCANFORWARD
 
   #if !defined(NX_USE_GENERIC_BITSCANFORWARD) && defined(NX_TC_GCC)
-  // GCC bitScanForward - finds the lowest set bit index
+  // GCC BitScanForward - finds the lowest set bit index
 
   // unsigned long long version
   template <class T>
   inline constexpr EnableIf<
       All<
         std::is_integral<T>,
-        IntegerFits<T, unsigned long long>,
-        Not<IntegerFits<T, unsigned long>>
+        IntegerFits<T, unsigned long long>,  // NOLINT(runtime/int)
+        Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
       >,
-  unsigned int> bitScanForward(const T&val) {
+  unsigned int> BitScanForward(const T&val) {
     return (val ? __builtin_ctzll(val) : 0);
   }
   // unsigned long version
@@ -46,10 +46,10 @@ namespace nx {
   inline constexpr EnableIf<
       All<
         std::is_integral<T>,
-        IntegerFits<T, unsigned long>,
+        IntegerFits<T, unsigned long>,  // NOLINT(runtime/int)
         Not<IntegerFits<T, unsigned int>>
       >,
-  unsigned int> bitScanForward(const T&val) {
+  unsigned int> BitScanForward(const T&val) {
     return (val ? __builtin_ctzl(val) : 0);
   }
   // unsigned int version
@@ -59,17 +59,17 @@ namespace nx {
         std::is_integral<T>,
         IntegerFits<T, unsigned int>
       >,
-  unsigned int> bitScanForward(const T&val) {
+  unsigned int> BitScanForward(const T&val) {
     return (val ? __builtin_ctz(val) : 0);
   }
   #else
-  // Generic bitScanForward
+  // Generic BitScanForward
 
   namespace detail {
-    template <unsigned int uVersion,class T>
+    template <unsigned int uVersion, class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==64>>,
-    unsigned int> bitScanForward(const T&val) {
+      All<std::is_integral<T>, Bool<uVersion == 64>>,
+    unsigned int> BitScanForward(const T&val) {
       typedef typename std::make_signed<
         typename std::add_const<T>::type
       >::type const_signed_T;
@@ -80,16 +80,15 @@ namespace nx {
           (
             (
               static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T&>(val)
-              ) * constant::deBruijn64Multiplier
-            ) >> 58u
-          ) & 0x3Fu
-      ];
+                val & -static_cast<const_signed_T&>(val))
+              * constant::deBruijn64Multiplier)
+            >> 58u)
+          & 0x3Fu];
     }
-    template <unsigned int uVersion,class T>
+    template <unsigned int uVersion, class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==32>>,
-    unsigned int> bitScanForward(const T&val) {
+      All<std::is_integral<T>, Bool<uVersion == 32>>,
+    unsigned int> BitScanForward(const T&val) {
       typedef typename std::make_signed<
         typename std::add_const<T>::type
       >::type const_signed_T;
@@ -100,26 +99,25 @@ namespace nx {
           (
             (
               static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T&>(val)
-              ) * constant::deBruijn32Multiplier
-            ) >> 27u
-          ) & 0x1Fu
-      ];
+                val & -static_cast<const_signed_T&>(val))
+              * constant::deBruijn32Multiplier)
+            >> 27u)
+          & 0x1Fu];
     }
+  }  // namespace detail
+  template <class T>
+  inline constexpr EnableIf<
+      All<std::is_integral<T>, BitRange<T, 0, 32>>,
+  unsigned int> BitScanForward(const T&v) {
+    return detail::BitScanForward<32>(v);
   }
   template <class T>
   inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,0,32>>,
-  unsigned int> bitScanForward(const T&v) {
-    return detail::bitScanForward<32>(v);
-  }
-  template <class T>
-  inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,33,64>>,
-  unsigned int> bitScanForward(const T&v) {
-    return detail::bitScanForward<64>(v);
+      All<std::is_integral<T>, BitRange<T, 33, 64>>,
+  unsigned int> BitScanForward(const T&v) {
+    return detail::BitScanForward<64>(v);
   }
   #endif
 
-}
+}  // namespace nx
 #endif  // INCLUDE_NX_BITSCANFORWARD_H_

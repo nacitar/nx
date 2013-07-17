@@ -25,19 +25,19 @@
 
 namespace nx {
   // Enable this define to not use compiler builtins.
-  //#define NX_USE_GENERIC_BITSCANREVERSE
+  // #define NX_USE_GENERIC_BITSCANREVERSE
   #if !defined(NX_USE_GENERIC_BITSCANREVERSE) && defined(NX_TC_GCC)
-  // GCC bitScanReverse
+  // GCC BitScanReverse
 
   // unsigned long long version
   template <class T>
   inline constexpr EnableIf<
       All<
         std::is_integral<T>,
-        IntegerFits<T, unsigned long long>,
-        Not<IntegerFits<T, unsigned long>>
+        IntegerFits<T, unsigned long long>,  // NOLINT(runtime/int)
+        Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
       >,
-  unsigned int> bitScanReverse(const T&val) {
+  unsigned int> BitScanReverse(const T&val) {
     return (val ? BitSize<T>::value - 1 -__builtin_clzll(val) : 0);
   }
   // unsigned long version
@@ -45,10 +45,10 @@ namespace nx {
   inline constexpr EnableIf<
       All<
         std::is_integral<T>,
-        IntegerFits<T, unsigned long>,
+        IntegerFits<T, unsigned long>,  // NOLINT(runtime/int)
         Not<IntegerFits<T, unsigned int>>
       >,
-  unsigned int> bitScanReverse(const T&val) {
+  unsigned int> BitScanReverse(const T&val) {
     return (val ? BitSize<T>::value - 1 -__builtin_clzl(val) : 0);
   }
   // unsigned int version
@@ -58,102 +58,90 @@ namespace nx {
         std::is_integral<T>,
         IntegerFits<T, unsigned int>
       >,
-  unsigned int> bitScanReverse(const T&val) {
+  unsigned int> BitScanReverse(const T&val) {
     return (val ? BitSize<T>::value - 1 -__builtin_clz(val) : 0);
   }
   #else
-  // Generic bitScanReverse - finds the highest set bit index
+  // Generic BitScanReverse - finds the highest set bit index
 
   namespace detail {
-    template <const unsigned int uVersion,class T>
+    template <const unsigned int uVersion, class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==8>>,
-    unsigned int> bitScanReverse(const T&v) {
+      All<std::is_integral<T>, Bool<uVersion == 8>>,
+    unsigned int> BitScanReverse(const T&v) {
       using constant::Log256;
       return (
         // for types <= 8
-        Log256[v]
-      );
+        Log256[v]);
     }
-    template <const unsigned int uVersion,class T>
+    template <const unsigned int uVersion, class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==16>>,
-    unsigned int> bitScanReverse(const T&v) {
+      All<std::is_integral<T>, Bool<uVersion == 16>>,
+    unsigned int> BitScanReverse(const T&v) {
       using constant::Log256;
       return (
         // for types <= 16
-        (v >> 8) ? (8 + Log256[v >> 8]) : (
-          bitScanReverse<8>(v)
-        )
-      );
+        (v >> 8) ? (8 + Log256[v >> 8]) : (BitScanReverse<8>(v)));
     }
-    template <const unsigned int uVersion,class T>
+    template <const unsigned int uVersion, class T>
     constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==32>>,
-    unsigned int> bitScanReverse(const T&v) {
+      All<std::is_integral<T>, Bool<uVersion == 32>>,
+    unsigned int> BitScanReverse(const T&v) {
       using constant::Log256;
       return (
         // for types <= 32
         (v >> 16) ? (
-          (v >> 24) ? (24 + Log256[v >> 24]) : (16 + Log256[v >> 16])
-        ) : (
-          bitScanReverse<16>(v)
-        )
-      );
+          (v >> 24) ? (24 + Log256[v >> 24]) : (16 + Log256[v >> 16]))
+        : (BitScanReverse<16>(v)));
     }
-    template <const unsigned int uVersion,class T>
+    template <const unsigned int uVersion, class T>
     constexpr EnableIf<
-      All<std::is_integral<T>,Bool<uVersion==64>>,
-    unsigned int> bitScanReverse(const T&v) {
+      All<std::is_integral<T>, Bool<uVersion == 64>>,
+    unsigned int> BitScanReverse(const T&v) {
       using constant::Log256;
       return (
         // for types <= 64
         (v >> 32) ? (
           (v >> 48) ? (
-            (v >> 56) ? (56 + Log256[v >> 56]) : (48 + Log256[v >> 48])
-          ) : (
-            (v >> 40) ? (40 + Log256[v >> 40]) : (32 + Log256[v >> 32])
-          )
-        ) : (
-          bitScanReverse<32>(v)
-        )
-      );
+            (v >> 56) ? (56 + Log256[v >> 56]) : (48 + Log256[v >> 48]))
+          : ((v >> 40) ? (40 + Log256[v >> 40]) : (32 + Log256[v >> 32])))
+        : (BitScanReverse<32>(v)));
     }
+  }  // namespace detail
+  template <class T>
+  inline constexpr EnableIf<
+      All<std::is_integral<T>, BitRange<T, 0, 8>>,
+  unsigned int> BitScanReverse(const T&v) {
+    return detail::BitScanReverse<8>(v);
   }
   template <class T>
   inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,0,8>>,
-  unsigned int> bitScanReverse(const T&v) {
-    return detail::bitScanReverse<8>(v);
+      All<std::is_integral<T>, BitRange<T, 9, 16>>,
+  unsigned int> BitScanReverse(const T&v) {
+    return detail::BitScanReverse<16>(v);
   }
   template <class T>
   inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,9,16>>,
-  unsigned int> bitScanReverse(const T&v) {
-    return detail::bitScanReverse<16>(v);
+      All<std::is_integral<T>, BitRange<T, 17, 32>>,
+  unsigned int> BitScanReverse(const T&v) {
+    return detail::BitScanReverse<32>(v);
   }
   template <class T>
   inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,17,32>>,
-  unsigned int> bitScanReverse(const T&v) {
-    return detail::bitScanReverse<32>(v);
-  }
-  template <class T>
-  inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,33,64>>,
-  unsigned int> bitScanReverse(const T&v) {
-    return detail::bitScanReverse<64>(v);
+      All<std::is_integral<T>, BitRange<T, 33, 64>>,
+  unsigned int> BitScanReverse(const T&v) {
+    return detail::BitScanReverse<64>(v);
   }
   #if 0
-  // TODO: when we get static warning working
+  // TODO(nacitar): when we get static warning working
   template <class T>
   inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T,65>>,
-  unsigned int> bitScanReverse(const T&v) {
-    return detail::bitScanReverse<64>(v & BitMask<T,64>::value);
+      All<std::is_integral<T>, BitRange<T, 65>>,
+  unsigned int> BitScanReverse(const T&v) {
+    return detail::BitScanReverse<64>(v & BitMask<T, 64>::value);
   }
   #endif
   #endif
 
-}
+}  // namespace nx
 #endif  // INCLUDE_NX_BITSCANREVERSE_H_

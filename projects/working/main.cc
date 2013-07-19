@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include "nx/log10.h"
 #include "nx/application.h"
@@ -27,6 +28,39 @@
 #include "nx/bitscanreverse.h"
 #include "nx/bitscanforward.h"
 #include "nx/toa.h"
+#include "nx/popcount.h"
+
+
+namespace nx {
+  namespace detail {
+    template<char... digits>
+    struct binary_literal_helper;
+
+    template<char high, char... digits>
+    struct binary_literal_helper<high, digits...> {
+      // +1 to include 'high'
+      typedef uint_least_t<sizeof...(digits)+1> uint_type;
+      static_assert(high == '0' || high == '1', "invalid binary digit!");
+      static uint_type const value = 
+        (static_cast<uint_type>(high - '0') << sizeof...(digits))
+        + binary_literal_helper<digits...>::value;
+    };
+
+    template<char high>
+    struct binary_literal_helper<high> {
+      typedef uint_least_t<1> uint_type;
+      static_assert(high == '0' || high == '1', "invalid binary digit!");
+      static uint_type const value = (high - '0');
+    };
+  }  // namespace detail
+}  // namespace nx
+
+
+template<char... digits>
+constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
+  return nx::detail::binary_literal_helper<digits...>::value;
+}
+
 
 /// The class for the test application
 class MyApplication : public nx::Application {
@@ -50,8 +84,7 @@ class MyApplication : public nx::Application {
     //char buf[100];
     int sum=0;
     std::string buf;
-    for (int i=0;i<100000000;++i)
-    {
+    for (int i=0;i<100000000;++i) {
       sum += nx::tos(-i,&buf);
       buf.clear();
     }
@@ -60,6 +93,8 @@ class MyApplication : public nx::Application {
 
 
   int main() {
+    auto v = 101100101_b;
+    std::cout << "V pop is " << nx::PopCount(v) << std::endl;
     arg_vector& args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;
@@ -71,6 +106,23 @@ class MyApplication : public nx::Application {
     std::cout << x << std::endl;
     std::cout << nx::tos(x) << std::endl;
 
+
+    std::cout << "{" << std::endl;
+    for (unsigned int i=0;i<256;++i) {
+      if (i % 16 == 0) {
+        if (i) {
+          std::cout << "," << std::endl;
+        }
+        std::cout << "  ";
+      } else {
+        std::cout << ", ";
+      }
+      std::cout
+      // << "0x" << std::uppercase << std::setw(2) << std::setfill('0') << std::hex
+      << (unsigned int)(nx::constant::Parity256[i]);
+    }
+    std::cout << std::endl;
+    std::cout << "};" << std::endl;
     return 0;
   }
 };

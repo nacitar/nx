@@ -15,7 +15,7 @@
 //
 
 /// @file
-/// Provides a function to  calculate the log10 of an unsigned integer.
+/// Provides a function to calculate the log10 of an unsigned integer.
 
 #ifndef INCLUDE_NX_LOG10_H_
 #define INCLUDE_NX_LOG10_H_
@@ -28,7 +28,7 @@ namespace nx {
     template <unsigned int uVersion, class T>
     constexpr EnableIf<
       All<std::is_unsigned<T>, Bool<uVersion == 64>>,
-    unsigned int> log10(const T&v) {
+    unsigned int> log10(T v) {
       using constant::pow10_64;
       return  (v < pow10_64[10]) ?
           (v < pow10_64[5]) ?
@@ -64,7 +64,7 @@ namespace nx {
     template <unsigned int uVersion, class T>
     constexpr EnableIf<
       All<std::is_unsigned<T>, Bool<uVersion == 32>>,
-    unsigned int> log10(const T&v) {
+    unsigned int> log10(T v) {
       using constant::pow10_32;
       return  (v < pow10_32[5]) ?
           (v < pow10_32[2]) ?
@@ -86,13 +86,13 @@ namespace nx {
   template <class T>
   inline constexpr EnableIf<
       All<std::is_unsigned<T>, BitRange<T, 0, 32>>,
-  unsigned int> log10(const T&v) {
+  unsigned int> log10(T v) {
     return detail::log10<32>(v);
   }
   template <class T>
   inline constexpr EnableIf<
       All<std::is_unsigned<T>, BitRange<T, 33, 64>>,
-  unsigned int> log10(const T&v) {
+  unsigned int> log10(T v) {
     return detail::log10<64>(v);
   }
 

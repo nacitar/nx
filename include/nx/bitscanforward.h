@@ -80,7 +80,7 @@ namespace nx {
           (
             (
               static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T&>(val))
+                val & -static_cast<const_signed_T>(val))
               * constant::deBruijn64Multiplier)
             >> 58u)
           & 0x3Fu];
@@ -99,7 +99,7 @@ namespace nx {
           (
             (
               static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T&>(val))
+                val & -static_cast<const_signed_T>(val))
               * constant::deBruijn32Multiplier)
             >> 27u)
           & 0x1Fu];

@@ -29,6 +29,7 @@
 #include "nx/bitscanforward.h"
 #include "nx/toa.h"
 #include "nx/popcount.h"
+#include "nx/reverse.h"
 
 
 namespace nx {
@@ -93,8 +94,8 @@ class MyApplication : public nx::Application {
 
 
   int main() {
-    auto v = 101100101_b;
-    std::cout << "V pop is " << nx::PopCount(v) << std::endl;
+    auto v = 11110000_b;
+    std::cout << "V reverse is " << +nx::Reverse(v) << std::endl;
     arg_vector& args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;

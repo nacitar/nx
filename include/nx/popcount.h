@@ -15,7 +15,7 @@
 //
 
 /// @file
-/// Provides a function to calculate the popcount of an unsigned integer.
+/// Provides a function to calculate the popcount of an integral value.
 
 #ifndef INCLUDE_NX_POPCOUNT_H_
 #define INCLUDE_NX_POPCOUNT_H_
@@ -62,8 +62,6 @@ namespace nx {
   unsigned int> PopCount(T val) {
     return __builtin_popcount(val);
   }
-
-
   #else
   namespace detail {
     // Generic PopCount
@@ -100,9 +98,9 @@ namespace nx {
       All<std::is_unsigned<T>, Bool<uVersion == 16>>,
     unsigned int> PopCount(T v) {
       using nx::constant::PopCount256;
-				return static_cast<unsigned int>(
-          PopCount256[ v        & 0xff]) +
-					PopCount256[(v >> 8 ) & 0xff];
+      return static_cast<unsigned int>(
+        PopCount256[ v        & 0xff]) +
+        PopCount256[(v >> 8 ) & 0xff];
     }
 
     template <unsigned int uVersion, class T>
@@ -110,7 +108,7 @@ namespace nx {
       All<std::is_unsigned<T>, Bool<uVersion == 8>>,
     unsigned int> PopCount(T v) {
       using nx::constant::PopCount256;
-				return static_cast<unsigned int>(PopCount256[v]);
+      return static_cast<unsigned int>(PopCount256[v]);
     }
   }  // namespace detail
 

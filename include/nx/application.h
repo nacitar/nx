@@ -28,18 +28,22 @@
 #include "nx/core.h"
 
 namespace nx {
-  /// A base class upon which an application can be built.
+  /// @brief A base class upon which an application can be built.
   class Application {
    public:
-    /// The container type used to hold arguments.
+    /// @brief The container type used to hold arguments.
     typedef std::vector<std::string> arg_vector;
 
-    /// A class used to hold platform-specific data that is sometimes pertinent
-    /// that would typically be obtained in a tradtional main() function.
+    /// @brief A class used to hold platform-specific data that is sometimes
+    /// pertinent that would typically be obtained in a traditional main()
+    /// function.
     #ifdef NX_OS_WINDOWS
     struct PlatformData {
       // These members are named matching winapi documentation.
+
+      /// @brief The hInstance of the application, as passed to WinMain()
       HINSTANCE hInstance;
+      /// @brief The value of nCmdShow as passed to WinMain()
       int nCmdShow;
     };
     #else
@@ -47,40 +51,62 @@ namespace nx {
     };
     #endif
 
+    /// @brief Destructor.
     virtual ~Application();
 
+    /// @brief Constructs with no stored arguments.
     Application();
 
-    /// Constructs the application using the provided arguments.
+    /// @brief Constructs using the provided stored arguments.
+    ///
+    /// @param argc The number of arguments passed.
+    /// @param argv The array of argument values.
     Application(const int argc, const char* const * const argv);
 
-    /// The driver function of the application; to be overriden by a subclass.
+    /// @brief The driver function of the application.  Must be overridden.
+    ///
+    /// @return The exit code of the application.
     virtual int main()=0;
 
-    /// Populates the arguments using the argc/argv pair passed.
+    /// @brief Populates the stored arguments with the ones provided.
+    ///
+    /// @param argc The number of arguments passed.
+    /// @param argv The array of argument values.
+    /// @return true if the arguments were set successfully.
     bool set_arguments(const int argc, const char* const * const argv);
 
-    /// Returns a const reference to the arguments to the Application.
+    /// @brief Accessor for the stored arguments.
+    /// @return A const reference to the stored arguments.
     const arg_vector& arguments() const;
-    /// Returns a reference to the arguments to the Application.
+
+    /// @brief Accessor for the stored arguments.
+    /// @return A reference to the stored arguments.
     arg_vector& arguments();
 
-    /// Returns a const pointer to platform specific data for this Application.
+    /// @brief Accessor for any platform-specific data.
+    /// @return A const pointer to the PlatformData.
     const PlatformData* platform_data() const;
-    /// Returns a pointer to platform specific data for this Application.
+
+    /// @brief Accessor for any platform-specific data.
+    /// @return A pointer to the PlatformData.
     PlatformData* platform_data();
-    /// Sets the platform specific data for this Application.
+
+    /// @brief Sets the platform-specific data, transferring ownership to
+    /// this object.
+    ///
+    /// @param data The new platform-specific data.  Must be allocated with
+    ///  new.
     void set_platform_data(PlatformData*data);
 
    private:
-    /// The platform specific data.
+    /// @brief The platform-specific data.
     std::unique_ptr<PlatformData> platform_data_;
-    /// The arguments.
+    /// @brief The stored arguments.
     arg_vector arguments_;
   };
 
-  /// The main application;  defined as an external to ensure a linker error if
-  /// the user does not instantiate an application.
+  /// @brief The main application.  It is defined as an external to ensure
+  /// a linker error if the user does not instantiate an application.
   extern Application& application;
 
 }  // namespace nx

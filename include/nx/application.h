@@ -14,12 +14,11 @@
 // limitations under the License.
 //
 
-/// @file
-/// Tools to allow for an object-oriented application approach.
+/// @file application.h
+/// @brief Tools to allow for an object-oriented application approach.
 
 #ifndef INCLUDE_NX_APPLICATION_H_
 #define INCLUDE_NX_APPLICATION_H_
-
 
 #include <memory>
 #include <vector>
@@ -27,6 +26,7 @@
 
 #include "nx/core.h"
 
+/// @brief Library namespace.
 namespace nx {
   /// @brief A base class upon which an application can be built.
   class Application {

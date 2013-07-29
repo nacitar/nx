@@ -14,110 +14,136 @@
 // limitations under the License.
 //
 
-/// @file
-/// Provides a function to find the bit index of the least significant set bit
-/// in an unsigned integral value.
+/// @file bitscanforward.h
+/// @brief Provides a function to find the bit index of the least significant
+/// set bit in an unsigned integral value.
+/// @details If you define NX_USE_GENERIC_BITSCANFORWARD, even on platforms
+/// with the appropriate compiler intrinsics, a generic fallback will be used.
 
 #ifndef INCLUDE_NX_BITSCANFORWARD_H_
 #define INCLUDE_NX_BITSCANFORWARD_H_
 
 #include "nx/core.h"
 
+/// @brief Library namespace.
 namespace nx {
   // Enable this define to not use compiler builtins.
   // #define NX_USE_GENERIC_BITSCANFORWARD
 
   #if !defined(NX_USE_GENERIC_BITSCANFORWARD) && defined(NX_TC_GCC)
   // GCC BitScanForward - finds the lowest set bit index
-
-  // unsigned long long version
-  template <class T>
-  inline constexpr EnableIf<
-      All<
-        std::is_integral<T>,
-        IntegerFits<T, unsigned long long>,  // NOLINT(runtime/int)
-        Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
-      >,
-  unsigned int> BitScanForward(const T&val) {
-    return (val ? __builtin_ctzll(val) : 0);
-  }
-  // unsigned long version
-  template <class T>
-  inline constexpr EnableIf<
-      All<
-        std::is_integral<T>,
-        IntegerFits<T, unsigned long>,  // NOLINT(runtime/int)
-        Not<IntegerFits<T, unsigned int>>
-      >,
-  unsigned int> BitScanForward(const T&val) {
-    return (val ? __builtin_ctzl(val) : 0);
-  }
-  // unsigned int version
-  template <class T>
-  inline constexpr EnableIf<
-      All<
-        std::is_integral<T>,
-        IntegerFits<T, unsigned int>
-      >,
-  unsigned int> BitScanForward(const T&val) {
-    return (val ? __builtin_ctz(val) : 0);
-  }
-  #else
-  // Generic BitScanForward
-
+  /// @cond nx_detail
   namespace detail {
-    template <unsigned int uVersion, class T>
+    /// @brief unsigned long long version
+    template <class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>, Bool<uVersion == 64>>,
-    unsigned int> BitScanForward(const T&val) {
-      typedef typename std::make_signed<
-        typename std::add_const<T>::type
-      >::type const_signed_T;
-      typedef typename std::make_unsigned<
-        typename std::add_const<T>::type
-      >::type const_unsigned_T;
-      return constant::deBruijn64[
-          (
-            (
-              static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T>(val))
-              * constant::deBruijn64Multiplier)
-            >> 58u)
-          & 0x3Fu];
+        All<
+          std::is_integral<T>,
+          IntegerFits<T, unsigned long long>,  // NOLINT(runtime/int)
+          Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
+        >,
+    unsigned int> BitScanForward(T value) {
+      return (value ? __builtin_ctzll(value) : 0);
     }
-    template <unsigned int uVersion, class T>
+    /// @brief unsigned long version
+    template <class T>
     inline constexpr EnableIf<
-      All<std::is_integral<T>, Bool<uVersion == 32>>,
-    unsigned int> BitScanForward(const T&val) {
-      typedef typename std::make_signed<
-        typename std::add_const<T>::type
-      >::type const_signed_T;
-      typedef typename std::make_unsigned<
-        typename std::add_const<T>::type
-      >::type const_unsigned_T;
-      return constant::deBruijn32[
-          (
-            (
-              static_cast<const_unsigned_T>(
-                val & -static_cast<const_signed_T>(val))
-              * constant::deBruijn32Multiplier)
-            >> 27u)
-          & 0x1Fu];
+        All<
+          std::is_integral<T>,
+          IntegerFits<T, unsigned long>,  // NOLINT(runtime/int)
+          Not<IntegerFits<T, unsigned int>>
+        >,
+    unsigned int> BitScanForward(T value) {
+      return (value ? __builtin_ctzl(value) : 0);
+    }
+    /// @brief unsigned int version
+    template <class T>
+    inline constexpr EnableIf<
+        All<
+          std::is_integral<T>,
+          IntegerFits<T, unsigned int>
+        >,
+    unsigned int> BitScanForward(T value) {
+      return (value ? __builtin_ctz(value) : 0);
     }
   }  // namespace detail
-  template <class T>
-  inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T, 0, 32>>,
-  unsigned int> BitScanForward(const T&v) {
-    return detail::BitScanForward<32>(v);
-  }
-  template <class T>
-  inline constexpr EnableIf<
-      All<std::is_integral<T>, BitRange<T, 33, 64>>,
-  unsigned int> BitScanForward(const T&v) {
-    return detail::BitScanForward<64>(v);
-  }
+  /// @endcond
+  #else
+  // Generic BitScanForward
+  /// @cond nx_detail
+  namespace detail {
+    /// @cond nx_detail_version
+    namespace version {
+      /// @brief 64-bit version
+      template <unsigned int uVersion, class T>
+      inline constexpr EnableIf<
+        All<std::is_integral<T>, Bool<uVersion == 64>>,
+      unsigned int> BitScanForward(T value) {
+        typedef typename std::make_signed<
+          typename std::add_const<T>::type
+        >::type const_signed_T;
+        typedef typename std::make_unsigned<
+          typename std::add_const<T>::type
+        >::type const_unsigned_T;
+        return constant::deBruijn64[
+            (
+              (
+                static_cast<const_unsigned_T>(
+                  value & -static_cast<const_signed_T>(value))
+                * constant::deBruijn64Multiplier)
+              >> 58u)
+            & 0x3Fu];
+      }
+      /// @brief 32-bit version
+      template <unsigned int uVersion, class T>
+      inline constexpr EnableIf<
+        All<std::is_integral<T>, Bool<uVersion == 32>>,
+      unsigned int> BitScanForward(T value) {
+        typedef typename std::make_signed<
+          typename std::add_const<T>::type
+        >::type const_signed_T;
+        typedef typename std::make_unsigned<
+          typename std::add_const<T>::type
+        >::type const_unsigned_T;
+        return constant::deBruijn32[
+            (
+              (
+                static_cast<const_unsigned_T>(
+                  value & -static_cast<const_signed_T>(value))
+                * constant::deBruijn32Multiplier)
+              >> 27u)
+            & 0x1Fu];
+      }
+    }  // namespace version
+    /// @endcond
+    /// @brief [0,32]-bit selector
+    template <class T>
+    inline constexpr EnableIf<
+        All<std::is_integral<T>, BitRange<T, 0, 32>>,
+    unsigned int> BitScanForward(T value) {
+      return version::BitScanForward<32>(value);
+    }
+    /// @brief [33,64]-bit selector
+    template <class T>
+    inline constexpr EnableIf<
+        All<std::is_integral<T>, BitRange<T, 33, 64>>,
+    unsigned int> BitScanForward(T value) {
+      return version::BitScanForward<64>(value);
+    }
+  }  // namespace detail
+  /// @endcond
   #endif
 
+  /// @brief Determines the index of the most significant set bit.
+  ///
+  /// @tparam T The type of the passed value.
+  /// @param value The value to examine.
+  ///
+  /// @return The index of the highest bit set, with 0 indicating the least
+  /// significant bit.  If the value is 0, then 0 is returned.
+  template <class T>
+  inline constexpr unsigned int BitScanForward(T value) {
+    return detail::BitScanForward(value);
+  }
 }  // namespace nx
 #endif  // INCLUDE_NX_BITSCANFORWARD_H_

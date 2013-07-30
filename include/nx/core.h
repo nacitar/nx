@@ -14,9 +14,9 @@
 // limitations under the License.
 //
 
-/// @file
-/// A header which simply includes parts of nx that are considered to be so
-/// necessary that it constitutes a "core" set of components.
+/// @file core.h
+/// @brief Simply includes parts of nx that are considered to be so necessary
+/// that it constitutes a "core" set of components.
 
 #ifndef INCLUDE_NX_CORE_H_
 #define INCLUDE_NX_CORE_H_

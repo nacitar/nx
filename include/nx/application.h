@@ -95,7 +95,7 @@ namespace nx {
     /// this object.
     ///
     /// @param data The new platform-specific data.  Must be allocated with
-    ///  new.
+    /// new.
     void set_platform_data(PlatformData*data);
 
    private:

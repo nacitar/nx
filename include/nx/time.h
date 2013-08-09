@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-/// @file
-/// A collection of functions to do with time or timing.
+/// @file time.h
+/// @brief Functions to do with time or timing.
 
 #ifndef INCLUDE_NX_TIME_H_
 #define INCLUDE_NX_TIME_H_
@@ -32,8 +32,9 @@
     #error The timer library requires POSIX CLOCK_MONOTONIC_RAW support.
   #endif
 #endif
+/// @brief Library namespace.
 namespace nx {
-  /// An unsigned integer type suitable to hold milliseconds for this api.
+  /// @brief An unsigned integer type suitable to hold milliseconds.
   #ifndef NX_OS_WINDOWS
   // Sized to match the "seconds" field in timespec
   typedef uint_t<BitSize<time_t>::value> msec_t;
@@ -41,11 +42,15 @@ namespace nx {
   // Matches GetTickCount64's return value
   typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
   #endif
-  /// Returns a monotonically increasing millisecond counter.
+  /// @brief Returns a monotonically increasing millisecond counter.
   msec_t fixed_msec();
-  /// Returns the difference in milliseconds between two msec_t values.
+  /// @brief Returns the difference in milliseconds between two {@link msec_t}
+  /// values.
+  /// @param later A later millisecond timer value.
+  /// @param earlier An earlier millisecond timer value.
   msec_t msec_elapsed(msec_t later, msec_t earlier);
-  /// A millisecond precision sleep command, where possible.
+  /// @brief A millisecond precision sleep command, where possible.
+  /// @param millisecs How many milliseconds to wait.
   void millisleep(const unsigned int millisecs);
 }  // namespace nx
 

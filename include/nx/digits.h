@@ -146,6 +146,7 @@ namespace nx {
 
   /// @brief Determines the digits of the value.
   /// @details This version handles types we can compute as constexpr.
+  /// Slightly faster for unsigned types.
   ///
   /// @tparam T The type of the passed value.
   /// @param value The value to examine.
@@ -160,7 +161,7 @@ namespace nx {
   }
   /// @brief Determines the digits of the value.
   /// @details This version handles types we can't compute as constexpr
-  /// because they are too large.
+  /// because they are too large.  Slightly faster for unsigned types.
   ///
   /// @tparam T The type of the passed value.
   /// @param value The value to examine.

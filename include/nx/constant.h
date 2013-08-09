@@ -57,6 +57,48 @@ namespace nx {
         51, 25, 36, 32, 60, 20, 57, 16,
         50, 31, 19, 15, 30, 14, 13, 12
     };
+    /// @cond nx_detail
+    namespace detail {
+      template <
+          class T, T Base, unsigned int Power, class Enable=void>
+      struct power {
+        static constexpr T previous = power<T,Base,Power-1>::value;
+        static constexpr T value = Base * previous;
+        static_assert(
+            !OverflowMult<T,Base,previous>::value,
+            "Value overflows type.");
+      };
+      template <class T, T Base, unsigned int Power>
+      struct power<
+          T,
+          Base,
+          Power,
+          EnableIf< Bool<Power==0>>> {
+        static constexpr T value = 1;
+      };
+    }
+    /// @endcond
+    /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
+    /// implement a specialization for handling overflow so you get only one
+    /// error message for it.
+    /// @brief Determines Base to the power of Power.
+    template <class T, T Base, unsigned int Power>
+    struct power : detail::power<T,Base,Power> {
+    };
+    /// @brief Indexing into this yields 10 to the power of the index as a type
+    /// that is at least 32-bits.
+    constexpr const uint_least32_t pow10_32[10] = {
+        power<uint_least32_t,10, 0>::value,
+                10ul,
+               100ul,
+              1000ul,
+             10000ul,
+            100000ul,
+           1000000ul,
+          10000000ul,
+         100000000ul,
+        1000000000ul
+    };
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 64-bits.
     constexpr const uint_least64_t pow10_64[20] = {
@@ -80,20 +122,6 @@ namespace nx {
           100000000000000000ull,
          1000000000000000000ull,
         10000000000000000000ull
-    };
-    /// @brief Indexing into this yields 10 to the power of the index as a type
-    /// that is at least 32-bits.
-    constexpr const uint_least32_t pow10_32[10] = {
-                 1ul,
-                10ul,
-               100ul,
-              1000ul,
-             10000ul,
-            100000ul,
-           1000000ul,
-          10000000ul,
-         100000000ul,
-        1000000000ul
     };
     /// @brief Indexing with an 8-bit value yields the log2 of that value.
     constexpr const uint_least8_t Log256[256] = {

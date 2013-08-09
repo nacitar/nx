@@ -278,6 +278,12 @@ namespace nx {
         > {
   };
 
+  /// @brief Determines if multiplying lhs with rhs will result in an overflow.
+  template <class T, T lhs, T rhs>
+  struct OverflowMult
+      : Bool<(rhs != 0 && lhs > std::numeric_limits<T>::max() / rhs)> {
+  };
+
   /// Instantiates to be the specified number of bytes in size.
   template<unsigned int kSize>
   class SpecificSize {

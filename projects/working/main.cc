@@ -19,9 +19,7 @@
 
 #include <stdio.h>
 #include <iostream>
-#include <iomanip>
 #include <sstream>
-#include "nx/log10.h"
 #include "nx/application.h"
 #include "nx/time.h"
 #include "nx/constant.h"
@@ -30,6 +28,7 @@
 #include "nx/toa.h"
 #include "nx/popcount.h"
 #include "nx/reverse.h"
+#include "nx/digits.h"
 
 
 namespace nx {
@@ -42,7 +41,7 @@ namespace nx {
       // +1 to include 'high'
       typedef uint_least_t<sizeof...(digits)+1> uint_type;
       static_assert(high == '0' || high == '1', "invalid binary digit!");
-      static uint_type const value = 
+      static uint_type const value =
         (static_cast<uint_type>(high - '0') << sizeof...(digits))
         + binary_literal_helper<digits...>::value;
     };
@@ -62,7 +61,13 @@ constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
   return nx::detail::binary_literal_helper<digits...>::value;
 }
 
+//template <class T, unsigned int Base>
+//constexpr T power(unsigned int exponent) {
+//  return (exponent? Base * power<T,Base>(exponent-1) : 1);
+//}
 
+template <unsigned int Base, unsigned int Power>
+using IntPow = nx::constant::power<unsigned int,Base,Power>;
 /// The class for the test application
 class MyApplication : public nx::Application {
  public:
@@ -79,7 +84,7 @@ class MyApplication : public nx::Application {
   void test_bitops(nx::uint_least64_t x) {
     std::cout << "BSF: " << nx::BitScanForward(x) << std::endl;
     std::cout << "BSR: " << nx::BitScanReverse(x) << std::endl;
-    std::cout << "L10: " << nx::log10(x) << std::endl;
+    std::cout << "dig: " << nx::digits(x) << std::endl;
   }
   int test_strings() {
     //char buf[100];
@@ -94,36 +99,26 @@ class MyApplication : public nx::Application {
 
 
   int main() {
-    auto v = 11110000_b;
-    std::cout << "V reverse is " << +nx::Reverse(v) << std::endl;
     arg_vector& args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;
       return 1;
     }
-    nx::int_least64_t x;
-    std::stringstream ss(args[1]);
-    ss >> x;
-    std::cout << x << std::endl;
-    std::cout << nx::tos(x) << std::endl;
-
-
-    std::cout << "{" << std::endl;
-    for (unsigned int i=0;i<256;++i) {
-      if (i % 16 == 0) {
-        if (i) {
-          std::cout << "," << std::endl;
-        }
-        std::cout << "  ";
-      } else {
-        std::cout << ", ";
-      }
-      std::cout
-      // << "0x" << std::uppercase << std::setw(2) << std::setfill('0') << std::hex
-      << (unsigned int)(nx::constant::Parity256[i]);
+    auto blit_val = 11110000_b;
+    auto pow_val = IntPow<10,9>::value;
+    nx::int_least64_t cmdline_val;
+    {
+      std::stringstream ss(args[1]);
+      ss >> cmdline_val;
     }
-    std::cout << std::endl;
-    std::cout << "};" << std::endl;
+    std::cout << "blit_val reverse: " << +nx::Reverse(blit_val) << std::endl;
+    std::cout << "cmdline_val: " << cmdline_val << std::endl;
+    std::cout << "power test: " << pow_val << std::endl;
+    std::cout << "digits_test: " << nx::digits(cmdline_val) << std::endl;
+    std::cout << "tos test: " << nx::tos(cmdline_val) << std::endl;
+    std::cout << "tos test pad: " << nx::tos(cmdline_val,10) << std::endl;
+
+
     return 0;
   }
 };

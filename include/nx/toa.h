@@ -22,7 +22,6 @@
 
 #include <string>
 #include "nx/core.h"
-#include "nx/log10.h"
 #include "nx/digits.h"
 
 /// @brief Library namespace.
@@ -35,7 +34,7 @@ namespace nx {
     EnableIf<
       std::is_unsigned<T>,
     unsigned int> toa(T v, char*ptBuf, unsigned int uDigits = 0) {
-      // Calculate the log10 if it wasn't provided.
+      // Calculate the number of digits if it wasn't provided.
       if (!uDigits) {
         uDigits = digits<10>(v);
       }

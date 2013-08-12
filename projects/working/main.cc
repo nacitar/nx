@@ -123,5 +123,8 @@ class MyApplication : public nx::Application {
   }
 };
 
-// Set this as the default application
-nx::Application& nx::get_application() { return *new MyApplication(); }
+// @brief Function to lazy-load the application; required by nx library.
+nx::Application& nx::get_application() {
+  static MyApplication app;
+  return app;
+}

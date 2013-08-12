@@ -27,15 +27,15 @@
 #include "nx/core/os.h"
 
 /// Preprocessor text concatenation.
-#define NX_PP_CAT(x,y) NX_PP_CAT1(x,y)
-#define NX_PP_CAT1(x,y) x##y
+#define NX_PP_CAT(x, y) NX_PP_CAT1(x, y)
+#define NX_PP_CAT1(x, y) x##y
 
 /// Simple static warning.
 #define NX_STATIC_WARNING(cond, msg) \
-struct NX_PP_CAT(static_warning,__LINE__) { \
-  NX_DEPRECATED(void _(::std::false_type const& ),msg) {}; \
-  void _(::std::true_type const& ) {}; \
-  NX_PP_CAT(static_warning,__LINE__)() {_(::nx::Bool<cond>());} \
+struct NX_PP_CAT(static_warning, __LINE__) { \
+  NX_DEPRECATED(void _(::std::false_type const&), msg) {}; \
+  void _(::std::true_type const&) {}; \
+  NX_PP_CAT(static_warning, __LINE__)() {_(::nx::Bool<cond>());} \
 }
 
 /// Static warning at template level.
@@ -44,7 +44,7 @@ struct NX_PP_CAT(static_warning,__LINE__) { \
 /// least one byte of space in each structure/class instantiation.
 /// NX_STATIC_WARNING should be preferred in any non-template situation.
 #define NX_STATIC_WARNING_TEMPLATE(cond, msg) \
-    NX_STATIC_WARNING(cond, msg) NX_PP_CAT(_localvar_staticwarning,__LINE__)
+    NX_STATIC_WARNING(cond, msg) NX_PP_CAT(_localvar_staticwarning, __LINE__)
 
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,
@@ -181,7 +181,7 @@ namespace nx {
   template <
     typename T,
     unsigned int Min,
-    unsigned int Max=std::numeric_limits<unsigned int>::max()>
+    unsigned int Max = std::numeric_limits<unsigned int>::max()>
   struct BitRange
       : public Bool<(BitSize<T>::value >= Min && BitSize<T>::value <= Max)> {
   };
@@ -263,7 +263,7 @@ namespace nx {
       : public All<
             std::is_integral<T>,
             std::is_integral<TDest>,
-            InRange<BitSize<T>::value,0,BitSize<TDest>::value>
+            InRange<BitSize<T>::value, 0, BitSize<TDest>::value>
         > {
   };
 

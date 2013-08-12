@@ -56,11 +56,11 @@
 // Toolchain detection
 #if defined(__GNUC__)
   /// @brief Set if the toolchain in use is GCC
-  #define NX_TC_GCC
+  #define NX_TC_GCC 1
 
 #elif defined(_MSC_VER)
   /// @brief Set if the toolchain in use is visual studio
-  #define NX_TC_VS
+  #define NX_TC_VS 1
 #endif
 
 // Compiler features

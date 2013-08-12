@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-/// @file popcount.h
+/// @file population_count.h
 /// @brief Provides a function to calculate the number of set bits in an
 /// integral value.
 /// @details If you define NX_USE_GENERIC_POPULATION_COUNT, even on platforms with

@@ -27,10 +27,12 @@
 
 /// @brief Library namespace.
 namespace nx {
+
   // Enable this define to not use compiler builtins.
   // #define NX_USE_GENERIC_BITSCANREVERSE
 
   #if !defined(NX_USE_GENERIC_BITSCANREVERSE) && defined(NX_TC_GCC)
+
   // GCC BitScanReverse
   /// @cond nx_detail
   namespace detail {
@@ -43,8 +45,9 @@ namespace nx {
           Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
         >,
     unsigned int> BitScanReverse(T value) {
-      return (value ? BitSize<T>::value - 1 -__builtin_clzll(value) : 0);
+      return (value ? BitSize<T>::value - 1 - __builtin_clzll(value) : 0);
     }
+
     /// @brief unsigned long version
     template <class T>
     inline constexpr EnableIf<
@@ -54,8 +57,9 @@ namespace nx {
           Not<IntegerFits<T, unsigned int>>
         >,
     unsigned int> BitScanReverse(T value) {
-      return (value ? BitSize<T>::value - 1 -__builtin_clzl(value) : 0);
+      return (value ? BitSize<T>::value - 1 - __builtin_clzl(value) : 0);
     }
+
     /// @brief unsigned int version
     template <class T>
     inline constexpr EnableIf<
@@ -64,16 +68,21 @@ namespace nx {
           IntegerFits<T, unsigned int>
         >,
     unsigned int> BitScanReverse(T value) {
-      return (value ? BitSize<T>::value - 1 -__builtin_clz(value) : 0);
+      return (value ? BitSize<T>::value - 1 - __builtin_clz(value) : 0);
     }
+
   }  // namespace detail
   /// @endcond
+
   #else
+
   // Generic BitScanReverse - finds the highest set bit index
   /// @cond nx_detail
   namespace detail {
+
     /// @cond nx_detail_version
     namespace version {
+
       /// @brief 8-bit version
       template <const unsigned int uVersion, class T>
       inline constexpr EnableIf<
@@ -84,6 +93,7 @@ namespace nx {
           // for types <= 8
           Log256[value]);
       }
+
       /// @brief 16-bit version
       template <const unsigned int uVersion, class T>
       inline constexpr EnableIf<
@@ -92,8 +102,10 @@ namespace nx {
         using constant::Log256;
         return (
           // for types <= 16
-          (value >> 8) ? (8 + Log256[value >> 8]) : (BitScanReverse<8>(value)));
+          (value >> 8) ? (
+            8 + Log256[value >> 8]) : (BitScanReverse<8>(value)));
       }
+
       /// @brief 32-bit version
       template <const unsigned int uVersion, class T>
       constexpr EnableIf<
@@ -103,9 +115,11 @@ namespace nx {
         return (
           // for types <= 32
           (value >> 16) ? (
-            (value >> 24) ? (24 + Log256[value >> 24]) : (16 + Log256[value >> 16]))
+            (value >> 24) ? (
+              24 + Log256[value >> 24]) : (16 + Log256[value >> 16]))
           : (BitScanReverse<16>(value)));
       }
+
       /// @brief 64-bit version
       template <const unsigned int uVersion, class T>
       constexpr EnableIf<
@@ -116,42 +130,51 @@ namespace nx {
           // for types <= 64
           (value >> 32) ? (
             (value >> 48) ? (
-              (value >> 56) ? (56 + Log256[value >> 56]) : (48 + Log256[value >> 48]))
-            : ((value >> 40) ? (40 + Log256[value >> 40]) : (32 + Log256[value >> 32])))
+              (value >> 56) ? (
+                56 + Log256[value >> 56]) : (48 + Log256[value >> 48]))
+            : ((value >> 40) ? (
+              40 + Log256[value >> 40]) : (32 + Log256[value >> 32])))
           : (BitScanReverse<32>(value)));
       }
+
     }  // namespace version
     /// @endcond
-    /// @brief [0, 8]-bit selector 
+
+    /// @brief [0, 8]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_integral<T>, BitRange<T, 0, 8>>,
     unsigned int> BitScanReverse(T value) {
       return version::BitScanReverse<8>(value);
     }
-    /// @brief [9, 16]-bit selector 
+
+    /// @brief [9, 16]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_integral<T>, BitRange<T, 9, 16>>,
     unsigned int> BitScanReverse(T value) {
       return version::BitScanReverse<16>(value);
     }
-    /// @brief [17, 32]-bit selector 
+
+    /// @brief [17, 32]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_integral<T>, BitRange<T, 17, 32>>,
     unsigned int> BitScanReverse(T value) {
       return version::BitScanReverse<32>(value);
     }
-    /// @brief [33, 64]-bit selector 
+
+    /// @brief [33, 64]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_integral<T>, BitRange<T, 33, 64>>,
     unsigned int> BitScanReverse(T value) {
       return version::BitScanReverse<64>(value);
     }
+
   }  // namespace detail
   /// @endcond
+
   #endif
 
   /// @brief Determines the index of the least significant set bit.
@@ -165,5 +188,7 @@ namespace nx {
   inline constexpr unsigned int BitScanReverse(T value) {
     return detail::BitScanReverse(value);
   }
+
 }  // namespace nx
+
 #endif  // INCLUDE_NX_BITSCANREVERSE_H_

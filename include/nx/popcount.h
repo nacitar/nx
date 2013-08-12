@@ -83,7 +83,7 @@ namespace nx {
         using nx::constant::PopCount256;
         return static_cast<unsigned int>(
           PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8 ) & 0xff]  +
+          PopCount256[(value >> 8)  & 0xff]  +
           PopCount256[(value >> 16) & 0xff]  +
           PopCount256[(value >> 24) & 0xff]  +
           PopCount256[(value >> 32) & 0xff]  +
@@ -99,7 +99,7 @@ namespace nx {
         using nx::constant::PopCount256;
         return static_cast<unsigned int>(
           PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8 ) & 0xff]  +
+          PopCount256[(value >> 8)  & 0xff]  +
           PopCount256[(value >> 16) & 0xff]  +
           PopCount256[(value >> 24) & 0xff];
       }
@@ -111,7 +111,7 @@ namespace nx {
         using nx::constant::PopCount256;
         return static_cast<unsigned int>(
           PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8 ) & 0xff];
+          PopCount256[(value >> 8)  & 0xff];
       }
       /// @brief 8-bit version
       template <unsigned int uVersion, class T>

@@ -24,12 +24,14 @@
 
 /// @brief Library namespace.
 namespace nx {
+
   namespace constant {
     /// @brief A multiplier for 32-bit values that for the lowest set bit
     /// produces a unique value in the lowest 5 bits (values: 0-31) which can
     /// be used to obtain the index of that set bit.
     constexpr const uint_least32_t deBruijn32Multiplier =
         0x077CB531ul;
+
     /// @brief A lookup table for mapping the lowest 5 bits of the product of
     /// a 32-bit value and {@link deBruijn32Multiplier} to the bit index of the
     /// value's least significant bit.
@@ -39,11 +41,13 @@ namespace nx {
         31, 27, 13, 23, 21, 19, 16,  7,
         26, 12, 18,  6, 11,  5, 10,  9
     };
+
     /// @brief A multiplier for 64-bit values that for the lowest set bit
     /// produces a unique value in the lowest 6 bits (values: 0-63) which can
     /// be used to obtain the index of that set bit.
     constexpr const uint_least64_t deBruijn64Multiplier =
         0x022FDD63CC95386Dull;
+
     /// @brief A lookup table for mapping the lowest 6 bits of the product of
     /// a 64-bit value and {@link deBruijn64Multiplier} to the bit index of the
     /// value's least significant bit.
@@ -57,72 +61,78 @@ namespace nx {
         51, 25, 36, 32, 60, 20, 57, 16,
         50, 31, 19, 15, 30, 14, 13, 12
     };
+
     /// @cond nx_detail
     namespace detail {
       template <
-          class T, T Base, unsigned int Power, class Enable=void>
+          class T, T Base, unsigned int Power, class Enable = void>
       struct power {
-        static constexpr T previous = power<T,Base,Power-1>::value;
+        static constexpr T previous = power<T, Base, Power-1>::value;
         static constexpr T value = Base * previous;
         static_assert(
-            !OverflowMult<T,Base,previous>::value,
+            !OverflowMult<T, Base, previous>::value,
             "Value overflows type.");
       };
+
       template <class T, T Base, unsigned int Power>
       struct power<
           T,
           Base,
           Power,
-          EnableIf< Bool<Power==0>>> {
+          EnableIf< Bool<Power == 0>>> {
         static constexpr T value = 1;
       };
     }
     /// @endcond
+
     /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
     /// implement a specialization for handling overflow so you get only one
     /// error message for it.
     /// @brief Determines Base to the power of Power.
     template <class T, T Base, unsigned int Power>
-    struct power : detail::power<T,Base,Power> {
+    struct power : detail::power<T, Base, Power> {
     };
+
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 32-bits.
     constexpr const uint_least32_t pow10_32[10] = {
-        power<uint_least32_t,10, 0>::value,
-                10ul,
-               100ul,
-              1000ul,
-             10000ul,
-            100000ul,
-           1000000ul,
-          10000000ul,
-         100000000ul,
-        1000000000ul
+        power<uint_least32_t, 10, 0>::value,
+        power<uint_least32_t, 10, 1>::value,
+        power<uint_least32_t, 10, 2>::value,
+        power<uint_least32_t, 10, 3>::value,
+        power<uint_least32_t, 10, 4>::value,
+        power<uint_least32_t, 10, 5>::value,
+        power<uint_least32_t, 10, 6>::value,
+        power<uint_least32_t, 10, 7>::value,
+        power<uint_least32_t, 10, 8>::value,
+        power<uint_least32_t, 10, 9>::value
     };
+
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 64-bits.
     constexpr const uint_least64_t pow10_64[20] = {
-                           1ull,
-                          10ull,
-                         100ull,
-                        1000ull,
-                       10000ull,
-                      100000ull,
-                     1000000ull,
-                    10000000ull,
-                   100000000ull,
-                  1000000000ull,
-                 10000000000ull,
-                100000000000ull,
-               1000000000000ull,
-              10000000000000ull,
-             100000000000000ull,
-            1000000000000000ull,
-           10000000000000000ull,
-          100000000000000000ull,
-         1000000000000000000ull,
-        10000000000000000000ull
+        power<uint_least64_t, 10, 0>::value,
+        power<uint_least64_t, 10, 1>::value,
+        power<uint_least64_t, 10, 2>::value,
+        power<uint_least64_t, 10, 3>::value,
+        power<uint_least64_t, 10, 4>::value,
+        power<uint_least64_t, 10, 5>::value,
+        power<uint_least64_t, 10, 6>::value,
+        power<uint_least64_t, 10, 7>::value,
+        power<uint_least64_t, 10, 8>::value,
+        power<uint_least64_t, 10, 9>::value,
+        power<uint_least64_t, 10, 10>::value,
+        power<uint_least64_t, 10, 11>::value,
+        power<uint_least64_t, 10, 12>::value,
+        power<uint_least64_t, 10, 13>::value,
+        power<uint_least64_t, 10, 14>::value,
+        power<uint_least64_t, 10, 15>::value,
+        power<uint_least64_t, 10, 16>::value,
+        power<uint_least64_t, 10, 17>::value,
+        power<uint_least64_t, 10, 18>::value,
+        power<uint_least64_t, 10, 19>::value,
     };
+
     /// @brief Indexing with an 8-bit value yields the log2 of that value.
     constexpr const uint_least8_t Log256[256] = {
         0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -142,6 +152,7 @@ namespace nx {
         7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
         7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
     };
+
     /// @brief Indexing with an 8-bit value yields the reversed bits of the
     /// index.
     constexpr const uint_least8_t Reverse256[256] = {
@@ -178,6 +189,7 @@ namespace nx {
         0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF,
         0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF
     };
+
     /// @brief Indexing with an 8-bit value yields the number of bits set to 1
     /// in the index.
     constexpr const uint_least8_t PopCount256[256] = {
@@ -198,6 +210,7 @@ namespace nx {
         3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
         4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
     };
+
     /// @brief Indexing with an 8-bit value yields the parity of the index.
     constexpr const uint_least8_t Parity256[256] = {
         0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
@@ -217,7 +230,9 @@ namespace nx {
         1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
         0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0
     };
+
   }  // namespace constant
+
 }  // namespace nx
 
 #endif  // INCLUDE_NX_CONSTANT_H_

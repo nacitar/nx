@@ -34,8 +34,8 @@ namespace nx {
         0x077CB531ul;
 
     /// @brief A lookup table for mapping the lowest 5 bits of the product of
-    /// a 32-bit value and {@link de_bruijn_multiplier_32bit} to the bit index of the
-    /// value's least significant bit.
+    /// a 32-bit value and {@link de_bruijn_multiplier_32bit} to the bit index
+    /// of the value's least significant bit.
     constexpr const uint_least8_t de_bruijn_32bit[32] = {
          0,  1, 28,  2, 29, 14, 24,  3,
         30, 22, 20, 15, 25, 17,  4,  8,
@@ -50,8 +50,8 @@ namespace nx {
         0x022FDD63CC95386Dull;
 
     /// @brief A lookup table for mapping the lowest 6 bits of the product of
-    /// a 64-bit value and {@link de_bruijn_multiplier_64bit} to the bit index of
-    /// the value's least significant bit.
+    /// a 64-bit value and {@link de_bruijn_multiplier_64bit} to the bit index
+    /// of the value's least significant bit.
     constexpr const uint_least8_t de_bruijn_64bit[64] = {
          0,  1,  2, 53,  3,  7, 54, 27,
          4, 38, 41,  8, 34, 55, 48, 28,

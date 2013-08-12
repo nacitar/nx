@@ -182,6 +182,7 @@ namespace nx {
   struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
   };
 
+  /// @cond nx_detail
   namespace detail {
     template <
         typename T,
@@ -242,6 +243,7 @@ namespace nx {
           "This type does not have enough bits to hold a mask of this size.");
     };
   }  // namespace detail
+  /// @endcond
 
   /// @brief Provides a bit mask of type T with the lowest kBits bits set.
   template <typename T, unsigned int kBits, bool kAllowPartial = false>
@@ -305,6 +307,38 @@ namespace nx {
   /// new unsigned char[sizeof(T)*50];
   template<class T>
   class SameSize : public SpecificSize<sizeof(T)> {
+  };
+
+  /// @cond nx_detail
+  namespace detail {
+
+    template <
+        class T, T kBase, unsigned int kPower, class Enable = void>
+    struct Power {
+      static constexpr T previous = Power<T, kBase, kPower-1>::value;
+      static constexpr T value = kBase * previous;
+      static_assert(
+          !OverflowMult<T, kBase, previous>::value,
+          "Value overflows type.");
+    };
+
+    template <class T, T kBase, unsigned int kPower>
+    struct Power<
+        T,
+        kBase,
+        kPower,
+        EnableIf< Bool<kPower == 0>>> {
+      static constexpr T value = 1;
+    };
+  }
+  /// @endcond
+
+  /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
+  /// implement a specialization for handling overflow so you get only one
+  /// error message for it.
+  /// @brief Determines kBase to the power of kPower.
+  template <class T, T kBase, unsigned int kPower>
+  struct Power : detail::Power<T, kBase, kPower> {
   };
 }  // namespace nx
 

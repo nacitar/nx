@@ -63,38 +63,6 @@ namespace nx {
         50, 31, 19, 15, 30, 14, 13, 12
     };
 
-    /// @cond nx_detail
-    namespace detail {
-
-      template <
-          class T, T kBase, unsigned int kPower, class Enable = void>
-      struct Power {
-        static constexpr T previous = Power<T, kBase, kPower-1>::value;
-        static constexpr T value = kBase * previous;
-        static_assert(
-            !OverflowMult<T, kBase, previous>::value,
-            "Value overflows type.");
-      };
-
-      template <class T, T kBase, unsigned int kPower>
-      struct Power<
-          T,
-          kBase,
-          kPower,
-          EnableIf< Bool<kPower == 0>>> {
-        static constexpr T value = 1;
-      };
-    }
-    /// @endcond
-
-    /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
-    /// implement a specialization for handling overflow so you get only one
-    /// error message for it.
-    /// @brief Determines kBase to the power of kPower.
-    template <class T, T kBase, unsigned int kPower>
-    struct Power : detail::Power<T, kBase, kPower> {
-    };
-
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 32-bits.
     constexpr const uint_least32_t power_10_32bit[10] = {

@@ -45,7 +45,6 @@ namespace nx {
           Bool<number_base == 10>,
           Bool<version == 32>>,
       unsigned int> Digits(T value) {
-        using constant::Power;
           return  (value < Power<T, 10, 5>::value) ?
               (value < Power<T, 10, 2>::value) ?
                 (value < Power<T, 10, 1>::value) ? 1 : 2
@@ -69,7 +68,6 @@ namespace nx {
           Bool<number_base == 10>,
           Bool<version == 64>>,
       unsigned int> Digits(T value) {
-        using constant::Power;
         return  (value < Power<T, 10, 10>::value) ?
             Digits<number_base, 32>(value)
           :
@@ -96,7 +94,6 @@ namespace nx {
           Bool<number_base == 10>,
           Bool<version == 0>>,
       unsigned int> Digits(T value) {
-        using constant::Power;
         constexpr const T next_pow10 = Power<T, 10, 20>::value;
         if (value < next_pow10) {
           return version::Digits<number_base, version>(value);

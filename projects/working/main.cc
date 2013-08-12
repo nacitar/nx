@@ -65,7 +65,7 @@ constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
 }
 
 template <unsigned int base, unsigned int power>
-using IntPow = nx::constant::Power<unsigned int,base,power>;
+using IntPow = nx::Power<unsigned int,base,power>;
 /// The class for the test application
 class MyApplication : public nx::Application {
  public:

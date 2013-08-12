@@ -124,4 +124,4 @@ class MyApplication : public nx::Application {
 };
 
 // Set this as the default application
-nx::Application& nx::application = *new MyApplication();
+nx::Application& nx::get_application() { return *new MyApplication(); }

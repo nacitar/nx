@@ -57,12 +57,6 @@ namespace nx {
     /// @brief Constructs with no stored arguments.
     Application();
 
-    /// @brief Constructs using the provided stored arguments.
-    ///
-    /// @param argc The number of arguments passed.
-    /// @param argv The array of argument values.
-    Application(const int argc, const char* const * const argv);
-
     /// @brief The driver function of the application.  Must be overridden.
     ///
     /// @return The exit code of the application.
@@ -105,9 +99,9 @@ namespace nx {
     arg_vector arguments_;
   };
 
-  /// @brief The main application.  It is defined as an external to ensure
-  /// a linker error if the user does not instantiate an application.
-  extern Application& application;
+  /// @brief The main application.  An undefined external; the user must
+  /// implement this so the library can instantiate the application.
+  extern Application& get_application();
 
 }  // namespace nx
 

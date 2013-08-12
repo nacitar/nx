@@ -26,10 +26,6 @@ namespace nx {
   Application::Application() {
   }
 
-  Application::Application(const int argc, const char* const * const argv) {
-    set_arguments(argc, argv);
-  }
-
   bool Application::set_arguments(
       const int argc,
       const char* const * const argv) {
@@ -60,9 +56,11 @@ namespace nx {
 /// Main driver; invokes the Application instance for this app.
 int main(int argc, char*argv[]) {
   nx::Application::PlatformData * data = new nx::Application::PlatformData();
-  nx::application.set_platform_data(data);
-  nx::application.set_arguments(argc, argv);
-  return nx::application.main();
+
+  nx::Application&application = nx::get_application();
+  application.set_platform_data(data);
+  application.set_arguments(argc, argv);
+  return application.main();
 }
 
 #ifdef NX_OS_WINDOWS
@@ -76,10 +74,11 @@ int WINAPI WinMain(
   data->hInstance = hInstance;
   data->nCmdShow = nCmdShow;
 
-  nx::application.set_platform_data(data);
+  nx::Application&application = nx::get_application();
+  application.set_platform_data(data);
   // TODO(nacitar): make this utf8 from GetCommandLine()
-  nx::application.set_arguments(__argc, __argv);
-  return nx::application.main();
+  application.set_arguments(__argc, __argv);
+  return application.main();
 }
 #endif
 

@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-/// @file
-/// A collection of metaprogramming tools.
+/// @file mpl.h
+/// @brief A collection of metaprogramming tools.
 
 #ifndef INCLUDE_NX_CORE_MPL_H_
 #define INCLUDE_NX_CORE_MPL_H_
@@ -26,11 +26,12 @@
 
 #include "nx/core/os.h"
 
-/// Preprocessor text concatenation.
+/// @brief Preprocessor text concatenation.
 #define NX_PP_CAT(x, y) NX_PP_CAT1(x, y)
+/// @brief Preprocessor text concatenation helper.
 #define NX_PP_CAT1(x, y) x##y
 
-/// Simple static warning.
+/// @brief Simple static warning.
 #define NX_STATIC_WARNING(cond, msg) \
 struct NX_PP_CAT(static_warning, __LINE__) { \
   NX_DEPRECATED(void _(::std::false_type const&), msg) {}; \
@@ -38,7 +39,7 @@ struct NX_PP_CAT(static_warning, __LINE__) { \
   NX_PP_CAT(static_warning, __LINE__)() {_(::nx::Bool<cond>());} \
 }
 
-/// Static warning at template level.
+/// @brief Static warning at template level.
 /// Note: using NX_STATIC_WARNING_TEMPLATE changes the meaning of a program in a
 /// small way.  It introduces a member/variable declaration.  This means at
 /// least one byte of space in each structure/class instantiation.
@@ -49,96 +50,100 @@ struct NX_PP_CAT(static_warning, __LINE__) { \
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,
 // gcc's error messages are more meaningful.
+
+/// @brief Library namespace.
 namespace nx {
-  /// Simple wrapper around an integral constant.  Can be used to make a value
-  /// depend upon a template parameter by passing the types as additional
+
+  /// @brief Simple wrapper around an integral constant.  Can be used to make a
+  /// value depend upon a template parameter by passing the types as additional
   /// arguments to the template.
   template<typename T, T kValue, typename...>
   struct DependentIntegralConstant : public std::integral_constant<T, kValue> {
   };
 
-  /// A dependent boolean type
+  /// @brief A dependent boolean type
   template <bool kValue, typename... T>
   struct DependentBool : public DependentIntegralConstant<bool, kValue, T...> {
   };
 
   // No need to invoke integral constants... they resolve to themselves!
 
-  /// Meta-constant boolean
+  /// @brief Meta-constant boolean
   template <bool kValue>
   struct Bool : public std::integral_constant<bool, kValue> {
   };
-  /// Meta-constant int
+  /// @brief Meta-constant int
   template <int kValue>
   struct Int : public std::integral_constant<int, kValue> {
   };
-  /// Meta-constant unsigned int
+  /// @brief Meta-constant unsigned int
   template <unsigned int kValue>
   struct UInt : public std::integral_constant<unsigned int, kValue> {
   };
 
-  /// Alias for removing typename and type members from boilerplate.
+  /// @brief Alias for removing typename and type members from boilerplate.
   template <typename T>
   using Invoke = typename T::type;
 
-  /// Basic identity metafunction; provides the type unaltered.
+  /// @brief Basic identity metafunction; provides the type unaltered.
   /// Useful for passing raw types to templates expecting a type member.
   template <typename T>
   struct Identity {
-    /// The type provided as a template argument.
+    /// @brief The type provided as a template argument.
     using type = T;
   };
 
-  /// Alias to get the conditional of something with a value member.
+  /// @brief Alias to get the conditional of something with a value member.
   template <typename If, typename Then, typename Else>
   using Conditional = Invoke<std::conditional<If::value, Then, Else>>;
 
-  /// Meta-logical negation (Not)
+  /// @brief Meta-logical negation (Not)
   template <typename T>
   struct Not : public Bool<!T::value> {
   };
 
-  /// Meta-logical disjunction (Or)
+  /// @brief Meta-logical disjunction (Or)
   template <typename... T>
   struct Any : Bool<false> {
   };
-  /// Specialization for checking the truth of one condition before chaining
-  /// to check the other conditions.
+  /// @brief Specialization for checking the truth of one condition before
+  /// chaining to check the other conditions.
   template <typename Head, typename... Tail>
   struct Any<Head, Tail...> : Conditional<Head, Bool<true>, Any<Tail...>> {
   };
 
-  /// Meta-logical conjunction (And)
+  /// @brief Meta-logical conjunction (And)
   template <typename... T>
   struct All : public Bool<true> {
   };
-  /// Specialization for checking the truth of one condition before chaining
-  /// to check the other conditions.
+  /// @brief Specialization for checking the truth of one condition before
+  /// chaining to check the other conditions.
   template <typename Head, typename... Tail>
   struct All<Head, Tail...> : Conditional<Head, All<Tail...>, Bool<false>> {
   };
 
-  /// A version of enable_if that takes a trait and resolves itself
+  /// @brief A version of enable_if that takes a trait and resolves itself
   template <typename Condition, typename T = void>
   using EnableIf = Invoke<std::enable_if<Condition::value, T>>;
 
-  /// A negated version of enable_if that takes a trait and resolves itself
+  /// @brief A negated version of enable_if that takes a trait and resolves
+  /// itself
   template <typename Condition, typename T = void>
   using DisableIf = Invoke<std::enable_if<Not<Condition>::value, T>>;
 
-  /// An distinct "invalid" type, useful for metaprogramming.
+  /// @brief An distinct "invalid" type, useful for metaprogramming.
   struct InvalidType {
   };
 
-  /// Checks if the provided type is valid, and if so provides it.  Otherwise
-  /// providing the Fallback type.  If kAssert is true, a static assertion
-  /// failure will also occur upon an invalid type.
+  /// @brief Checks if the provided type is valid, and if so provides it.
+  /// Otherwise providing the Fallback type.  If kAssert is true, a static
+  /// assertion failure will also occur upon an invalid type.
   template <bool kAssert, typename T, typename Fallback = T>
   struct CheckValidType : public Identity<T>, Bool<true> {
     using Identity<T>::type;
   };
 
-  /// Specialization that fails a static assertion on invalid types.
+  /// @brief Specialization that fails a static assertion on invalid types.
   template <typename Fallback>
   struct CheckValidType<
       true,
@@ -151,7 +156,7 @@ namespace nx {
         "No type exists that fulfills the specified requirements.");
   };
 
-  /// Specialization that does not fail a static assertion on invalid types.
+  /// @brief Specialization that does not fail a static assertion on invalid types.
   template <typename Fallback>
   struct CheckValidType<
       false,
@@ -161,18 +166,18 @@ namespace nx {
     using Identity<Fallback>::type;
   };
 
-  /// Shorthand for CheckValidType with static assertions.  Using this will
+  /// @brief Shorthand for CheckValidType with static assertions.  Using this will
   /// make the presence of assertions more clear to the reader.
   template <typename T, typename Fallback = T>
   struct AssertValidType : public CheckValidType<true, T, Fallback> {
   };
 
-  /// Shorthand for CheckValidType without static assertions.
+  /// @brief Shorthand for CheckValidType without static assertions.
   template <typename T, typename Fallback = T>
   struct IsValidType : public CheckValidType<false, T, Fallback> {
   };
 
-  /// Stores the size of the provided type in bits.
+  /// @brief Stores the size of the provided type in bits.
   template <typename T>
   struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
   };
@@ -238,17 +243,17 @@ namespace nx {
     };
   }  // namespace detail
 
-  /// Provides a bit mask of type T with the lowest kBits bits set.
+  /// @brief Provides a bit mask of type T with the lowest kBits bits set.
   template <typename T, unsigned int kBits, bool kAllowPartial = false>
   struct BitMask : public detail::BitMaskInternal<T, kBits, kAllowPartial> {
   };
 
-  /// Stores a true value if kValue is in the range [kMin,kMax]
+  /// @brief Stores a true value if kValue is in the range [kMin,kMax]
   template <unsigned int kValue, unsigned int kMin, unsigned int kMax>
   struct InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
   };
 
-  /// Checks if the size of the type T is within the requested range.
+  /// @brief Checks if the size of the type T is within the requested range.
   template <
     typename T,
     unsigned int kMin,
@@ -258,7 +263,8 @@ namespace nx {
   };
 
 
-  /// Determines if integer type T is <= the size of integer type Destination.
+  /// @brief Determines if integer type T is <= the size of integer type
+  /// Destination.
   template <typename T, typename Destination>
   struct IntegerFits
       : public All<
@@ -268,7 +274,7 @@ namespace nx {
         > {
   };
 
-  /// Makes an integral type either signed or unsigned based upon the
+  /// @brief Makes an integral type either signed or unsigned based upon the
   /// value of kSigned.
   template <bool kSigned, typename T>
   struct SetSigned
@@ -286,15 +292,15 @@ namespace nx {
       : Bool<(kRHS != 0 && kLHS > std::numeric_limits<T>::max() / kRHS)> {
   };
 
-  /// Instantiates to be the specified number of bytes in size.
+  /// @brief Instantiates to be the specified number of bytes in size.
   template<unsigned int kSize>
   class SpecificSize {
     unsigned char buffer_[kSize];
   };
 
-  /// Instantiates to be exactly the same number of bytes as an object of type T
-  /// would require on the stack.  Used to reserve space for a type without
-  /// constructing it.  This allows much neater code in such cases.
+  /// @brief Instantiates to be exactly the same number of bytes as an object
+  /// of type T would require on the stack.  Used to reserve space for a type
+  /// without constructing it.  This allows much neater code in such cases.
   /// new same_size<T>[50]; instead of using something like
   /// new unsigned char[sizeof(T)*50];
   template<class T>

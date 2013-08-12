@@ -65,21 +65,21 @@ namespace nx {
     /// @cond nx_detail
     namespace detail {
       template <
-          class T, T Base, unsigned int Power, class Enable = void>
-      struct power {
-        static constexpr T previous = power<T, Base, Power-1>::value;
-        static constexpr T value = Base * previous;
+          class T, T base, unsigned int power, class Enable = void>
+      struct Power {
+        static constexpr T previous = Power<T, base, power-1>::value;
+        static constexpr T value = base * previous;
         static_assert(
-            !OverflowMult<T, Base, previous>::value,
+            !OverflowMult<T, base, previous>::value,
             "Value overflows type.");
       };
 
-      template <class T, T Base, unsigned int Power>
-      struct power<
+      template <class T, T base, unsigned int power>
+      struct Power<
           T,
-          Base,
-          Power,
-          EnableIf< Bool<Power == 0>>> {
+          base,
+          power,
+          EnableIf< Bool<power == 0>>> {
         static constexpr T value = 1;
       };
     }
@@ -88,49 +88,49 @@ namespace nx {
     /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
     /// implement a specialization for handling overflow so you get only one
     /// error message for it.
-    /// @brief Determines Base to the power of Power.
-    template <class T, T Base, unsigned int Power>
-    struct power : detail::power<T, Base, Power> {
+    /// @brief Determines base to the power of power.
+    template <class T, T base, unsigned int power>
+    struct Power : detail::Power<T, base, power> {
     };
 
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 32-bits.
     constexpr const uint_least32_t pow10_32[10] = {
-        power<uint_least32_t, 10, 0>::value,
-        power<uint_least32_t, 10, 1>::value,
-        power<uint_least32_t, 10, 2>::value,
-        power<uint_least32_t, 10, 3>::value,
-        power<uint_least32_t, 10, 4>::value,
-        power<uint_least32_t, 10, 5>::value,
-        power<uint_least32_t, 10, 6>::value,
-        power<uint_least32_t, 10, 7>::value,
-        power<uint_least32_t, 10, 8>::value,
-        power<uint_least32_t, 10, 9>::value
+        Power<uint_least32_t, 10, 0>::value,
+        Power<uint_least32_t, 10, 1>::value,
+        Power<uint_least32_t, 10, 2>::value,
+        Power<uint_least32_t, 10, 3>::value,
+        Power<uint_least32_t, 10, 4>::value,
+        Power<uint_least32_t, 10, 5>::value,
+        Power<uint_least32_t, 10, 6>::value,
+        Power<uint_least32_t, 10, 7>::value,
+        Power<uint_least32_t, 10, 8>::value,
+        Power<uint_least32_t, 10, 9>::value
     };
 
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 64-bits.
     constexpr const uint_least64_t pow10_64[20] = {
-        power<uint_least64_t, 10, 0>::value,
-        power<uint_least64_t, 10, 1>::value,
-        power<uint_least64_t, 10, 2>::value,
-        power<uint_least64_t, 10, 3>::value,
-        power<uint_least64_t, 10, 4>::value,
-        power<uint_least64_t, 10, 5>::value,
-        power<uint_least64_t, 10, 6>::value,
-        power<uint_least64_t, 10, 7>::value,
-        power<uint_least64_t, 10, 8>::value,
-        power<uint_least64_t, 10, 9>::value,
-        power<uint_least64_t, 10, 10>::value,
-        power<uint_least64_t, 10, 11>::value,
-        power<uint_least64_t, 10, 12>::value,
-        power<uint_least64_t, 10, 13>::value,
-        power<uint_least64_t, 10, 14>::value,
-        power<uint_least64_t, 10, 15>::value,
-        power<uint_least64_t, 10, 16>::value,
-        power<uint_least64_t, 10, 17>::value,
-        power<uint_least64_t, 10, 18>::value,
-        power<uint_least64_t, 10, 19>::value,
+        Power<uint_least64_t, 10, 0>::value,
+        Power<uint_least64_t, 10, 1>::value,
+        Power<uint_least64_t, 10, 2>::value,
+        Power<uint_least64_t, 10, 3>::value,
+        Power<uint_least64_t, 10, 4>::value,
+        Power<uint_least64_t, 10, 5>::value,
+        Power<uint_least64_t, 10, 6>::value,
+        Power<uint_least64_t, 10, 7>::value,
+        Power<uint_least64_t, 10, 8>::value,
+        Power<uint_least64_t, 10, 9>::value,
+        Power<uint_least64_t, 10, 10>::value,
+        Power<uint_least64_t, 10, 11>::value,
+        Power<uint_least64_t, 10, 12>::value,
+        Power<uint_least64_t, 10, 13>::value,
+        Power<uint_least64_t, 10, 14>::value,
+        Power<uint_least64_t, 10, 15>::value,
+        Power<uint_least64_t, 10, 16>::value,
+        Power<uint_least64_t, 10, 17>::value,
+        Power<uint_least64_t, 10, 18>::value,
+        Power<uint_least64_t, 10, 19>::value,
     };
 
     /// @brief Indexing with an 8-bit value yields the log2 of that value.

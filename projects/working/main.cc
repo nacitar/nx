@@ -25,7 +25,7 @@
 #include "nx/constant.h"
 #include "nx/bitscanreverse.h"
 #include "nx/bitscanforward.h"
-#include "nx/toa.h"
+#include "nx/tostring.h"
 #include "nx/popcount.h"
 #include "nx/reverse.h"
 #include "nx/digits.h"
@@ -61,13 +61,8 @@ constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
   return nx::detail::binary_literal_helper<digits...>::value;
 }
 
-//template <class T, unsigned int Base>
-//constexpr T power(unsigned int exponent) {
-//  return (exponent? Base * power<T,Base>(exponent-1) : 1);
-//}
-
-template <unsigned int Base, unsigned int Power>
-using IntPow = nx::constant::power<unsigned int,Base,Power>;
+template <unsigned int base, unsigned int power>
+using IntPow = nx::constant::Power<unsigned int,base,power>;
 /// The class for the test application
 class MyApplication : public nx::Application {
  public:
@@ -84,14 +79,14 @@ class MyApplication : public nx::Application {
   void test_bitops(nx::uint_least64_t x) {
     std::cout << "BSF: " << nx::BitScanForward(x) << std::endl;
     std::cout << "BSR: " << nx::BitScanReverse(x) << std::endl;
-    std::cout << "dig: " << nx::digits(x) << std::endl;
+    std::cout << "dig: " << nx::Digits(x) << std::endl;
   }
   int test_strings() {
     //char buf[100];
     int sum=0;
     std::string buf;
     for (int i=0;i<100000000;++i) {
-      sum += nx::tos(-i,&buf);
+      sum += nx::ToString(-i,&buf);
       buf.clear();
     }
     return sum;
@@ -111,12 +106,16 @@ class MyApplication : public nx::Application {
       std::stringstream ss(args[1]);
       ss >> cmdline_val;
     }
+    char buf[256];
     std::cout << "blit_val reverse: " << +nx::Reverse(blit_val) << std::endl;
     std::cout << "cmdline_val: " << cmdline_val << std::endl;
     std::cout << "power test: " << pow_val << std::endl;
-    std::cout << "digits_test: " << nx::digits(cmdline_val) << std::endl;
-    std::cout << "tos test: " << nx::tos(cmdline_val) << std::endl;
-    std::cout << "tos test pad: " << nx::tos(cmdline_val,10) << std::endl;
+    std::cout << "digits_test: " << nx::Digits(cmdline_val) << std::endl;
+    std::cout << "tos test: " << nx::ToString(cmdline_val) << std::endl;
+    std::cout << "tos test pad: " << nx::ToString(cmdline_val,10) << std::endl;
+    int len=nx::ToString(-1234,buf);
+    buf[len]='\0';
+    std::cout << "buf: " << buf << std::endl;
 
 
     return 0;

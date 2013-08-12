@@ -26,7 +26,7 @@
 
 namespace nx {
   #ifndef NX_OS_WINDOWS
-  msec_t fixed_msec() {
+  msec_t FixedMS() {
     struct timespec time;
     if (NX_UNLIKELY(clock_gettime(CLOCK_MONOTONIC_RAW, &time) != 0)) {
       throw std::runtime_error(
@@ -36,10 +36,11 @@ namespace nx {
         (static_cast<msec_t>(time.tv_sec) * 1000) +
         (time.tv_nsec / 1000000));
   }
-  msec_t msec_elapsed(msec_t later, msec_t earlier) {
+
+  msec_t ElapsedMS(msec_t later, msec_t earlier) {
     return (later-earlier);
   }
-  void millisleep(const unsigned int millisecs) {
+  void SleepMS(const unsigned int millisecs) {
     struct timespec tspec;
     // Get the number of seconds
     tspec.tv_sec = millisecs/1000ul;
@@ -51,13 +52,13 @@ namespace nx {
     };
   }
   #else
-  msec_t fixed_msec() {
+  msec_t FixedMS() {
     return static_cast<msec_t>(GetTickCount64());
   }
-  msec_t msec_diff(msec_t later, msec_t earlier) {
+  msec_t ElapsedMS(msec_t later, msec_t earlier) {
     return (later-earlier);
   }
-  void millisleep(const unsigned int millisecs) {
+  void SleepMS(const unsigned int millisecs) {
     Sleep(millisecs);
   }
   #endif

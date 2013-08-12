@@ -72,7 +72,7 @@ class MyApplication : public nx::Application {
   void timer_resolution_test() {
     nx::msec_t last = 0;
     while (true) {
-      nx::msec_t now = nx::fixed_msec();
+      nx::msec_t now = nx::FixedMS();
       if (last != now) {
         printf("%d", static_cast<unsigned int>(now));
         last = now;
@@ -126,7 +126,7 @@ class MyApplication : public nx::Application {
 };
 
 // @brief Function to lazy-load the application; required by nx library.
-nx::Application& nx::get_application() {
+nx::Application& nx::GetApplication() {
   static MyApplication app;
   return app;
 }

@@ -57,7 +57,7 @@ namespace nx {
 int main(int argc, char*argv[]) {
   nx::PlatformData * data = new nx::PlatformData();
 
-  nx::Application&application = nx::get_application();
+  nx::Application&application = nx::GetApplication();
   application.set_platform_data(data);
   application.set_arguments(argc, argv);
   return application.main();
@@ -74,7 +74,7 @@ int WINAPI WinMain(
   data->hInstance = hInstance;
   data->nCmdShow = nCmdShow;
 
-  nx::Application&application = nx::get_application();
+  nx::Application&application = nx::GetApplication();
   application.set_platform_data(data);
   // TODO(nacitar): make this utf8 from GetCommandLine()
   application.set_arguments(__argc, __argv);

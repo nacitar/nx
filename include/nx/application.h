@@ -102,7 +102,7 @@ namespace nx {
 
   /// @brief The main application.  An undefined external; the user must
   /// implement this so the library can instantiate the application.
-  extern Application& get_application();
+  extern Application& GetApplication();
 
 }  // namespace nx
 

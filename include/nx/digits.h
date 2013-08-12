@@ -22,97 +22,115 @@
 #ifndef INCLUDE_NX_DIGITS_H_
 #define INCLUDE_NX_DIGITS_H_
 
+#include <cstdlib>  // integral std::abs
+#include <cmath>  // float/double std::abs
+
 #include "nx/core.h"
 #include "nx/constant.h"
 
-#include <cstdlib>  // integral std::abs
-#include <cmath> // float/double std::abs
 
 /// @brief Library namespace.
 namespace nx {
+
   /// @cond nx_detail
   namespace detail {
+
     /// @cond nx_detail_version
     namespace version {
+
       /// @brief 32-bit version
       template <unsigned int number_base, unsigned int version, class T>
-      constexpr EnableIf<
-          All<std::is_unsigned<T>, Bool<number_base==10>, Bool<version==32>>,
+      constexpr EnableIf<All<
+          std::is_unsigned<T>,
+          Bool<number_base == 10>,
+          Bool<version == 32>>,
       unsigned int> digits(T value) {
         using constant::power;
-          return  (value < power<T,10,5>::value) ?
-              (value < power<T,10,2>::value) ?
-                (value < power<T,10,1>::value) ? 1 : 2
+          return  (value < power<T, 10, 5>::value) ?
+              (value < power<T, 10, 2>::value) ?
+                (value < power<T, 10, 1>::value) ? 1 : 2
               :
-              (value < power<T,10,4>::value) ?
-                (value < power<T,10,3>::value) ? 3 : 4
+              (value < power<T, 10, 4>::value) ?
+                (value < power<T, 10, 3>::value) ? 3 : 4
               : 5
             :
-            (value < power<T,10,7>::value) ?
-              (value < power<T,10,6>::value) ? 6 : 7
+            (value < power<T, 10, 7>::value) ?
+              (value < power<T, 10, 6>::value) ? 6 : 7
             :
-            (value < power<T,10,9>::value) ?
-              (value < power<T,10,8>::value) ? 8 : 9
+            (value < power<T, 10, 9>::value) ?
+              (value < power<T, 10, 8>::value) ? 8 : 9
             : 10;
       }
+
       /// @brief 64-bit version
       template <unsigned int number_base, unsigned int version, class T>
-      constexpr EnableIf<
-        All<std::is_unsigned<T>, Bool<number_base==10>, Bool<version==64>>,
+      constexpr EnableIf<All<
+          std::is_unsigned<T>,
+          Bool<number_base == 10>,
+          Bool<version == 64>>,
       unsigned int> digits(T value) {
         using constant::power;
-        return  (value < power<T,10,10>::value) ?
+        return  (value < power<T, 10, 10>::value) ?
             digits<number_base, 32>(value)
           :
-          (value < power<T,10,15>::value) ?
-            (value < power<T,10,12>::value) ?
-              (value < power<T,10,11>::value) ? 11 : 12
+          (value < power<T, 10, 15>::value) ?
+            (value < power<T, 10, 12>::value) ?
+              (value < power<T, 10, 11>::value) ? 11 : 12
             :
-            (value < power<T,10,14>::value) ?
-              (value < power<T,10,13>::value) ? 13 : 14
+            (value < power<T, 10, 14>::value) ?
+              (value < power<T, 10, 13>::value) ? 13 : 14
             : 15
           :
-          (value < power<T,10,17>::value) ?
-            (value < power<T,10,16>::value) ? 16 : 17
+          (value < power<T, 10, 17>::value) ?
+            (value < power<T, 10, 16>::value) ? 16 : 17
           :
-          (value < power<T,10,19>::value) ?
-            (value < power<T,10,18>::value) ? 18 : 19
+          (value < power<T, 10, 19>::value) ?
+            (value < power<T, 10, 18>::value) ? 18 : 19
           : 20;
       }
+
       /// @brief Version for large types, no longer constexpr
       template <unsigned int number_base, unsigned int version, class T>
-      EnableIf<
-        All<std::is_unsigned<T>, Bool<number_base==10>, Bool<version==0>>,
+      EnableIf<All<
+          std::is_unsigned<T>,
+          Bool<number_base == 10>,
+          Bool<version == 0>>,
       unsigned int> digits(T value) {
         using constant::power;
-        constexpr const T next_pow10 = power<T,10,20>::value;
+        constexpr const T next_pow10 = power<T, 10, 20>::value;
         if (value < next_pow10) {
-          return version::digits<number_base,version>(value);
+          return version::digits<number_base, version>(value);
         }
         value /= next_pow10;
-        unsigned int count=21;
+        unsigned int count = 21;
         while (value) {
           ++count;
           value /= 10u;
         }
         return count;
       }
+
       /// @brief Signed value forwarder for constexpr handled types.
       template <unsigned int number_base, unsigned int version, class T>
-      inline constexpr EnableIf<
-        All<std::is_signed<T>, Bool<number_base==10>, Bool<version!=0>>,
+      inline constexpr EnableIf<All<
+          std::is_signed<T>,
+          Bool<number_base == 10>,
+          Bool<version != 0>>,
       unsigned int> digits(T value) {
         typedef const typename std::make_unsigned<T>::type UT;
-        return digits<number_base,version>(
+        return digits<number_base, version>(
             static_cast<UT>((value < 0?-value:value)) );
       }
+
       /// @brief Signed value forwarder for larger types.
       template <unsigned int number_base, unsigned int version, class T>
-      inline EnableIf<
-        All<std::is_signed<T>, Bool<number_base==10>, Bool<version==0>>,
+      inline EnableIf<All<
+          std::is_signed<T>,
+          Bool<number_base == 10>,
+          Bool<version == 0>>,
       unsigned int> digits(T value) {
         typedef const typename std::make_unsigned<T>::type UT;
-        return digits<number_base,version>(
+        return digits<number_base, version>(
             static_cast<UT>((value < 0?-value:value)) );
       }
 
@@ -121,24 +139,29 @@ namespace nx {
 
     /// @brief [0,32]-bit selector
     template <unsigned int number_base, class T>
-    inline constexpr EnableIf<
-      All<Bool<number_base==10>, BitRange<T, 0, 32>>,
+    inline constexpr EnableIf<All<
+        Bool<number_base == 10>,
+        BitRange<T, 0, 32>>,
     unsigned int> digits(T value) {
-      return version::digits<number_base,32>(value);
+      return version::digits<number_base, 32>(value);
     }
+
     /// @brief [33,64]-bit selector
     template <unsigned int number_base, class T>
-    inline constexpr EnableIf<
-      All<Bool<number_base==10>, BitRange<T, 33, 64>>,
+    inline constexpr EnableIf<All<
+        Bool<number_base == 10>,
+        BitRange<T, 33, 64>>,
     unsigned int> digits(T value) {
-      return version::digits<number_base,64>(value);
+      return version::digits<number_base, 64>(value);
     }
+
     /// @brief Large generic selector
     template <unsigned int number_base, class T>
-    inline EnableIf<
-      All<Bool<number_base==10>, BitRange<T, 65>>,
+    inline EnableIf<All<
+        Bool<number_base == 10>,
+        BitRange<T, 65>>,
     unsigned int> digits(T value) {
-      return version::digits<number_base,0>(value);
+      return version::digits<number_base, 0>(value);
     }
 
   }  // namespace detail
@@ -153,12 +176,13 @@ namespace nx {
   ///
   /// @return The digits of the value, useful for determining the number of
   /// digits in a decimal number.  This does not count any negative sign.
-  template <unsigned int number_base=10,class T>
+  template <unsigned int number_base = 10, class T>
   constexpr EnableIf<
-    BitRange<T,0,64>,
+    BitRange<T, 0, 64>,
   unsigned int> digits(T value) {
     return detail::digits<number_base>(value);
   }
+
   /// @brief Determines the digits of the value.
   /// @details This version handles types we can't compute as constexpr
   /// because they are too large.  Slightly faster for unsigned types.
@@ -168,9 +192,9 @@ namespace nx {
   ///
   /// @return The digits of the value, useful for determining the number of
   /// digits in a decimal number.  This does not count any negative sign.
-  template <unsigned int number_base=10,class T>
+  template <unsigned int number_base = 10, class T>
   EnableIf<
-    BitRange<T,65>,
+    BitRange<T, 65>,
   unsigned int> digits(T value) {
     return detail::digits<number_base>(value);
   }

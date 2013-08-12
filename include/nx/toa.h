@@ -26,102 +26,105 @@
 
 /// @brief Library namespace.
 namespace nx {
+
   /// @cond nx_detail
   namespace detail {
+
     /// @brief Writes the ascii representation of an unsigned integral value
     /// into a provided C-style string.  Does not terminate the string.
     template <class T>
     EnableIf<
       std::is_unsigned<T>,
-    unsigned int> toa(T v, char*ptBuf, unsigned int uDigits = 0) {
+    unsigned int> toa(T value, char*buffer, unsigned int num_digits = 0) {
       // Calculate the number of digits if it wasn't provided.
-      if (!uDigits) {
-        uDigits = digits<10>(v);
+      if (!num_digits) {
+        num_digits = digits<10>(value);
       }
       // Point 1-past the last character
-      ptBuf += uDigits;
-      // Counter for digits.  Can't use uDigits; we must return that.
-      unsigned int uCount=uDigits;
+      buffer += num_digits;
+      // Counter for digits.  Can't use num_digits; we must return that.
+      unsigned int count = num_digits;
       // generate digits starting at the end of the buffer
-      while (uCount--) {
-        *(--ptBuf) = v % 10 + '0';  // get next digit
-        v /= 10; // remove that digit
+      while (count--) {
+        *(--buffer) = value % 10 + '0';  // get next digit
+        value /= 10;  // remove that digit
       }
       // return number of digits
-      return uDigits;
+      return num_digits;
     }
+
     /// @brief Writes the ascii representation of a signed integral value
     /// into a provided C-style string.  Does not terminate the string.
     template <class T>
     EnableIf<
       std::is_signed<T>,
-    unsigned int> toa(T sVal, char*ptBuf, unsigned int uDigits = 0) {
+    unsigned int> toa(T value, char*buffer, unsigned int num_digits = 0) {
       // Unsigned T
       typedef const typename std::make_unsigned<T>::type UT;
-      if (sVal < 0) {
+      if (value < 0) {
         // add the -
-        *ptBuf = '-';
+        *buffer = '-';
         // adjust by 1 to account for the -
-        return toa(static_cast<UT>(-sVal), ptBuf+1, uDigits)+1;
+        return toa(static_cast<UT>(-value), buffer+1, num_digits)+1;
       }
       // just pass it on to the unsigned version
-      return toa(static_cast<UT>(sVal), ptBuf, uDigits);
+      return toa(static_cast<UT>(value), buffer, num_digits);
     }
-
-    /// TODO: finish file,
-
 
     /// @brief Appends the ascii representation of an unsigned integral value
     /// into a provided std::string.
     template <class T>
     inline EnableIf<
       std::is_unsigned<T>,
-    unsigned int> tos(T uVal, std::string*ptBuf, unsigned int uDigits = 0) {
-      if (!uDigits) {
-        uDigits = digits<10>(uVal);
+    unsigned int> tos(
+        T value, std::string*buffer, unsigned int num_digits = 0) {
+      if (!num_digits) {
+        num_digits = digits<10>(value);
       }
-      const std::string::size_type uOffset = ptBuf->size();
+      const std::string::size_type offset = buffer->size();
       // add the size of textual data
-      ptBuf->resize(uOffset + uDigits);
+      buffer->resize(offset + num_digits);
       // convert the number
-      return toa(uVal, &((*ptBuf)[uOffset]), uDigits);
+      return toa(value, &((*buffer)[offset]), num_digits);
     }
+
     /// @brief Appends the ascii representation of a signed integral value
     /// into a provided std::string.
     template <class T>
     EnableIf<
       std::is_signed<T>,
-    unsigned int> tos(T sVal, std::string*ptBuf, unsigned int uDigits = 0) {
+    unsigned int> tos(
+        T value, std::string*buffer, unsigned int num_digits = 0) {
       // Unsigned T
       typedef const typename std::make_unsigned<T>::type UT;
-      if (sVal < 0) {
-        // TODO argh
-        const UT uVal = static_cast<UT>(-sVal);
-        if (!uDigits) {
-          uDigits = digits<10>(uVal);
+      if (value < 0) {
+        const UT abs_value = static_cast<UT>(-value);
+        if (!num_digits) {
+          num_digits = digits<10>(abs_value);
         }
-        const std::string::size_type uOffset = ptBuf->size();
+        const std::string::size_type offset = buffer->size();
         // add the size of textual data and the -
-        ptBuf->resize(uOffset + uDigits + 1);
+        buffer->resize(offset + num_digits + 1);
         // offset into the buffer
-        char*offset_buffer=&((*ptBuf)[uOffset]);
+        char*offset_buffer=&((*buffer)[offset]);
         // add the -
         *offset_buffer = '-';
         // advance
         ++offset_buffer;
         // convert the number
-        return toa(uVal, offset_buffer, uDigits);
+        return toa(abs_value, offset_buffer, num_digits);
       }
       // pass on to unsigned version
-      return tos(static_cast<UT>(sVal), ptBuf, uDigits);
+      return tos(static_cast<UT>(value), buffer, num_digits);
     }
+
     /// @brief Converts an integral value into a std::string, returning it.
     template <class T>
     inline EnableIf<
       std::is_integral<T>,
-    std::string> tos(T value, unsigned int uDigits = 0) {
+    std::string> tos(T value, unsigned int num_digits = 0) {
       std::string buffer;
-      tos(value, &buffer, uDigits);
+      tos(value, &buffer, num_digits);
       return std::move(buffer);
     }
   }  // namespace detail
@@ -132,16 +135,16 @@ namespace nx {
   ///
   /// @tparam T The type of the passed value.
   /// @param buffer The location to write the string representation.
-  /// @param uDigits The digit length to be assumed for the passed value.  This
-  /// may deviate from the actual length, if you wish to extract only the least
-  /// significant digits by treating it as having less.  Furthermore, this can
-  /// be used to zero-pad your values by specifying a greater length.  The
-  /// default value (0) causes the function to determine the length for you.
+  /// @param num_digits The digit length to be assumed for the passed value.
+  /// This may deviate from the actual length, if you wish to extract only the
+  /// least significant digits by treating it as having less.  Furthermore,
+  /// this can be used to zero-pad your values by specifying a greater length.
+  /// The default value (0) causes the function to determine the length for you.
   ///
   /// @return The number of characters written to the buffer.
   template <class T>
-  unsigned int toa(T value, char*buffer, unsigned int uDigits = 0) {
-    return detail::toa(value,buffer,uDigits);
+  unsigned int toa(T value, char*buffer, unsigned int num_digits = 0) {
+    return detail::toa(value, buffer, num_digits);
   }
 
   /// @brief Appends a string representation of an integral value to the
@@ -153,8 +156,8 @@ namespace nx {
   /// @return The number of characters appended to the string.
   template <class T>
   inline unsigned int tos(
-      T value, std::string*buffer, unsigned int uDigits = 0) {
-    return detail::tos(value, buffer, uDigits);
+      T value, std::string*buffer, unsigned int num_digits = 0) {
+    return detail::tos(value, buffer, num_digits);
   }
 
   /// @brief Converts an integral value into a string representation.
@@ -163,8 +166,8 @@ namespace nx {
   ///
   /// @return The string representation of the passed value.
   template <class T>
-  inline std::string tos(T value, unsigned int uDigits = 0) {
-    return detail::tos(value, uDigits);
+  inline std::string tos(T value, unsigned int num_digits = 0) {
+    return detail::tos(value, num_digits);
   }
 
 }  // namespace nx

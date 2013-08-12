@@ -75,9 +75,9 @@ namespace nx {
     /// @cond nx_detail_version
     namespace version {
       /// @brief 64-bit version
-      template <unsigned int uVersion, class T>
+      template <unsigned int version, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 64>>,
+        All<std::is_integral<T>, Bool<version == 64>>,
       unsigned int> BitScanForward(T value) {
         typedef typename std::make_signed<
           typename std::add_const<T>::type
@@ -95,9 +95,9 @@ namespace nx {
             & 0x3Fu];
       }
       /// @brief 32-bit version
-      template <unsigned int uVersion, class T>
+      template <unsigned int version, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 32>>,
+        All<std::is_integral<T>, Bool<version == 32>>,
       unsigned int> BitScanForward(T value) {
         typedef typename std::make_signed<
           typename std::add_const<T>::type

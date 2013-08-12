@@ -84,9 +84,9 @@ namespace nx {
     namespace version {
 
       /// @brief 8-bit version
-      template <const unsigned int uVersion, class T>
+      template <const unsigned int version, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 8>>,
+        All<std::is_integral<T>, Bool<version == 8>>,
       unsigned int> BitScanReverse(T value) {
         using constant::Log256;
         return (
@@ -95,9 +95,9 @@ namespace nx {
       }
 
       /// @brief 16-bit version
-      template <const unsigned int uVersion, class T>
+      template <const unsigned int version, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 16>>,
+        All<std::is_integral<T>, Bool<version == 16>>,
       unsigned int> BitScanReverse(T value) {
         using constant::Log256;
         return (
@@ -107,9 +107,9 @@ namespace nx {
       }
 
       /// @brief 32-bit version
-      template <const unsigned int uVersion, class T>
+      template <const unsigned int version, class T>
       constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 32>>,
+        All<std::is_integral<T>, Bool<version == 32>>,
       unsigned int> BitScanReverse(T value) {
         using constant::Log256;
         return (
@@ -121,9 +121,9 @@ namespace nx {
       }
 
       /// @brief 64-bit version
-      template <const unsigned int uVersion, class T>
+      template <const unsigned int version, class T>
       constexpr EnableIf<
-        All<std::is_integral<T>, Bool<uVersion == 64>>,
+        All<std::is_integral<T>, Bool<version == 64>>,
       unsigned int> BitScanReverse(T value) {
         using constant::Log256;
         return (

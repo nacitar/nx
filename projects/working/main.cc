@@ -23,16 +23,17 @@
 #include "nx/application.h"
 #include "nx/time.h"
 #include "nx/constant.h"
-#include "nx/bitscanreverse.h"
-#include "nx/bitscanforward.h"
-#include "nx/tostring.h"
-#include "nx/popcount.h"
+#include "nx/bit_scan_reverse.h"
+#include "nx/bit_scan_forward.h"
+#include "nx/to_string.h"
+#include "nx/population_count.h"
 #include "nx/reverse.h"
 #include "nx/digits.h"
 
-
 namespace nx {
+
   namespace detail {
+
     template<char... digits>
     struct binary_literal_helper;
 
@@ -52,7 +53,9 @@ namespace nx {
       static_assert(high == '0' || high == '1', "invalid binary digit!");
       static uint_type const value = (high - '0');
     };
+
   }  // namespace detail
+
 }  // namespace nx
 
 
@@ -94,7 +97,7 @@ class MyApplication : public nx::Application {
 
 
   int main() {
-    arg_vector& args = arguments();
+    ArgumentVector& args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;
       return 1;

@@ -177,15 +177,6 @@ namespace nx {
   struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
   };
 
-  /// Checks if the size of the type T is within the requested range.
-  template <
-    typename T,
-    unsigned int Min,
-    unsigned int Max = std::numeric_limits<unsigned int>::max()>
-  struct BitRange
-      : public Bool<(BitSize<T>::value >= Min && BitSize<T>::value <= Max)> {
-  };
-
   namespace detail {
     template <
         typename T,
@@ -257,13 +248,23 @@ namespace nx {
   struct InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
   };
 
-  /// Determines if integer type T is <= the size of integer type TDest.
-  template <typename T, typename TDest>
+  /// Checks if the size of the type T is within the requested range.
+  template <
+    typename T,
+    unsigned int kMin,
+    unsigned int kMax = std::numeric_limits<unsigned int>::max()>
+  struct BitRange
+      : public InRange<BitSize<T>::value,kMin,kMax> {
+  };
+
+
+  /// Determines if integer type T is <= the size of integer type Destination.
+  template <typename T, typename Destination>
   struct IntegerFits
       : public All<
             std::is_integral<T>,
-            std::is_integral<TDest>,
-            InRange<BitSize<T>::value, 0, BitSize<TDest>::value>
+            std::is_integral<Destination>,
+            InRange<BitSize<T>::value, 0, BitSize<Destination>::value>
         > {
   };
 
@@ -278,10 +279,11 @@ namespace nx {
         > {
   };
 
-  /// @brief Determines if multiplying lhs with rhs will result in an overflow.
-  template <class T, T lhs, T rhs>
+  /// @brief Determines if multiplying kLHS with kRHS will result in an
+  /// overflow.
+  template <class T, T kLHS, T kRHS>
   struct OverflowMult
-      : Bool<(rhs != 0 && lhs > std::numeric_limits<T>::max() / rhs)> {
+      : Bool<(kRHS != 0 && kLHS > std::numeric_limits<T>::max() / kRHS)> {
   };
 
   /// Instantiates to be the specified number of bytes in size.

@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-/// @file bitscanreverse.h
+/// @file bit_scan_reverse.h
 /// @brief Provides a function to find the bit index of the most significant
 /// set bit in an unsigned integral value.
-/// @details If you define NX_USE_GENERIC_BITSCANREVERSE, even on platforms
+/// @details If you define NX_USE_GENERIC_BIT_SCAN_REVERSE, even on platforms
 /// with the appropriate compiler intrinsics, a generic fallback will be used.
 
-#ifndef INCLUDE_NX_BITSCANREVERSE_H_
-#define INCLUDE_NX_BITSCANREVERSE_H_
+#ifndef INCLUDE_NX_BIT_SCAN_REVERSE_H_
+#define INCLUDE_NX_BIT_SCAN_REVERSE_H_
 
 #include "nx/core.h"
 
@@ -29,9 +29,9 @@
 namespace nx {
 
   // Enable this define to not use compiler builtins.
-  // #define NX_USE_GENERIC_BITSCANREVERSE
+  // #define NX_USE_GENERIC_BIT_SCAN_REVERSE
 
-  #if !defined(NX_USE_GENERIC_BITSCANREVERSE) && defined(NX_TC_GCC)
+  #if !defined(NX_USE_GENERIC_BIT_SCAN_REVERSE) && defined(NX_TC_GCC)
 
   // GCC BitScanReverse
   /// @cond nx_detail
@@ -84,56 +84,56 @@ namespace nx {
     namespace version {
 
       /// @brief 8-bit version
-      template <const unsigned int version, class T>
+      template <const unsigned int kVersion, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 8>>,
+        All<std::is_integral<T>, Bool<kVersion == 8>>,
       unsigned int> BitScanReverse(T value) {
-        using constant::Log256;
+        using constant::log_8bit;
         return (
           // for types <= 8
-          Log256[value]);
+          log_8bit[value]);
       }
 
       /// @brief 16-bit version
-      template <const unsigned int version, class T>
+      template <const unsigned int kVersion, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 16>>,
+        All<std::is_integral<T>, Bool<kVersion == 16>>,
       unsigned int> BitScanReverse(T value) {
-        using constant::Log256;
+        using constant::log_8bit;
         return (
           // for types <= 16
           (value >> 8) ? (
-            8 + Log256[value >> 8]) : (BitScanReverse<8>(value)));
+            8 + log_8bit[value >> 8]) : (BitScanReverse<8>(value)));
       }
 
       /// @brief 32-bit version
-      template <const unsigned int version, class T>
+      template <const unsigned int kVersion, class T>
       constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 32>>,
+        All<std::is_integral<T>, Bool<kVersion == 32>>,
       unsigned int> BitScanReverse(T value) {
-        using constant::Log256;
+        using constant::log_8bit;
         return (
           // for types <= 32
           (value >> 16) ? (
             (value >> 24) ? (
-              24 + Log256[value >> 24]) : (16 + Log256[value >> 16]))
+              24 + log_8bit[value >> 24]) : (16 + log_8bit[value >> 16]))
           : (BitScanReverse<16>(value)));
       }
 
       /// @brief 64-bit version
-      template <const unsigned int version, class T>
+      template <const unsigned int kVersion, class T>
       constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 64>>,
+        All<std::is_integral<T>, Bool<kVersion == 64>>,
       unsigned int> BitScanReverse(T value) {
-        using constant::Log256;
+        using constant::log_8bit;
         return (
           // for types <= 64
           (value >> 32) ? (
             (value >> 48) ? (
               (value >> 56) ? (
-                56 + Log256[value >> 56]) : (48 + Log256[value >> 48]))
+                56 + log_8bit[value >> 56]) : (48 + log_8bit[value >> 48]))
             : ((value >> 40) ? (
-              40 + Log256[value >> 40]) : (32 + Log256[value >> 32])))
+              40 + log_8bit[value >> 40]) : (32 + log_8bit[value >> 32])))
           : (BitScanReverse<32>(value)));
       }
 
@@ -191,4 +191,4 @@ namespace nx {
 
 }  // namespace nx
 
-#endif  // INCLUDE_NX_BITSCANREVERSE_H_
+#endif  // INCLUDE_NX_BIT_SCAN_REVERSE_H_

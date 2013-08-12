@@ -32,8 +32,10 @@
     #error The timer library requires POSIX CLOCK_MONOTONIC_RAW support.
   #endif
 #endif
+
 /// @brief Library namespace.
 namespace nx {
+
   /// @brief An unsigned integer type suitable to hold milliseconds.
   #ifndef NX_OS_WINDOWS
   // Sized to match the "seconds" field in timespec
@@ -42,16 +44,20 @@ namespace nx {
   // Matches GetTickCount64's return value
   typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
   #endif
+
   /// @brief Returns a monotonically increasing millisecond counter.
   msec_t fixed_msec();
+
   /// @brief Returns the difference in milliseconds between two {@link msec_t}
   /// values.
   /// @param later A later millisecond timer value.
   /// @param earlier An earlier millisecond timer value.
   msec_t msec_elapsed(msec_t later, msec_t earlier);
+
   /// @brief A millisecond precision sleep command, where possible.
   /// @param millisecs How many milliseconds to wait.
   void millisleep(const unsigned int millisecs);
+
 }  // namespace nx
 
 #endif  // INCLUDE_NX_TIME_H_

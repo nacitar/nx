@@ -34,20 +34,20 @@ namespace nx {
     return true;
   }
 
-  const Application::arg_vector& Application::arguments() const {
+  const Application::ArgumentVector& Application::arguments() const {
     return arguments_;
   }
-  Application::arg_vector& Application::arguments() {
+  Application::ArgumentVector& Application::arguments() {
     return arguments_;
   }
 
-  const Application::PlatformData* Application::platform_data() const {
+  const PlatformData* Application::platform_data() const {
     return platform_data_.get();
   }
-  Application::PlatformData* Application::platform_data() {
+  PlatformData* Application::platform_data() {
     return platform_data_.get();
   }
-  void Application::set_platform_data(Application::PlatformData*data) {
+  void Application::set_platform_data(PlatformData*data) {
     platform_data_.reset(data);
   }
 
@@ -55,7 +55,7 @@ namespace nx {
 
 /// Main driver; invokes the Application instance for this app.
 int main(int argc, char*argv[]) {
-  nx::Application::PlatformData * data = new nx::Application::PlatformData();
+  nx::PlatformData * data = new nx::PlatformData();
 
   nx::Application&application = nx::get_application();
   application.set_platform_data(data);
@@ -70,7 +70,7 @@ int WINAPI WinMain(
     HINSTANCE hInstance,
     HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow) {
-  nx::Application::PlatformData * data = new nx::Application::PlatformData();
+  nx::PlatformData * data = new nx::PlatformData();
   data->hInstance = hInstance;
   data->nCmdShow = nCmdShow;
 

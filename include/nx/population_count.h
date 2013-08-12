@@ -17,24 +17,26 @@
 /// @file popcount.h
 /// @brief Provides a function to calculate the number of set bits in an
 /// integral value.
-/// @details If you define NX_USE_GENERIC_POPCOUNT, even on platforms with
+/// @details If you define NX_USE_GENERIC_POPULATION_COUNT, even on platforms with
 /// the appropriate compiler intrinsics, a generic fallback will be used.
 
-#ifndef INCLUDE_NX_POPCOUNT_H_
-#define INCLUDE_NX_POPCOUNT_H_
+#ifndef INCLUDE_NX_POPULATION_COUNT_H_
+#define INCLUDE_NX_POPULATION_COUNT_H_
 
 #include "nx/core.h"
 
 /// @brief Library namespace.
 namespace nx {
-  // Enable this define to not use compiler builtins.
-  // #define NX_USE_GENERIC_POPCOUNT
 
-  #if !defined(NX_USE_GENERIC_POPCOUNT) && defined(NX_TC_GCC)
-  // GCC PopCount - counts the number of set bits
+  // Enable this define to not use compiler builtins.
+  // #define NX_USE_GENERIC_POPULATION_COUNT
+
+  #if !defined(NX_USE_GENERIC_POPULATION_COUNT) && defined(NX_TC_GCC)
+  // GCC PopulationCount - counts the number of set bits
 
   /// @cond nx_detail
   namespace detail {
+
     /// @brief unsigned long long selector
     template <class T>
     inline constexpr EnableIf<
@@ -43,9 +45,10 @@ namespace nx {
           IntegerFits<T, unsigned long long>,  // NOLINT(runtime/int)
           Not<IntegerFits<T, unsigned long>>  // NOLINT(runtime/int)
         >,
-    unsigned int> PopCount(T value) {
+    unsigned int> PopulationCount(T value) {
       return __builtin_popcountll(value);
     }
+
     /// @brief unsigned long selector
     template <class T>
     inline constexpr EnableIf<
@@ -54,9 +57,10 @@ namespace nx {
           IntegerFits<T, unsigned long>,  // NOLINT(runtime/int)
           Not<IntegerFits<T, unsigned int>>
         >,
-    unsigned int> PopCount(T value) {
+    unsigned int> PopulationCount(T value) {
       return __builtin_popcountl(value);
     }
+
     /// @brief unsigned int selector
     template <class T>
     inline constexpr EnableIf<
@@ -64,104 +68,120 @@ namespace nx {
           std::is_integral<T>,
           IntegerFits<T, unsigned int>
         >,
-    unsigned int> PopCount(T value) {
+    unsigned int> PopulationCount(T value) {
       return __builtin_popcount(value);
     }
   }
   /// @endcond
+
   #else
+
   /// @cond nx_detail
   namespace detail {
+
     /// @cond nx_detail_version
     namespace version {
-      // Generic PopCount
+      // Generic PopulationCount
+
       /// @brief 64-bit version
       template <unsigned int uVersion, class T>
       constexpr EnableIf<
         All<std::is_unsigned<T>, Bool<uVersion == 64>>,
-      unsigned int> PopCount(T value) {
-        using nx::constant::PopCount256;
+      unsigned int> PopulationCount(T value) {
+        using nx::constant::population_count_8bit;
         return static_cast<unsigned int>(
-          PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8)  & 0xff]  +
-          PopCount256[(value >> 16) & 0xff]  +
-          PopCount256[(value >> 24) & 0xff]  +
-          PopCount256[(value >> 32) & 0xff]  +
-          PopCount256[(value >> 40) & 0xff]  +
-          PopCount256[(value >> 48) & 0xff]  +
-          PopCount256[(value >> 56) & 0xff];
+          population_count_8bit[ value        & 0xff]) +
+          population_count_8bit[(value >> 8)  & 0xff]  +
+          population_count_8bit[(value >> 16) & 0xff]  +
+          population_count_8bit[(value >> 24) & 0xff]  +
+          population_count_8bit[(value >> 32) & 0xff]  +
+          population_count_8bit[(value >> 40) & 0xff]  +
+          population_count_8bit[(value >> 48) & 0xff]  +
+          population_count_8bit[(value >> 56) & 0xff];
       }
+
       /// @brief 32-bit version
       template <unsigned int uVersion, class T>
       constexpr EnableIf<
         All<std::is_unsigned<T>, Bool<uVersion == 32>>,
-      unsigned int> PopCount(T value) {
-        using nx::constant::PopCount256;
+      unsigned int> PopulationCount(T value) {
+        using nx::constant::population_count_8bit;
         return static_cast<unsigned int>(
-          PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8)  & 0xff]  +
-          PopCount256[(value >> 16) & 0xff]  +
-          PopCount256[(value >> 24) & 0xff];
+          population_count_8bit[ value        & 0xff]) +
+          population_count_8bit[(value >> 8)  & 0xff]  +
+          population_count_8bit[(value >> 16) & 0xff]  +
+          population_count_8bit[(value >> 24) & 0xff];
       }
+
       /// @brief 16-bit version
       template <unsigned int uVersion, class T>
       constexpr EnableIf<
         All<std::is_unsigned<T>, Bool<uVersion == 16>>,
-      unsigned int> PopCount(T value) {
-        using nx::constant::PopCount256;
+      unsigned int> PopulationCount(T value) {
+        using nx::constant::population_count_8bit;
         return static_cast<unsigned int>(
-          PopCount256[ value        & 0xff]) +
-          PopCount256[(value >> 8)  & 0xff];
+          population_count_8bit[ value        & 0xff]) +
+          population_count_8bit[(value >> 8)  & 0xff];
       }
+
       /// @brief 8-bit version
       template <unsigned int uVersion, class T>
       constexpr EnableIf<
         All<std::is_unsigned<T>, Bool<uVersion == 8>>,
-      unsigned int> PopCount(T value) {
-        using nx::constant::PopCount256;
-        return static_cast<unsigned int>(PopCount256[value]);
+      unsigned int> PopulationCount(T value) {
+        using nx::constant::population_count_8bit;
+        return static_cast<unsigned int>(population_count_8bit[value]);
       }
+
     }  // namespace version
     /// @endcond
+
     /// @brief [0,8]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_unsigned<T>, BitRange<T, 0, 8>>,
-    unsigned int> PopCount(T value) {
-      return detail::PopCount<8>(value);
+    unsigned int> PopulationCount(T value) {
+      return detail::PopulationCount<8>(value);
     }
+
     /// @brief [9,16]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_unsigned<T>, BitRange<T, 9, 16>>,
-    unsigned int> PopCount(T value) {
-      return detail::PopCount<16>(value);
+    unsigned int> PopulationCount(T value) {
+      return detail::PopulationCount<16>(value);
     }
+
     /// @brief [17,32]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_unsigned<T>, BitRange<T, 17, 32>>,
-    unsigned int> PopCount(T value) {
-      return detail::PopCount<32>(value);
+    unsigned int> PopulationCount(T value) {
+      return detail::PopulationCount<32>(value);
     }
+
     /// @brief [33,64]-bit selector
     template <class T>
     inline constexpr EnableIf<
         All<std::is_unsigned<T>, BitRange<T, 33, 64>>,
-    unsigned int> PopCount(T value) {
-      return detail::PopCount<64>(value);
+    unsigned int> PopulationCount(T value) {
+      return detail::PopulationCount<64>(value);
     }
+
     /// @brief signed-value converter
     template <class T>
     inline constexpr EnableIf<
         std::is_signed<T>,
-    unsigned int> PopCount(T value) {
+    unsigned int> PopulationCount(T value) {
       typedef typename std::make_unsigned<T>::type UT;
-      return PopCount(static_cast<UT>(value));
+      return PopulationCount(static_cast<UT>(value));
     }
+
   }  // namespace detail
   /// @endcond
+
   #endif
+
   /// @brief Determines the number of set bits.
   ///
   /// @tparam T The type of the passed value.
@@ -169,9 +189,10 @@ namespace nx {
   ///
   /// @return The number of bits set.
   template <class T>
-  inline constexpr unsigned int PopCount(T value) {
-    return detail::PopCount(value);
+  inline constexpr unsigned int PopulationCount(T value) {
+    return detail::PopulationCount(value);
   }
+
 }  // namespace nx
 
-#endif  // INCLUDE_NX_POPCOUNT_H_
+#endif  // INCLUDE_NX_POPULATION_COUNT_H_

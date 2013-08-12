@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-/// @file tostring.h
+/// @file to_string.h
 /// @brief Functions to convert integral values into strings.
 
-#ifndef INCLUDE_NX_TOSTRING_H_
-#define INCLUDE_NX_TOSTRING_H_
+#ifndef INCLUDE_NX_TO_STRING_H_
+#define INCLUDE_NX_TO_STRING_H_
 
 #include <string>
 #include "nx/core.h"
@@ -172,4 +172,4 @@ namespace nx {
 
 }  // namespace nx
 
-#endif  // INCLUDE_NX_TOSTRING_H_
+#endif  // INCLUDE_NX_TO_STRING_H_

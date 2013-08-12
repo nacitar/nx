@@ -28,28 +28,29 @@
 
 /// @brief Library namespace.
 namespace nx {
+
+  /// @brief A class used to hold platform-specific data that is sometimes
+  /// pertinent that would typically be obtained in a traditional main()
+  /// function.
+  #ifdef NX_OS_WINDOWS
+  struct PlatformData {
+    // These members are named matching winapi documentation.
+
+    /// @brief The hInstance of the application, as passed to WinMain()
+    HINSTANCE hInstance;
+    /// @brief The value of nCmdShow as passed to WinMain()
+    int nCmdShow;
+  };
+  #else
+  struct PlatformData {
+  };
+  #endif
+
   /// @brief A base class upon which an application can be built.
   class Application {
    public:
     /// @brief The container type used to hold arguments.
-    typedef std::vector<std::string> arg_vector;
-
-    /// @brief A class used to hold platform-specific data that is sometimes
-    /// pertinent that would typically be obtained in a traditional main()
-    /// function.
-    #ifdef NX_OS_WINDOWS
-    struct PlatformData {
-      // These members are named matching winapi documentation.
-
-      /// @brief The hInstance of the application, as passed to WinMain()
-      HINSTANCE hInstance;
-      /// @brief The value of nCmdShow as passed to WinMain()
-      int nCmdShow;
-    };
-    #else
-    struct PlatformData {
-    };
-    #endif
+    typedef std::vector<std::string> ArgumentVector;
 
     /// @brief Destructor.
     virtual ~Application();
@@ -71,11 +72,11 @@ namespace nx {
 
     /// @brief Accessor for the stored arguments.
     /// @return A const reference to the stored arguments.
-    const arg_vector& arguments() const;
+    const ArgumentVector& arguments() const;
 
     /// @brief Accessor for the stored arguments.
     /// @return A reference to the stored arguments.
-    arg_vector& arguments();
+    ArgumentVector& arguments();
 
     /// @brief Accessor for any platform-specific data.
     /// @return A const pointer to the PlatformData.
@@ -96,7 +97,7 @@ namespace nx {
     /// @brief The platform-specific data.
     std::unique_ptr<PlatformData> platform_data_;
     /// @brief The stored arguments.
-    arg_vector arguments_;
+    ArgumentVector arguments_;
   };
 
   /// @brief The main application.  An undefined external; the user must

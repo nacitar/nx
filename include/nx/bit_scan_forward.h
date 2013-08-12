@@ -14,23 +14,23 @@
 // limitations under the License.
 //
 
-/// @file bitscanforward.h
+/// @file bit_scan_forward.h
 /// @brief Provides a function to find the bit index of the least significant
 /// set bit in an unsigned integral value.
-/// @details If you define NX_USE_GENERIC_BITSCANFORWARD, even on platforms
+/// @details If you define NX_USE_GENERIC_BIT_SCAN_FORWARD, even on platforms
 /// with the appropriate compiler intrinsics, a generic fallback will be used.
 
-#ifndef INCLUDE_NX_BITSCANFORWARD_H_
-#define INCLUDE_NX_BITSCANFORWARD_H_
+#ifndef INCLUDE_NX_BIT_SCAN_FORWARD_H_
+#define INCLUDE_NX_BIT_SCAN_FORWARD_H_
 
 #include "nx/core.h"
 
 /// @brief Library namespace.
 namespace nx {
   // Enable this define to not use compiler builtins.
-  // #define NX_USE_GENERIC_BITSCANFORWARD
+  // #define NX_USE_GENERIC_BIT_SCAN_FORWARD
 
-  #if !defined(NX_USE_GENERIC_BITSCANFORWARD) && defined(NX_TC_GCC)
+  #if !defined(NX_USE_GENERIC_BIT_SCAN_FORWARD) && defined(NX_TC_GCC)
   // GCC BitScanForward - finds the lowest set bit index
   /// @cond nx_detail
   namespace detail {
@@ -75,9 +75,9 @@ namespace nx {
     /// @cond nx_detail_version
     namespace version {
       /// @brief 64-bit version
-      template <unsigned int version, class T>
+      template <unsigned int kVersion, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 64>>,
+        All<std::is_integral<T>, Bool<kVersion == 64>>,
       unsigned int> BitScanForward(T value) {
         typedef typename std::make_signed<
           typename std::add_const<T>::type
@@ -85,19 +85,19 @@ namespace nx {
         typedef typename std::make_unsigned<
           typename std::add_const<T>::type
         >::type const_unsigned_T;
-        return constant::deBruijn64[
+        return constant::de_bruijn_64bit[
             (
               (
                 static_cast<const_unsigned_T>(
                   value & -static_cast<const_signed_T>(value))
-                * constant::deBruijn64Multiplier)
+                * constant::de_bruijn_multiplier_64bit)
               >> 58u)
             & 0x3Fu];
       }
       /// @brief 32-bit version
-      template <unsigned int version, class T>
+      template <unsigned int kVersion, class T>
       inline constexpr EnableIf<
-        All<std::is_integral<T>, Bool<version == 32>>,
+        All<std::is_integral<T>, Bool<kVersion == 32>>,
       unsigned int> BitScanForward(T value) {
         typedef typename std::make_signed<
           typename std::add_const<T>::type
@@ -105,12 +105,12 @@ namespace nx {
         typedef typename std::make_unsigned<
           typename std::add_const<T>::type
         >::type const_unsigned_T;
-        return constant::deBruijn32[
+        return constant::de_bruijn_32bit[
             (
               (
                 static_cast<const_unsigned_T>(
                   value & -static_cast<const_signed_T>(value))
-                * constant::deBruijn32Multiplier)
+                * constant::de_bruijn_multiplier_32bit)
               >> 27u)
             & 0x1Fu];
       }
@@ -146,4 +146,4 @@ namespace nx {
     return detail::BitScanForward(value);
   }
 }  // namespace nx
-#endif  // INCLUDE_NX_BITSCANFORWARD_H_
+#endif  // INCLUDE_NX_BIT_SCAN_FORWARD_H_

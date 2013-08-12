@@ -26,16 +26,17 @@
 namespace nx {
 
   namespace constant {
+
     /// @brief A multiplier for 32-bit values that for the lowest set bit
     /// produces a unique value in the lowest 5 bits (values: 0-31) which can
     /// be used to obtain the index of that set bit.
-    constexpr const uint_least32_t deBruijn32Multiplier =
+    constexpr const uint_least32_t de_bruijn_multiplier_32bit =
         0x077CB531ul;
 
     /// @brief A lookup table for mapping the lowest 5 bits of the product of
-    /// a 32-bit value and {@link deBruijn32Multiplier} to the bit index of the
+    /// a 32-bit value and {@link de_bruijn_multiplier_32bit} to the bit index of the
     /// value's least significant bit.
-    constexpr const uint_least8_t deBruijn32[32] = {
+    constexpr const uint_least8_t de_bruijn_32bit[32] = {
          0,  1, 28,  2, 29, 14, 24,  3,
         30, 22, 20, 15, 25, 17,  4,  8,
         31, 27, 13, 23, 21, 19, 16,  7,
@@ -45,13 +46,13 @@ namespace nx {
     /// @brief A multiplier for 64-bit values that for the lowest set bit
     /// produces a unique value in the lowest 6 bits (values: 0-63) which can
     /// be used to obtain the index of that set bit.
-    constexpr const uint_least64_t deBruijn64Multiplier =
+    constexpr const uint_least64_t de_bruijn_multiplier_64bit =
         0x022FDD63CC95386Dull;
 
     /// @brief A lookup table for mapping the lowest 6 bits of the product of
-    /// a 64-bit value and {@link deBruijn64Multiplier} to the bit index of the
-    /// value's least significant bit.
-    constexpr const uint_least8_t deBruijn64[64] = {
+    /// a 64-bit value and {@link de_bruijn_multiplier_64bit} to the bit index of
+    /// the value's least significant bit.
+    constexpr const uint_least8_t de_bruijn_64bit[64] = {
          0,  1,  2, 53,  3,  7, 54, 27,
          4, 38, 41,  8, 34, 55, 48, 28,
         62,  5, 39, 46, 44, 42, 22,  9,
@@ -64,22 +65,23 @@ namespace nx {
 
     /// @cond nx_detail
     namespace detail {
+
       template <
-          class T, T base, unsigned int power, class Enable = void>
+          class T, T kBase, unsigned int kPower, class Enable = void>
       struct Power {
-        static constexpr T previous = Power<T, base, power-1>::value;
-        static constexpr T value = base * previous;
+        static constexpr T previous = Power<T, kBase, kPower-1>::value;
+        static constexpr T value = kBase * previous;
         static_assert(
-            !OverflowMult<T, base, previous>::value,
+            !OverflowMult<T, kBase, previous>::value,
             "Value overflows type.");
       };
 
-      template <class T, T base, unsigned int power>
+      template <class T, T kBase, unsigned int kPower>
       struct Power<
           T,
-          base,
-          power,
-          EnableIf< Bool<power == 0>>> {
+          kBase,
+          kPower,
+          EnableIf< Bool<kPower == 0>>> {
         static constexpr T value = 1;
       };
     }
@@ -88,14 +90,14 @@ namespace nx {
     /// @todo When http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58059 is fixed,
     /// implement a specialization for handling overflow so you get only one
     /// error message for it.
-    /// @brief Determines base to the power of power.
-    template <class T, T base, unsigned int power>
-    struct Power : detail::Power<T, base, power> {
+    /// @brief Determines kBase to the power of kPower.
+    template <class T, T kBase, unsigned int kPower>
+    struct Power : detail::Power<T, kBase, kPower> {
     };
 
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 32-bits.
-    constexpr const uint_least32_t pow10_32[10] = {
+    constexpr const uint_least32_t power_10_32bit[10] = {
         Power<uint_least32_t, 10, 0>::value,
         Power<uint_least32_t, 10, 1>::value,
         Power<uint_least32_t, 10, 2>::value,
@@ -110,7 +112,7 @@ namespace nx {
 
     /// @brief Indexing into this yields 10 to the power of the index as a type
     /// that is at least 64-bits.
-    constexpr const uint_least64_t pow10_64[20] = {
+    constexpr const uint_least64_t power_10_64bit[20] = {
         Power<uint_least64_t, 10, 0>::value,
         Power<uint_least64_t, 10, 1>::value,
         Power<uint_least64_t, 10, 2>::value,
@@ -134,7 +136,7 @@ namespace nx {
     };
 
     /// @brief Indexing with an 8-bit value yields the log2 of that value.
-    constexpr const uint_least8_t Log256[256] = {
+    constexpr const uint_least8_t log_8bit[256] = {
         0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
         4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -155,7 +157,7 @@ namespace nx {
 
     /// @brief Indexing with an 8-bit value yields the reversed bits of the
     /// index.
-    constexpr const uint_least8_t Reverse256[256] = {
+    constexpr const uint_least8_t reverse_8bit[256] = {
         0x00, 0x80, 0x40, 0xC0, 0x20, 0xA0, 0x60, 0xE0,
         0x10, 0x90, 0x50, 0xD0, 0x30, 0xB0, 0x70, 0xF0,
         0x08, 0x88, 0x48, 0xC8, 0x28, 0xA8, 0x68, 0xE8,
@@ -192,7 +194,7 @@ namespace nx {
 
     /// @brief Indexing with an 8-bit value yields the number of bits set to 1
     /// in the index.
-    constexpr const uint_least8_t PopCount256[256] = {
+    constexpr const uint_least8_t population_count_8bit[256] = {
         0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
         1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
         1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
@@ -212,7 +214,7 @@ namespace nx {
     };
 
     /// @brief Indexing with an 8-bit value yields the parity of the index.
-    constexpr const uint_least8_t Parity256[256] = {
+    constexpr const uint_least8_t parity_8bit[256] = {
         0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
         1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
         1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,

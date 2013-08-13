@@ -15,7 +15,7 @@
 //
 
 /// @file time.cc
-/// @brief The implementation for time.h
+/// @brief Implementation for time.h
 
 #include <stdexcept>
 #include "nx/time.h"

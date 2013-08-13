@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-/// @file
-/// Test project for things being worked on.
+/// @file main.cc
+/// @brief Test project for things being worked on.
 
 #include <stdio.h>
 #include <iostream>
@@ -30,31 +30,32 @@
 #include "nx/reverse.h"
 #include "nx/digits.h"
 
+/// @brief Library namespace.
 namespace nx {
 
-  namespace detail {
+namespace detail {
 
-    template<char... digits>
-    struct binary_literal_helper;
+template<char... digits>
+struct binary_literal_helper;
 
-    template<char high, char... digits>
-    struct binary_literal_helper<high, digits...> {
-      // +1 to include 'high'
-      typedef uint_least_t<sizeof...(digits)+1> uint_type;
-      static_assert(high == '0' || high == '1', "invalid binary digit!");
-      static uint_type const value =
-        (static_cast<uint_type>(high - '0') << sizeof...(digits))
-        + binary_literal_helper<digits...>::value;
-    };
+template<char high, char... digits>
+struct binary_literal_helper<high, digits...> {
+  // +1 to include 'high'
+  typedef uint_least_t<sizeof...(digits)+1> uint_type;
+  static_assert(high == '0' || high == '1', "invalid binary digit!");
+  static uint_type const value =
+    (static_cast<uint_type>(high - '0') << sizeof...(digits))
+    + binary_literal_helper<digits...>::value;
+};
 
-    template<char high>
-    struct binary_literal_helper<high> {
-      typedef uint_least_t<1> uint_type;
-      static_assert(high == '0' || high == '1', "invalid binary digit!");
-      static uint_type const value = (high - '0');
-    };
+template<char high>
+struct binary_literal_helper<high> {
+  typedef uint_least_t<1> uint_type;
+  static_assert(high == '0' || high == '1', "invalid binary digit!");
+  static uint_type const value = (high - '0');
+};
 
-  }  // namespace detail
+}  // namespace detail
 
 }  // namespace nx
 
@@ -66,9 +67,11 @@ constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
 
 template <unsigned int base, unsigned int power>
 using IntPow = nx::Power<unsigned int,base,power>;
-/// The class for the test application
+
+/// @brief The class for the test application
 class MyApplication : public nx::Application {
  public:
+
   void timer_resolution_test() {
     nx::msec_t last = 0;
     while (true) {
@@ -79,11 +82,13 @@ class MyApplication : public nx::Application {
       }
     }
   }
+
   void test_bitops(nx::uint_least64_t x) {
     std::cout << "BSF: " << nx::BitScanForward(x) << std::endl;
     std::cout << "BSR: " << nx::BitScanReverse(x) << std::endl;
     std::cout << "dig: " << nx::Digits(x) << std::endl;
   }
+
   int test_strings() {
     //char buf[100];
     int sum=0;
@@ -94,7 +99,6 @@ class MyApplication : public nx::Application {
     }
     return sum;
   }
-
 
   int main() {
     ArgumentVector& args = arguments();
@@ -120,12 +124,11 @@ class MyApplication : public nx::Application {
     buf[len]='\0';
     std::cout << "buf: " << buf << std::endl;
 
-
     return 0;
   }
 };
 
-// @brief Function to lazy-load the application; required by nx library.
+/// @brief Function to lazy-load the application; required by nx library.
 nx::Application& nx::GetApplication() {
   static MyApplication app;
   return app;

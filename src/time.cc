@@ -24,6 +24,7 @@
 // system clock interval (as it is bad for the system to do that anyway; uses
 // battery a lot more).  Expect 12-16ms precision
 
+/// @brief Library namespace.
 namespace nx {
 
 #ifndef NX_OS_WINDOWS

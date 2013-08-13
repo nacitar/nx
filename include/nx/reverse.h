@@ -25,120 +25,120 @@
 /// @brief Library namespace.
 namespace nx {
 
-  /// @cond nx_detail
-  namespace detail {
+/// @cond nx_detail
+namespace detail {
 
-    /// @cond nx_detail_version
-    namespace version {
+/// @cond nx_detail_version
+namespace version {
 
-      /// @brief 64-bit version
-      template <unsigned int uVersion, class T>
-      constexpr EnableIf<
-        All<std::is_unsigned<T>, Bool<uVersion == 64>>,
-      T> Reverse(T value) {
-        using constant::reverse_8bit;
-        return
-            static_cast<T>(reverse_8bit[ value        & 0xff]) << 56 |
-            static_cast<T>(reverse_8bit[(value >>  8) & 0xff]) << 48 |
-            static_cast<T>(reverse_8bit[(value >> 16) & 0xff]) << 40 |
-            static_cast<T>(reverse_8bit[(value >> 24) & 0xff]) << 32 |
-            static_cast<T>(reverse_8bit[(value >> 32) & 0xff]) << 24 |
-            static_cast<T>(reverse_8bit[(value >> 40) & 0xff]) << 16 |
-            static_cast<T>(reverse_8bit[(value >> 48) & 0xff]) <<  8 |
-            static_cast<T>(reverse_8bit[(value >> 56) & 0xff]);
-      }
+/// @brief 64-bit version
+template <unsigned int uVersion, class T>
+constexpr EnableIf<All<
+    std::is_unsigned<T>, Bool<uVersion == 64>>,
+T> Reverse(T value) {
+  using constant::reverse_8bit;
+  return
+      static_cast<T>(reverse_8bit[ value        & 0xff]) << 56 |
+      static_cast<T>(reverse_8bit[(value >>  8) & 0xff]) << 48 |
+      static_cast<T>(reverse_8bit[(value >> 16) & 0xff]) << 40 |
+      static_cast<T>(reverse_8bit[(value >> 24) & 0xff]) << 32 |
+      static_cast<T>(reverse_8bit[(value >> 32) & 0xff]) << 24 |
+      static_cast<T>(reverse_8bit[(value >> 40) & 0xff]) << 16 |
+      static_cast<T>(reverse_8bit[(value >> 48) & 0xff]) <<  8 |
+      static_cast<T>(reverse_8bit[(value >> 56) & 0xff]);
+}
 
-      /// @brief 32-bit version
-      template <unsigned int uVersion, class T>
-      constexpr EnableIf<
-        All<std::is_unsigned<T>, Bool<uVersion == 32>>,
-      T> Reverse(T value) {
-        using constant::reverse_8bit;
-        return
-            static_cast<T>(reverse_8bit[ value        & 0xff]) << 24 |
-            static_cast<T>(reverse_8bit[(value >>  8) & 0xff]) << 16 |
-            static_cast<T>(reverse_8bit[(value >> 16) & 0xff]) <<  8 |
-            static_cast<T>(reverse_8bit[(value >> 24) & 0xff]);
-      }
+/// @brief 32-bit version
+template <unsigned int uVersion, class T>
+constexpr EnableIf<All<
+    std::is_unsigned<T>, Bool<uVersion == 32>>,
+T> Reverse(T value) {
+  using constant::reverse_8bit;
+  return
+      static_cast<T>(reverse_8bit[ value        & 0xff]) << 24 |
+      static_cast<T>(reverse_8bit[(value >>  8) & 0xff]) << 16 |
+      static_cast<T>(reverse_8bit[(value >> 16) & 0xff]) <<  8 |
+      static_cast<T>(reverse_8bit[(value >> 24) & 0xff]);
+}
 
-      /// @brief 16-bit version
-      template <unsigned int uVersion, class T>
-      constexpr EnableIf<
-        All<std::is_unsigned<T>, Bool<uVersion == 16>>,
-      T> Reverse(T value) {
-        using constant::reverse_8bit;
-        return
-            static_cast<T>(reverse_8bit[ value        & 0xff]) <<  8 |
-            static_cast<T>(reverse_8bit[(value >>  8) & 0xff]);
-      }
+/// @brief 16-bit version
+template <unsigned int uVersion, class T>
+constexpr EnableIf<All<
+    std::is_unsigned<T>, Bool<uVersion == 16>>,
+T> Reverse(T value) {
+  using constant::reverse_8bit;
+  return
+      static_cast<T>(reverse_8bit[ value        & 0xff]) <<  8 |
+      static_cast<T>(reverse_8bit[(value >>  8) & 0xff]);
+}
 
-      /// @brief 8-bit version
-      template <unsigned int uVersion, class T>
-      constexpr EnableIf<
-        All<std::is_unsigned<T>, Bool<uVersion == 8>>,
-      T> Reverse(T value) {
-        using constant::reverse_8bit;
-        return
-            static_cast<T>(reverse_8bit[value]);
-      }
+/// @brief 8-bit version
+template <unsigned int uVersion, class T>
+constexpr EnableIf<All<
+    std::is_unsigned<T>, Bool<uVersion == 8>>,
+T> Reverse(T value) {
+  using constant::reverse_8bit;
+  return
+      static_cast<T>(reverse_8bit[value]);
+}
 
-    }  // namespace version
-    /// @endcond
+}  // namespace version
+/// @endcond
 
-    /// @brief [0,8]-bit selector
-    template <class T>
-    inline constexpr EnableIf<
-        All<std::is_unsigned<T>, BitRange<T, 0, 8>>,
-    T> Reverse(T value) {
-      return version::Reverse<8>(value);
-    }
+/// @brief [0,8]-bit selector
+template <class T>
+inline constexpr EnableIf<All<
+    std::is_unsigned<T>, BitRange<T, 0, 8>>,
+T> Reverse(T value) {
+  return version::Reverse<8>(value);
+}
 
-    /// @brief [9,16]-bit selector
-    template <class T>
-    inline constexpr EnableIf<
-        All<std::is_unsigned<T>, BitRange<T, 9, 16>>,
-    T> Reverse(T value) {
-      return version::Reverse<16>(value);
-    }
+/// @brief [9,16]-bit selector
+template <class T>
+inline constexpr EnableIf<All<
+    std::is_unsigned<T>, BitRange<T, 9, 16>>,
+T> Reverse(T value) {
+  return version::Reverse<16>(value);
+}
 
-    /// @brief [17,32]-bit selector
-    template <class T>
-    inline constexpr EnableIf<
-        All<std::is_unsigned<T>, BitRange<T, 17, 32>>,
-    T> Reverse(T value) {
-      return version::Reverse<32>(value);
-    }
+/// @brief [17,32]-bit selector
+template <class T>
+inline constexpr EnableIf<All<
+    std::is_unsigned<T>, BitRange<T, 17, 32>>,
+T> Reverse(T value) {
+  return version::Reverse<32>(value);
+}
 
-    /// @brief [33,64]-bit selector
-    template <class T>
-    inline constexpr EnableIf<
-        All<std::is_unsigned<T>, BitRange<T, 33, 64>>,
-    T> Reverse(T value) {
-      return version::Reverse<64>(value);
-    }
+/// @brief [33,64]-bit selector
+template <class T>
+inline constexpr EnableIf<All<
+    std::is_unsigned<T>, BitRange<T, 33, 64>>,
+T> Reverse(T value) {
+  return version::Reverse<64>(value);
+}
 
-    /// @brief signed-value converter
-    template <class T>
-    inline constexpr EnableIf<
-        std::is_signed<T>,
-    T> Reverse(T value) {
-      typedef typename std::make_unsigned<T>::type UT;
-      return Reverse(static_cast<UT>(value));
-    }
+/// @brief signed-value converter
+template <class T>
+inline constexpr EnableIf<
+    std::is_signed<T>,
+T> Reverse(T value) {
+  typedef typename std::make_unsigned<T>::type UT;
+  return Reverse(static_cast<UT>(value));
+}
 
-  }  // namespace detail
-  /// @endcond
+}  // namespace detail
+/// @endcond
 
-  /// @brief Determines the reverse of a bit pattern.
-  ///
-  /// @tparam T The type of the passed value.
-  /// @param value The value to examine.
-  ///
-  /// @return The bits of the passed value, in reverse order.
-  template <class T>
-  inline constexpr T Reverse(T value) {
-    return detail::Reverse(value);
-  }
+/// @brief Determines the reverse of a bit pattern.
+///
+/// @tparam T The type of the passed value.
+/// @param value The value to examine.
+///
+/// @return The bits of the passed value, in reverse order.
+template <class T>
+inline constexpr T Reverse(T value) {
+  return detail::Reverse(value);
+}
 
 }  // namespace nx
 

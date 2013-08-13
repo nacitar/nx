@@ -21,31 +21,30 @@
 #define INCLUDE_NX_CORE_OS_H_
 
 // C++11 requirement
-#if (\
+#if \
     (__cplusplus < 201103L && !defined(__GXX_EXPERIMENTAL_CXX0X__)) || \
-    (defined(GCC_VERSION) && GCC_VERSION < 40700) \
-)
+    (defined(GCC_VERSION) && GCC_VERSION < 40700)
   #error This library is written with c++11 in mind; backwards compatibility \
       has been removed.  If using gcc, this requires 4.7+
 #endif
 
 // OS detection
-#if (\
-    defined(WINDOWS) || defined(WIN32) || defined(_WIN32) || \
-    defined(WIN64) || defined(_WIN64) \
-)
+#if \
+    defined(WINDOWS) || \
+    defined(WIN32) || defined(_WIN32) || \
+    defined(WIN64) || defined(_WIN64)
   /// @brief Defined if build target is Windows
   #define NX_OS_WINDOWS 1
-#elif (\
-    defined(__linux) || defined(__linux__) || \
-    defined(linux) || defined(__gnu_linux__) || defined(LINUX) \
-)
+#elif \
+    defined(__linux) || defined(__linux__) || defined(linux) || \
+    defined(__gnu_linux__) || defined(LINUX)
+
   /// @brief Defined if build target is Linux
   #define NX_OS_LINUX 1
 #elif defined(__APPLE__)
   /// @brief Defined if build target is Mac
   #define NX_OS_MAC 1
-#elif defined (__SVR4) && defined (__sun)
+#elif defined(__SVR4) && defined(__sun)
   /// @brief Defined if build target is Solaris
   #define NX_OS_SOLARIS 1
 #else
@@ -116,7 +115,8 @@
   #endif
 #else
   #include <limits.h>
-  /// @brief Best guess per platform includes as to the maximum length of a path.
+  /// @brief Best guess per platform includes as to the maximum length of a
+  /// path.
   #define MAX_PATH PATH_MAX
 #endif
 

@@ -36,27 +36,27 @@
 /// @brief Library namespace.
 namespace nx {
 
-  /// @brief An unsigned integer type suitable to hold milliseconds.
-  #ifndef NX_OS_WINDOWS
-  // Sized to match the "seconds" field in timespec
-  typedef uint_t<BitSize<time_t>::value> msec_t;
-  #else
-  // Matches GetTickCount64's return value
-  typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
-  #endif
+/// @brief An unsigned integer type suitable to hold milliseconds.
+#ifndef NX_OS_WINDOWS
+// Sized to match the "seconds" field in timespec
+typedef uint_t<BitSize<time_t>::value> msec_t;
+#else
+// Matches GetTickCount64's return value
+typedef uint_t<BitSize<ULONGLONG>::value> msec_t;
+#endif
 
-  /// @brief Returns a monotonically increasing millisecond counter.
-  msec_t FixedMS();
+/// @brief Returns a monotonically increasing millisecond counter.
+msec_t FixedMS();
 
-  /// @brief Returns the difference in milliseconds between two {@link msec_t}
-  /// values.
-  /// @param later A later millisecond timer value.
-  /// @param earlier An earlier millisecond timer value.
-  msec_t ElapsedMS(msec_t later, msec_t earlier);
+/// @brief Returns the difference in milliseconds between two {@link msec_t}
+/// values.
+/// @param later A later millisecond timer value.
+/// @param earlier An earlier millisecond timer value.
+msec_t ElapsedMS(msec_t later, msec_t earlier);
 
-  /// @brief A millisecond precision sleep command, where possible.
-  /// @param millisecs How many milliseconds to wait.
-  void SleepMS(unsigned int millisecs);
+/// @brief A millisecond precision sleep command, where possible.
+/// @param millisecs How many milliseconds to wait.
+void SleepMS(unsigned int millisecs);
 
 }  // namespace nx
 

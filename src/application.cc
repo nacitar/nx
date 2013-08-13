@@ -14,46 +14,49 @@
 // limitations under the License.
 //
 
-/// @file
-/// Implementation for application.h
+/// @file application.cc
+/// @brief Implementation for application.h
 
 #include "nx/application.h"
 
+/// @brief Library namespace.
 namespace nx {
-  Application::~Application() {
-  }
 
-  Application::Application() {
-  }
+Application::~Application() {
+}
 
-  bool Application::set_arguments(
-      const int argc,
-      const char* const * const argv) {
-    if (argc < 0) return false;
-    arguments_.assign(argv, argv+argc);
-    return true;
-  }
+Application::Application() {
+}
 
-  const Application::ArgumentVector& Application::arguments() const {
-    return arguments_;
-  }
-  Application::ArgumentVector& Application::arguments() {
-    return arguments_;
-  }
+bool Application::set_arguments(
+    const int argc,
+    const char* const * const argv) {
+  if (argc < 0) return false;
+  arguments_.assign(argv, argv+argc);
+  return true;
+}
 
-  const PlatformData* Application::platform_data() const {
-    return platform_data_.get();
-  }
-  PlatformData* Application::platform_data() {
-    return platform_data_.get();
-  }
-  void Application::set_platform_data(PlatformData*data) {
-    platform_data_.reset(data);
-  }
+const Application::ArgumentVector& Application::arguments() const {
+  return arguments_;
+}
+Application::ArgumentVector& Application::arguments() {
+  return arguments_;
+}
+
+const PlatformData* Application::platform_data() const {
+  return platform_data_.get();
+}
+PlatformData* Application::platform_data() {
+  return platform_data_.get();
+}
+void Application::set_platform_data(PlatformData*data) {
+  platform_data_.reset(data);
+}
 
 }  // namespace nx
 
-/// Main driver; invokes the Application instance for this app.
+/// @brief Main driver; invokes the {@link nx::Application} instance for this
+/// app.
 int main(int argc, char*argv[]) {
   nx::PlatformData * data = new nx::PlatformData();
 
@@ -65,7 +68,8 @@ int main(int argc, char*argv[]) {
 
 #ifdef NX_OS_WINDOWS
 #include <stdlib.h>  // for __argc and __argv
-/// Windows main driver; invokes the Application instance for this app.
+/// @brief Windows main driver; invokes the {@link nx::Application} instance
+/// for this app.
 int WINAPI WinMain(
     HINSTANCE hInstance,
     HINSTANCE hPrevInstance,

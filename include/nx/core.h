@@ -21,9 +21,9 @@
 #ifndef INCLUDE_NX_CORE_H_
 #define INCLUDE_NX_CORE_H_
 
+#include <memory>
 #include "nx/core/os.h"
 #include "nx/core/mpl.h"
 #include "nx/core/integer.h"
-#include <memory>
 
 #endif  // INCLUDE_NX_CORE_H_

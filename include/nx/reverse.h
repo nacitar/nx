@@ -136,7 +136,7 @@ T> Reverse(T value) {
 ///
 /// @return The bits of the passed value, in reverse order.
 template <class T>
-inline constexpr T Reverse(T value) {
+constexpr T Reverse(T value) {
   return detail::Reverse(value);
 }
 

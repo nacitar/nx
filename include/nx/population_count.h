@@ -178,7 +178,7 @@ unsigned int> PopulationCount(T value) {
 ///
 /// @return The number of bits set.
 template <class T>
-inline constexpr unsigned int PopulationCount(T value) {
+constexpr unsigned int PopulationCount(T value) {
   return detail::PopulationCount(value);
 }
 

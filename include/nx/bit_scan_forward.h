@@ -150,7 +150,7 @@ unsigned int> BitScanForward(T value) {
 /// @return The index of the highest bit set, with 0 indicating the least
 /// significant bit.  If the value is 0, then 0 is returned.
 template <class T>
-inline constexpr unsigned int BitScanForward(T value) {
+constexpr unsigned int BitScanForward(T value) {
   return detail::BitScanForward(value);
 }
 

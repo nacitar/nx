@@ -178,7 +178,7 @@ unsigned int> BitScanReverse(T value) {
 /// @return The index of the lowest bit set, with 0 indicating the least
 /// significant bit.  If the value is 0, then 0 is returned.
 template <class T>
-inline constexpr unsigned int BitScanReverse(T value) {
+constexpr unsigned int BitScanReverse(T value) {
   return detail::BitScanReverse(value);
 }
 

@@ -35,6 +35,16 @@ namespace nx {
 /// @cond nx_detail
 namespace detail {
 
+/// @brief Determines if a given character is a valid digit in some base.
+template <unsigned int number_base>
+constexpr bool ValidDigit(char ch);
+
+/// @brief Specialization for base 2
+template <>
+constexpr bool ValidDigit<2>(char ch) {
+  return ch == '0' || ch == '1';
+}
+
 /// @cond nx_detail_version
 namespace version {
 
@@ -182,6 +192,17 @@ EnableIf<
 unsigned int> Digits(T value) {
   return detail::Digits<number_base>(value);
 }
+
+
+/// @brief Determines if a given character is a valid digit in some base.
+///
+/// @tparam number_base The base the number is to be checked against.
+/// @param ch The character to check.
+template <unsigned int number_base>
+constexpr bool ValidDigit(char ch) {
+  return detail::ValidDigit<number_base>(ch);
+}
+
 
 }  // namespace nx
 

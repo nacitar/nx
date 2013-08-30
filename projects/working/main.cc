@@ -29,41 +29,7 @@
 #include "nx/population_count.h"
 #include "nx/reverse.h"
 #include "nx/digits.h"
-
-/// @brief Library namespace.
-namespace nx {
-
-namespace detail {
-
-template<char... digits>
-struct binary_literal_helper;
-
-template<char high, char... digits>
-struct binary_literal_helper<high, digits...> {
-  // +1 to include 'high'
-  typedef uint_least_t<sizeof...(digits)+1> uint_type;
-  static_assert(high == '0' || high == '1', "invalid binary digit!");
-  static uint_type const value =
-    (static_cast<uint_type>(high - '0') << sizeof...(digits))
-    + binary_literal_helper<digits...>::value;
-};
-
-template<char high>
-struct binary_literal_helper<high> {
-  typedef uint_least_t<1> uint_type;
-  static_assert(high == '0' || high == '1', "invalid binary digit!");
-  static uint_type const value = (high - '0');
-};
-
-}  // namespace detail
-
-}  // namespace nx
-
-
-template<char... digits>
-constexpr nx::uint_least_t<sizeof...(digits)> operator "" _b() {
-  return nx::detail::binary_literal_helper<digits...>::value;
-}
+#include "nx/literal.h"
 
 template <unsigned int base, unsigned int power>
 using IntPow = nx::Power<unsigned int,base,power>;
@@ -106,7 +72,7 @@ class MyApplication : public nx::Application {
       std::cerr << "INVALID" << std::endl;
       return 1;
     }
-    auto blit_val = 11110000_b;
+    auto blit_val = 11110110_nx_b;
     auto pow_val = IntPow<10,9>::value;
     nx::int_least64_t cmdline_val;
     {

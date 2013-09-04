@@ -33,7 +33,7 @@ namespace nx {
 ///
 /// @return A vector of tokenized strings obtained by parsing the passed
 /// string.
-std::vector<std::string> ArgParser(const std::string&argument_string);
+std::vector<std::string> ArgumentParser(const std::string&argument_string);
 
 }  // namespace nx
 

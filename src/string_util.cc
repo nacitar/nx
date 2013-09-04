@@ -22,7 +22,7 @@
 /// @brief Library namespace.
 namespace nx {
 
-std::vector<std::string> ArgParser(const std::string&argument_string) {
+std::vector<std::string> ArgumentParser(const std::string&argument_string) {
   std::vector<std::string> arguments;
   std::string buffer;
   char escape = '\0';

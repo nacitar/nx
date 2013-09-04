@@ -30,6 +30,7 @@
 #include "nx/reverse.h"
 #include "nx/digits.h"
 #include "nx/literal.h"
+#include "nx/time.h"
 
 template <unsigned int base, unsigned int power>
 using IntPow = nx::Power<unsigned int,base,power>;
@@ -41,7 +42,7 @@ class MyApplication : public nx::Application {
   void timer_resolution_test() {
     nx::msec_t last = 0;
     while (true) {
-      nx::msec_t now = nx::FixedMS();
+      nx::msec_t now = nx::time::Fixed();
       if (last != now) {
         printf("%d", static_cast<unsigned int>(now));
         last = now;

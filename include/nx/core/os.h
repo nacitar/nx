@@ -99,6 +99,10 @@
 
 // OS initialization/ensuring important system defines are set
 #if defined(NX_OS_WINDOWS)
+  // Undefine existing values first to silence warnings
+  #undef WINVER
+  #undef _WIN32_WINNT
+
   /// @brief Informs the windows headers we are targetting windows 7
   #define WINVER 0x0601
   /// @brief Informs the windows headers we are targetting windows 7

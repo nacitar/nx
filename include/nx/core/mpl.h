@@ -70,7 +70,7 @@ struct NX_PP_CAT(static_warning, __LINE__) { \
 /// @see NX_INCONSTRUCTIBLE
 /// @see NX_IMMOVABLE
 /// @see NX_NONCOPYABLE
-#define NX_ABSTRACT(TypeName) \
+#define NX_UNINSTANTIABLE(TypeName) \
   NX_INCONSTRUCTIBLE(TypeName); \
   NX_IMMOVABLE(TypeName); \
   NX_NONCOPYABLE(TypeName)
@@ -170,7 +170,7 @@ using DisableIf = Invoke<std::enable_if<Not<Condition>::value, T>>;
 /// @brief An distinct "invalid" type, useful for metaprogramming.
 class InvalidType {
  private:
-  NX_ABSTRACT(InvalidType);
+  NX_UNINSTANTIABLE(InvalidType);
 };
 
 /// @brief Checks if the provided type is valid, and if so provides it.
@@ -300,7 +300,7 @@ class SetSigned : public std::conditional<
     Invoke<std::make_signed<T>>,
     Invoke<std::make_unsigned<T>>> {
  private:
-  NX_ABSTRACT(SetSigned);
+  NX_UNINSTANTIABLE(SetSigned);
 };
 
 /// @brief Determines if multiplying kLHS with kRHS will result in an overflow.

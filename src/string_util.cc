@@ -15,7 +15,7 @@
 //
 
 /// @file string_util.cc
-/// @brief Implementation for string_util.h 
+/// @brief Implementation for string_util.h
 
 #include "nx/string_util.h"
 
@@ -57,7 +57,7 @@ std::vector<std::string> ArgumentParser(const std::string&argument_string) {
         // all escapes outside quotes which are supported simply output the
         // second character, as we aren't handling special ones like \t or \n
         buffer.push_back(ch);
-        escape=0;
+        escape = 0;
         continue;
       } else {
         // outside of quotes and escapes

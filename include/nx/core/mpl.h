@@ -48,6 +48,33 @@ struct NX_PP_CAT(static_warning, __LINE__) { \
 #define NX_STATIC_WARNING_TEMPLATE(cond, msg) \
     NX_STATIC_WARNING(cond, msg) NX_PP_CAT(_localvar_staticwarning, __LINE__)
 
+/// @brief When placed within the private section of a class/structure this
+/// will disallow the default constructor.
+#define NX_INCONSTRUCTIBLE(TypeName) \
+  TypeName() = delete
+
+/// @brief When placed within the private section of a class/structure this
+/// will disallow the move constructor.
+#define NX_IMMOVABLE(TypeName) \
+  TypeName(TypeName&&) = delete
+
+/// @brief When placed within the private section of a class/structure this
+/// will disallow the copy constructor and the assignment operator.
+#define NX_NONCOPYABLE(TypeName) \
+  TypeName(const TypeName&) = delete;   \
+  void operator=(const TypeName&) = delete
+
+/// @brief When placed in the private section of a class/structure, this
+/// will disallow the default, move, and copy constructors as well as the
+/// assignment operator.
+/// @see NX_INCONSTRUCTIBLE
+/// @see NX_IMMOVABLE
+/// @see NX_NONCOPYABLE
+#define NX_ABSTRACT(TypeName) \
+  NX_INCONSTRUCTIBLE(TypeName); \
+  NX_IMMOVABLE(TypeName); \
+  NX_NONCOPYABLE(TypeName)
+
 // It is suggested that any types that use a static-assertion-using class be
 // implemented not as alias templates but rather as actual classes.  That way,
 // gcc's error messages are more meaningful.
@@ -59,29 +86,29 @@ namespace nx {
 /// value depend upon a template parameter by passing the types as additional
 /// arguments to the template.
 template<typename T, T kValue, typename...>
-struct DependentIntegralConstant : public std::integral_constant<T, kValue> {
+class DependentIntegralConstant : public std::integral_constant<T, kValue> {
 };
 
 /// @brief A dependent boolean type
 template <bool kValue, typename... T>
-struct DependentBool : public DependentIntegralConstant<bool, kValue, T...> {
+class DependentBool : public DependentIntegralConstant<bool, kValue, T...> {
 };
 
 // No need to invoke integral constants... they resolve to themselves!
 
 /// @brief Meta-constant boolean
 template <bool kValue>
-struct Bool : public std::integral_constant<bool, kValue> {
+class Bool : public std::integral_constant<bool, kValue> {
 };
 
 /// @brief Meta-constant int
 template <int kValue>
-struct Int : public std::integral_constant<int, kValue> {
+class Int : public std::integral_constant<int, kValue> {
 };
 
 /// @brief Meta-constant unsigned int
 template <unsigned int kValue>
-struct UInt : public std::integral_constant<unsigned int, kValue> {
+class UInt : public std::integral_constant<unsigned int, kValue> {
 };
 
 /// @brief Alias for removing typename and type members from boilerplate.
@@ -91,9 +118,12 @@ using Invoke = typename T::type;
 /// @brief Basic identity metafunction; provides the type unaltered. Useful for
 /// passing raw types to templates expecting a type member.
 template <typename T>
-struct Identity {
+class Identity {
+ public:
   /// @brief The type provided as a template argument.
-  using type = T;
+  typedef T type;
+ private:
+  NX_NONCOPYABLE(Identity);
 };
 
 /// @brief Alias to get the conditional of something with a value member.
@@ -102,29 +132,30 @@ using Conditional = Invoke<std::conditional<If::value, Then, Else>>;
 
 /// @brief Meta-logical negation (Not)
 template <typename T>
-struct Not : public Bool<!T::value> {
+class Not : public Bool<!T::value> {
 };
 
 /// @brief Meta-logical disjunction (Or)
 template <typename... T>
-struct Any : Bool<false> {
+class Any : public Bool<false> {
 };
 
 /// @brief Specialization for checking the truth of one condition before
 /// chaining to check the other conditions.
 template <typename Head, typename... Tail>
-struct Any<Head, Tail...> : Conditional<Head, Bool<true>, Any<Tail...>> {
+class Any<Head, Tail...> : public Conditional<Head, Bool<true>, Any<Tail...>> {
 };
 
 /// @brief Meta-logical conjunction (And)
 template <typename... T>
-struct All : public Bool<true> {
+class All : public Bool<true> {
 };
 
 /// @brief Specialization for checking the truth of one condition before
 /// chaining to check the other conditions.
 template <typename Head, typename... Tail>
-struct All<Head, Tail...> : Conditional<Head, All<Tail...>, Bool<false>> {
+class All<Head, Tail...> : public Conditional<
+    Head, All<Tail...>, Bool<false>> {
 };
 
 /// @brief A version of enable_if that takes a trait and resolves itself
@@ -137,25 +168,25 @@ template <typename Condition, typename T = void>
 using DisableIf = Invoke<std::enable_if<Not<Condition>::value, T>>;
 
 /// @brief An distinct "invalid" type, useful for metaprogramming.
-struct InvalidType {
+class InvalidType {
+ private:
+  NX_ABSTRACT(InvalidType);
 };
 
 /// @brief Checks if the provided type is valid, and if so provides it.
 /// Otherwise providing the Fallback type.  If kAssert is true, a static
 /// assertion failure will also occur upon an invalid type.
 template <bool kAssert, typename T, typename Fallback = T>
-struct CheckValidType : public Identity<T>, Bool<true> {
-  using Identity<T>::type;
+class CheckValidType : public Bool<true> {
+ public:
+  typedef T type;
 };
 
 /// @brief Specialization that fails a static assertion on invalid types.
 template <typename Fallback>
-struct CheckValidType<
-    true,
-    InvalidType,
-    Fallback>
-    : public Identity<Fallback>, Bool<false> {
-  using Identity<Fallback>::type;
+class CheckValidType<true, InvalidType, Fallback> : public Bool<false> {
+ public:
+  typedef Fallback type;
   static_assert(
       DependentBool<false, Fallback>::value,
       "No type exists that fulfills the specified requirements.");
@@ -164,89 +195,66 @@ struct CheckValidType<
 /// @brief Specialization that does not fail a static assertion on invalid
 /// types.
 template <typename Fallback>
-struct CheckValidType<
-    false,
-    InvalidType,
-    Fallback>
-    : public Identity<Fallback>, Bool<false> {
-  using Identity<Fallback>::type;
+class CheckValidType<false, InvalidType, Fallback> : public Bool<false> {
+ public:
+  typedef Fallback type;
 };
 
 /// @brief Shorthand for CheckValidType with static assertions.  Using this
 /// will make the presence of assertions more clear to the reader.
 template <typename T, typename Fallback = T>
-struct AssertValidType : public CheckValidType<true, T, Fallback> {
+class AssertValidType : public CheckValidType<true, T, Fallback> {
 };
 
 /// @brief Shorthand for CheckValidType without static assertions.
 template <typename T, typename Fallback = T>
-struct IsValidType : public CheckValidType<false, T, Fallback> {
+class IsValidType : public CheckValidType<false, T, Fallback> {
 };
 
 /// @brief Stores the size of the provided type in bits.
 template <typename T>
-struct BitSize : public UInt<sizeof(T)*CHAR_BIT> {
+class BitSize : public UInt<sizeof(T)*CHAR_BIT> {
 };
 
 /// @cond nx_detail
 namespace detail {
 
 template <
-    typename T,
-    unsigned int kBits,
-    bool kAllowPartial,
-    class Enable = void>
-struct BitMaskInternal
-    : public std::integral_constant<
-        T, (static_cast<T>(1) << kBits)-1> {
+    typename T, unsigned int kBits, bool kAllowPartial, class Enable = void>
+class BitMaskInternal : public std::integral_constant<
+    T, (static_cast<T>(1) << kBits)-1> {
 };
 
 template <typename T, unsigned int kBits, bool kAllowPartial>
-struct BitMaskInternal<
-    T,
-    kBits,
-    kAllowPartial,
-    EnableIf<Not<std::is_integral<T>>>>
-    : public UInt<0> {
+class BitMaskInternal<
+    T, kBits, kAllowPartial,
+    EnableIf<Not<std::is_integral<T>>>> : public UInt<0> {
   static_assert(
-      DependentBool<false, T>::value,
-      "The provided type is not integral.");
+      DependentBool<false, T>::value, "The provided type is not integral.");
 };
 
 template <typename T, unsigned int kBits, bool kAllowPartial>
-struct BitMaskInternal<
-    T,
-    kBits,
-    kAllowPartial,
-    EnableIf<All<
-        std::is_integral<T>,
-        Bool<(kBits == BitSize<T>::value)>>>>
+class BitMaskInternal<
+    T, kBits, kAllowPartial,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits == BitSize<T>::value)>>>>
     : public std::integral_constant<T, ~static_cast<T>(0)> {
 };
 
 // If we allow partial masks, we just max out what bits we have if we can't
 // hold them all.
 template <typename T, unsigned int kBits>
-struct BitMaskInternal<
-    T,
-    kBits,
-    true,
-    EnableIf<All<
-        std::is_integral<T>,
-        Bool<(kBits > BitSize<T>::value)>>>>
+class BitMaskInternal<
+    T, kBits, true,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
     : public std::integral_constant<T, ~static_cast<T>(0)> {
 };
 
 // If we don't allow partial masks, we fail a static assert if we can't hold
 // all the bits.
 template <typename T, unsigned int kBits>
-struct BitMaskInternal<
-    T,
-    kBits,
-    false,
-    EnableIf<All<
-        std::is_integral<T>,
-        Bool<(kBits > BitSize<T>::value)>>>>
+class BitMaskInternal<
+    T, kBits, false,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
     : public std::integral_constant<T, 0> {
   static_assert(
       DependentBool<false, T>::value,
@@ -258,12 +266,12 @@ struct BitMaskInternal<
 
 /// @brief Provides a bit mask of type T with the lowest kBits bits set.
 template <typename T, unsigned int kBits, bool kAllowPartial = false>
-struct BitMask : public detail::BitMaskInternal<T, kBits, kAllowPartial> {
+class BitMask : public detail::BitMaskInternal<T, kBits, kAllowPartial> {
 };
 
 /// @brief Stores a true value if kValue is in the range [kMin,kMax]
 template <unsigned int kValue, unsigned int kMin, unsigned int kMax>
-struct InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
+class InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
 };
 
 /// @brief Checks if the size of the type T is within the requested range.
@@ -271,35 +279,34 @@ template <
   typename T,
   unsigned int kMin,
   unsigned int kMax = std::numeric_limits<unsigned int>::max()>
-struct BitRange : public InRange<BitSize<T>::value, kMin, kMax> {
+class BitRange : public InRange<BitSize<T>::value, kMin, kMax> {
 };
 
 /// @brief Determines if integer type T is <= the size of integer type
 /// Destination.
 template <typename T, typename Destination>
-struct IntegerFits
+class IntegerFits
     : public All<
           std::is_integral<T>,
           std::is_integral<Destination>,
-          InRange<BitSize<T>::value, 0, BitSize<Destination>::value>
-      > {
+          InRange<BitSize<T>::value, 0, BitSize<Destination>::value>> {
 };
 
 /// @brief Makes an integral type either signed or unsigned based upon the
 /// value of kSigned.
 template <bool kSigned, typename T>
-struct SetSigned
-    : public std::conditional<
-          kSigned,
-          Invoke<std::make_signed<T>>,
-          Invoke<std::make_unsigned<T>>
-      > {
+class SetSigned : public std::conditional<
+    kSigned,
+    Invoke<std::make_signed<T>>,
+    Invoke<std::make_unsigned<T>>> {
+ private:
+  NX_ABSTRACT(SetSigned);
 };
 
 /// @brief Determines if multiplying kLHS with kRHS will result in an overflow.
 template <class T, T kLHS, T kRHS>
-struct OverflowMult
-    : Bool<(kRHS != 0 && kLHS > std::numeric_limits<T>::max() / kRHS)> {
+class OverflowMult
+    : public Bool<(kRHS != 0 && kLHS > std::numeric_limits<T>::max() / kRHS)> {
 };
 
 /// @brief Instantiates to be the specified number of bytes in size.
@@ -322,7 +329,8 @@ namespace detail {
 
 template <
     class T, T kBase, unsigned int kPower, class Enable = void>
-struct Power {
+class Power {
+ public:
   static constexpr T previous = Power<T, kBase, kPower-1>::value;
   static constexpr T value = kBase * previous;
   static_assert(
@@ -331,11 +339,8 @@ struct Power {
 };
 
 template <class T, T kBase, unsigned int kPower>
-struct Power<
-    T,
-    kBase,
-    kPower,
-    EnableIf< Bool<kPower == 0>>> {
+class Power<T, kBase, kPower, EnableIf< Bool<kPower == 0>>> {
+ public:
   static constexpr T value = 1;
 };
 
@@ -347,7 +352,7 @@ struct Power<
 /// error message for it.
 /// @brief Determines kBase to the power of kPower.
 template <class T, T kBase, unsigned int kPower>
-struct Power : detail::Power<T, kBase, kPower> {
+class Power : public detail::Power<T, kBase, kPower> {
 };
 
 }  // namespace nx

@@ -30,15 +30,13 @@
 #include "nx/reverse.h"
 #include "nx/digits.h"
 #include "nx/literal.h"
-#include "nx/time.h"
 
 template <unsigned int base, unsigned int power>
-using IntPow = nx::Power<unsigned int,base,power>;
+using IntPow = nx::Power<unsigned int, base, power>;
 
 /// @brief The class for the test application
 class MyApplication : public nx::Application {
  public:
-
   void timer_resolution_test() {
     nx::msec_t last = 0;
     while (true) {
@@ -57,11 +55,10 @@ class MyApplication : public nx::Application {
   }
 
   int test_strings() {
-    //char buf[100];
-    int sum=0;
+    int sum = 0;
     std::string buf;
-    for (int i=0;i<100000000;++i) {
-      sum += nx::ToString(-i,&buf);
+    for (int i = 0; i < 100000000; ++i) {
+      sum += nx::ToString(-i, &buf);
       buf.clear();
     }
     return sum;
@@ -74,7 +71,7 @@ class MyApplication : public nx::Application {
       return 1;
     }
     auto blit_val = 11110110_nx_b;
-    auto pow_val = IntPow<10,9>::value;
+    auto pow_val = IntPow<10, 9>::value;
     nx::int_least64_t cmdline_val;
     {
       std::stringstream ss(args[1]);
@@ -86,9 +83,9 @@ class MyApplication : public nx::Application {
     std::cout << "power test: " << pow_val << std::endl;
     std::cout << "digits_test: " << nx::Digits(cmdline_val) << std::endl;
     std::cout << "tos test: " << nx::ToString(cmdline_val) << std::endl;
-    std::cout << "tos test pad: " << nx::ToString(cmdline_val,10) << std::endl;
-    int len=nx::ToString(-1234,buf);
-    buf[len]='\0';
+    std::cout << "tos pad: " << nx::ToString(cmdline_val, 10) << std::endl;
+    int len = nx::ToString(-1234, buf);
+    buf[len] = '\0';
     std::cout << "buf: " << buf << std::endl;
 
     return 0;

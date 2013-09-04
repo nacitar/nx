@@ -68,7 +68,7 @@ namespace detail {
 
   template <class MillisecondType>
   EnableIf<
-      Not<IntegerFits<MillisecondType,DWORD>>,
+      Not<IntegerFits<MillisecondType, DWORD>>,
   void> Sleep(MillisecondType millisecs) {
     constexpr auto kMaxSleep = std::numeric_limits<DWORD>::max();
     while (millisecs > kMaxSleep) {
@@ -80,11 +80,12 @@ namespace detail {
 
   template <class MillisecondType>
   EnableIf<
-      IntegerFits<MillisecondType,DWORD>,
+      IntegerFits<MillisecondType, DWORD>,
   void> Sleep(MillisecondType millisecs) {
     ::Sleep(static_cast<DWORD>(millisecs));
   }
-}
+
+}  // namespace detail
 
 void Sleep(msec_t millisecs) {
   detail::Sleep(millisecs);

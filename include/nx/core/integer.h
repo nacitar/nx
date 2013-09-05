@@ -39,28 +39,36 @@ namespace nx {
 namespace detail {
 
 template <typename T, typename Preferred, typename = void>
-struct PreferIntegralTypeInternal : public Identity<T> {
+class PreferIntegralTypeInternal : public Identity<T> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralTypeInternal);
 };
 
 template <typename T, typename Preferred>
-struct PreferIntegralTypeInternal<
+class PreferIntegralTypeInternal<
     T,
     Preferred,
     EnableIf<All<std::is_integral<T>, std::is_integral<Preferred>>>>
     : public std::conditional<
         sizeof(T) == sizeof(Preferred), Preferred, T> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralTypeInternal);
 };
 
 template <bool kSigned, typename T, typename = void>
-struct PreferIntegralSignInternal : public Identity<T> {
+class PreferIntegralSignInternal : public Identity<T> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralSignInternal);
 };
 
 template <bool kSigned, typename T>
-struct PreferIntegralSignInternal<
+class PreferIntegralSignInternal<
     kSigned,
     T,
     EnableIf<std::is_integral<T>>>
     : public SetSigned<kSigned, T> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralSignInternal);
 };
 
 }  // namespace detail
@@ -69,15 +77,19 @@ struct PreferIntegralSignInternal<
 /// @brief If kType and kPreferred are integral and of the same size, use the
 /// kPreferred type instead of kType.
 template <typename T, typename Preferred>
-struct PreferIntegralType
+class PreferIntegralType
     : public detail::PreferIntegralTypeInternal<T, Preferred> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralType);
 };
 
 /// @brief If kType is integral, set its sign as specified.  Use the provided
 /// type otherwise.
 template <bool kSigned, typename T>
-struct PreferIntegralSign
+class PreferIntegralSign
     : public detail::PreferIntegralSignInternal<kSigned, T> {
+ private:
+  NX_UNINSTANTIABLE(PreferIntegralSign);
 };
 
 /// @brief Searches for the smallest signed integral type within the specified
@@ -86,7 +98,7 @@ template <
     bool kSigned,
     unsigned int kBitMin,
     unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
-struct IntegralLeastRangeSearch
+class IntegralLeastRangeSearch
     : public PreferIntegralSign<
         kSigned,
         Invoke<PreferIntegralType<
@@ -121,8 +133,9 @@ struct IntegralLeastRangeSearch
             short  // NOLINT(runtime/int)
           >>,
           int  // prefer int overall
-        >>
-      > {
+        >>> {
+ private:
+  NX_UNINSTANTIABLE(IntegralLeastRangeSearch);
 };
 
 /// @brief Provides the smallest integer type in the specified bit range, with
@@ -135,11 +148,13 @@ template <
     bool kSigned,
     unsigned int kBitMin,
     unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
-struct IntegralLeastRangeTraits
+class IntegralLeastRangeTraits
     : public AssertValidType<
         Invoke<IntegralLeastRangeSearch<kSigned, kBitMin, kBitMax>>,
         int  // fallback type for when our static assert fails
       > {
+ private:
+  NX_UNINSTANTIABLE(IntegralLeastRangeTraits);
 };
 
 // The following types are meant to be used in place of builtin integer types

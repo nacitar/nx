@@ -65,7 +65,7 @@ class MyApplication : public nx::Application {
   }
 
   int main() {
-    ArgumentVector& args = arguments();
+    auto&args = arguments();
     if (args.size() != 2) {
       std::cerr << "INVALID" << std::endl;
       return 1;

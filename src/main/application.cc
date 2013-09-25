@@ -19,6 +19,10 @@
 
 #include "nx/application.h"
 
+#ifdef NX_RUNNING_TEST
+  #include "gtest/gtest.h"
+#endif
+
 /// @brief Library namespace.
 namespace nx {
 
@@ -54,35 +58,3 @@ void Application::set_platform_data(PlatformData*data) {
 }
 
 }  // namespace nx
-
-/// @brief Main driver; invokes the {@link nx::Application} instance for this
-/// app.
-int main(int argc, char*argv[]) {
-  nx::PlatformData * data = new nx::PlatformData();
-
-  nx::Application&application = nx::GetApplication();
-  application.set_platform_data(data);
-  application.set_arguments(argc, argv);
-  return application.main();
-}
-
-#ifdef NX_OS_WINDOWS
-#include <stdlib.h>  // for __argc and __argv
-/// @brief Windows main driver; invokes the {@link nx::Application} instance
-/// for this app.
-int WINAPI WinMain(
-    HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine, int nCmdShow) {
-  nx::PlatformData * data = new nx::PlatformData();
-  data->hInstance = hInstance;
-  data->nCmdShow = nCmdShow;
-
-  nx::Application&application = nx::GetApplication();
-  application.set_platform_data(data);
-  // TODO(nacitar): make this utf8 from GetCommandLine()
-  application.set_arguments(__argc, __argv);
-  return application.main();
-}
-#endif
-

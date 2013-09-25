@@ -40,9 +40,17 @@ struct PlatformData {
   HINSTANCE hInstance;
   /// @brief The value of nCmdShow as passed to WinMain()
   int nCmdShow;
+  /// @brief The number of arguments passed on the command line.
+  int argc;
+  /// @brief The array of arguments passed on th ecommand line.
+  char**argv;
 };
 #else
 struct PlatformData {
+  /// @brief The number of arguments passed on the command line.
+  int argc;
+  /// @brief The array of arguments passed on th ecommand line.
+  char**argv;
 };
 #endif
 
@@ -100,9 +108,12 @@ class Application {
   ArgumentVector arguments_;
 };
 
-/// @brief The main application.  An undefined external; the user must
-/// implement this so the library can instantiate the application.
-extern Application& GetApplication();
+/// @brief The main application.  This is _not_ implemented by this library;
+/// the user is expected to link in an implementation for use.  However, this
+/// is only necessary if the user builds/links with the provided nx_main.cc in
+/// order to instantiate the application, because no other portion of the
+/// library references this function.
+Application& GetApplication();
 
 }  // namespace nx
 

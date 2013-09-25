@@ -19,10 +19,6 @@
 
 #include "nx/application.h"
 
-#ifdef NX_RUNNING_TEST
-  #include "gtest/gtest.h"
-#endif
-
 /// @brief Library namespace.
 namespace nx {
 

@@ -22,9 +22,9 @@ endif(UNIX)
 
 # NX
 # Requires rt on linux
-Root(nx_main_cc "src/main/nx_main.cc")
-Root(nx_include_dir "include/main")
-Root(sources "src/main/nx-all.cc")
+Root(nx_main_cc "src/nx_main.cc")
+Root(nx_include_dir "include")
+Root(sources "src/nx-all.cc")
 SetIncludeDirectories(${nx_include_dir})
 add_library(nx ${sources})
 if (UNIX)
@@ -35,7 +35,7 @@ endif(UNIX)
 # NX Samples
 SetIncludeDirectories(${nx_include_dir})
 # - Working
-Root(sources "projects/working/main.cc")
+Root(sources "samples/working/main.cc")
 add_executable(working ${sources} ${nx_main_cc})
 target_link_libraries(working nx)
 
@@ -43,6 +43,6 @@ target_link_libraries(working nx)
 # NX Unit Tests
 SetIncludeDirectories(${nx_include_dir} ${gtest_include_dir})
 # - Digits
-Root(sources "src/test/digits_unittest.cc")
+Root(sources "test/digits_unittest.cc")
 add_executable(digits_unittest ${sources} ${gtest_main_cc})
 target_link_libraries(digits_unittest nx gtest)

@@ -26,9 +26,13 @@
 class HelloWorldApplication : public nx::Application {
  public:
   int main() {
-    auto&args = arguments();
     std::cout << "Hello World!" << std::endl;
-    return 0;
+
+    std::cout << "Command Line:";
+    for (std::string& str : arguments()) {
+      std::cout << " " << str;
+    }
+    std::cout << std::endl;
     return 0;
   }
 };

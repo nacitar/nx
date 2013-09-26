@@ -34,10 +34,10 @@ endif(UNIX)
 
 # NX Samples
 SetIncludeDirectories(${nx_include_dir})
-# - Working
-Root(sources "samples/working/main.cc")
-add_executable(working ${sources} ${nx_main_cc})
-target_link_libraries(working nx)
+# - Hello World
+Root(sources "samples/hello_world/main.cc")
+add_executable(hello_world ${sources} ${nx_main_cc})
+target_link_libraries(hello_world nx)
 
 
 # NX Unit Tests

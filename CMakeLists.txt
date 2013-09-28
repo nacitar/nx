@@ -1,56 +1,91 @@
-cmake_minimum_required(VERSION 2.6)
-project (nx_project CXX)
+########################################################################
+# CMake build script for NX.
 
-include ("${CMAKE_CURRENT_LIST_DIR}/cmake/template.cmake")
+if(CMAKE_COMPILER_IS_GNUCXX)
+  option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
+endif()
 
+########################################################################
+#
+# Project-wide settings
+
+project (nx CXX)
+cmake_minimum_required(VERSION 2.6.2)
+
+# Utility macros
+macro(Append var)
+  foreach(value ${ARGN})
+    set("${var}" "${${var}} ${value}")
+  endforeach()
+endmacro()
+macro(AddLinkFlags)
+  Append(CMAKE_EXE_LINKER_FLAGS ${ARGN})
+  Append(CMAKE_SHARED_LINKER_FLAGS ${ARGN})
+  Append(CMAKE_MODULE_LINKER_FLAGS ${ARGN})
+endmacro()
+macro(AddCXXFlags)
+  Append(CMAKE_CXX_FLAGS ${ARGN})
+endmacro()
+macro(AddCFlags)
+  Append(CMAKE_C_FLAGS ${ARGN})
+endmacro()
+macro(AddCCFlags)
+  AddCXXFlags(${ARGN})
+  AddCFlags(${ARGN})
+endmacro()
+
+# Compilation settings
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
+
+  Append(CMAKE_CXX_FLAGS -std=c++11)
+  AddCCFlags(-Wall -Wno-unused-function -Wno-unused-value -g3)
+  if (STATIC_RUNTIME)
+    AddLinkFlags(-static-libstdc++ -static-libgcc)
+  endif()
+endif()
+
+########################################################################
+#
+# Build 3rdparty libraries
 
 # GoogleTest
-# Using gtest just requires the include directory but building gtest requires
-# the root directory too, so gtest-all.cc can include other .cc files.
-# Requires pthread on linux
-# TODO: get the root in a better way
-Root(gtest_root_dir "../../googletest-read-only")
-Relative(gtest_include_dir "${gtest_root_dir}" "include")
-Relative(lib_sources "${gtest_root_dir}" "src/gtest-all.cc")
-Relative(main_sources "${gtest_root_dir}" "src/gtest_main.cc")
-SetIncludeDirectories(${gtest_include_dir} ${gtest_root_dir})
-# lib itself
-add_library(gtest ${lib_sources})
-if (UNIX)
-  target_link_libraries(gtest pthread)
-endif(UNIX)
-# driver for test applications
-add_library(gtest_main ${main_sources})
-target_link_libraries(gtest_main gtest)
+add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 
 
-# NX
-# Requires rt on linux
-Root(nx_include_dir "include")
-Root(lib_sources "src/nx-all.cc")
-Root(main_sources "src/nx_main.cc")
-SetIncludeDirectories(${nx_include_dir})
-# lib itself
-add_library(nx ${lib_sources})
+# Maintained libraries/binaries
+# Treat warning as errors
+AddCCFlags(-Werror)
+
+########################################################################
+#
+# Defines the nx & nx libraries.  User projects should link with one of them.
+
+include_directories("${nx_SOURCE_DIR}/include")
+
+add_library(nx "src/nx-all.cc")
+add_library(nx_main "src/nx_main.cc")
 if (UNIX)
   target_link_libraries(nx rt)
 endif(UNIX)
-# driver for user applications
-add_library(nx_main ${main_sources})
 target_link_libraries(nx_main nx)
 
 
-# NX Samples
-SetIncludeDirectories(${nx_include_dir})
-# - Hello World
-Root(sources "samples/hello_world/main.cc")
-add_executable(hello_world ${sources})
+########################################################################
+#
+# Samples on how to link applications with nx or nx_main
+
+add_executable(hello_world "samples/hello_world/main.cc")
 target_link_libraries(hello_world nx_main)
 
-
+########################################################################
+#
 # NX Unit Tests
-SetIncludeDirectories(${nx_include_dir} ${gtest_include_dir})
-# - Digits
-Root(sources "test/digits_unittest.cc")
-add_executable(digits_unittest ${sources})
+
+include_directories(SYSTEM "${gtest_SOURCE_DIR}/include")
+
+add_executable(digits_unittest "test/digits_unittest.cc")
 target_link_libraries(digits_unittest nx gtest_main)

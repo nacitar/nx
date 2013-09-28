@@ -18,33 +18,25 @@ macro(Append var)
     set("${var}" "${${var}} ${value}")
   endforeach()
 endmacro()
-macro(AddLinkFlags)
-  Append(CMAKE_EXE_LINKER_FLAGS ${ARGN})
-  Append(CMAKE_SHARED_LINKER_FLAGS ${ARGN})
-  Append(CMAKE_MODULE_LINKER_FLAGS ${ARGN})
-endmacro()
-macro(AddCXXFlags)
-  Append(CMAKE_CXX_FLAGS ${ARGN})
-endmacro()
-macro(AddCFlags)
-  Append(CMAKE_C_FLAGS ${ARGN})
-endmacro()
-macro(AddCCFlags)
-  AddCXXFlags(${ARGN})
-  AddCFlags(${ARGN})
-endmacro()
 
 # Compilation settings
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
-  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
-  set(CMAKE_C_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
+  set(flags "-O3 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_RELEASE ${flags})
+  set(CMAKE_C_FLAGS_RELEASE ${flags})
 
-  Append(CMAKE_CXX_FLAGS -std=c++11)
-  AddCCFlags(-Wall -Wno-unused-function -Wno-unused-value -g3)
+  set(flags "-O0 -fno-inline -DDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG ${flags})
+  set(CMAKE_C_FLAGS_DEBUG ${flags})
+
+  set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
+  Append(CMAKE_CXX_FLAGS ${flags} -std=c++11)
+  Append(CMAKE_C_FLAGS ${flags})
   if (STATIC_RUNTIME)
-    AddLinkFlags(-static-libstdc++ -static-libgcc)
+    set(flags "-static-libstdc++ -static-libgcc")
+    Append(CMAKE_EXE_LINKER_FLAGS ${flags})
+    Append(CMAKE_SHARED_LINKER_FLAGS ${flags})
+    Append(CMAKE_MODULE_LINKER_FLAGS ${flags})
   endif()
 endif()
 
@@ -58,7 +50,9 @@ add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 
 # Maintained libraries/binaries
 # Treat warning as errors
-AddCCFlags(-Werror)
+set(flags "-Werror")
+Append(CMAKE_CXX_FLAGS ${flags})
+Append(CMAKE_C_FLAGS ${flags})
 
 ########################################################################
 #

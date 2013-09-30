@@ -11,13 +11,28 @@ endif()
 
 project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
+enable_testing()
 
 # Appends values to a space-delimited string
+# TODO: convert macros into functions?
 macro(Append var)
   foreach(value ${ARGN})
     set("${var}" "${${var}} ${value}")
   endforeach()
 endmacro()
+# Creates a binary name from a given target
+macro(BinaryName var target)
+  set("${var}" "${CMAKE_EXECUTABLE_PREFIX}${target}${CMAKE_EXECUTABLE_SUFFIX}")
+endmacro()
+# Adds a test from the target name, using WINE if necessary
+function(AddTest target)
+  BinaryName(target_binary "${target}")
+  if (CMAKE_CROSSCOMPILING AND WIN32)
+    add_test("${target}" wine "${target_binary}" ${ARGN})
+  else()
+    add_test("${target}" "${target_binary}" ${ARGN})
+  endif()
+endfunction()
 
 # Compilation settings
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -80,8 +95,10 @@ target_link_libraries(hello_world nx_main)
 ########################################################################
 #
 # NX Unit Tests
+# TODO: test how this works on windows when not cross-compiling
 
 include_directories(SYSTEM "${gtest_SOURCE_DIR}/include")
 
 add_executable(digits_unittest "test/digits_unittest.cc")
 target_link_libraries(digits_unittest nx gtest_main)
+AddTest(digits_unittest)

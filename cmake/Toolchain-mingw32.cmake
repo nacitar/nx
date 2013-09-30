@@ -1,4 +1,4 @@
-SET(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_NAME Windows)
 set(COMPILER_PREFIX "x86_64-w64-mingw32")
 
 # which compilers to use for C and C++
@@ -10,8 +10,8 @@ find_program(CMAKE_CXX_COMPILER NAMES ${COMPILER_PREFIX}-g++)
 #SET(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}-g++)
 
 # here is the target environment located
-#SET(USER_ROOT_PATH /home/erk/erk-win32-dev)
-SET(CMAKE_FIND_ROOT_PATH  /usr/${COMPILER_PREFIX} ${USER_ROOT_PATH})
+#set(USER_ROOT_PATH /home/erk/erk-win32-dev)
+set(CMAKE_FIND_ROOT_PATH  /usr/${COMPILER_PREFIX} ${USER_ROOT_PATH})
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search

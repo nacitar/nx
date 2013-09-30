@@ -12,7 +12,7 @@ endif()
 project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 
-# Utility macros
+# Appends values to a space-delimited string
 macro(Append var)
   foreach(value ${ARGN})
     set("${var}" "${${var}} ${value}")
@@ -30,7 +30,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_C_FLAGS_DEBUG ${flags})
 
   set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
-  Append(CMAKE_CXX_FLAGS ${flags} -std=c++11)
+  Append(CMAKE_CXX_FLAGS ${flags} "-std=c++11")
   Append(CMAKE_C_FLAGS ${flags})
   if (STATIC_RUNTIME)
     set(flags "-static-libstdc++ -static-libgcc")
@@ -49,10 +49,12 @@ add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 
 
 # Maintained libraries/binaries
-# Treat warning as errors
-set(flags "-Werror")
-Append(CMAKE_CXX_FLAGS ${flags})
-Append(CMAKE_C_FLAGS ${flags})
+if(CMAKE_COMPILER_IS_GNUCXX)
+  # Treat warnings as errors
+  set(flags "-Werror")
+  Append(CMAKE_CXX_FLAGS ${flags})
+  Append(CMAKE_C_FLAGS ${flags})
+endif()
 
 ########################################################################
 #
@@ -64,7 +66,7 @@ add_library(nx "src/nx-all.cc")
 add_library(nx_main "src/nx_main.cc")
 if (UNIX)
   target_link_libraries(nx rt)
-endif(UNIX)
+endif()
 target_link_libraries(nx_main nx)
 
 

@@ -13,20 +13,11 @@ project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 enable_testing()
 
-# Appends values to a space-delimited string
-# TODO: convert macros into functions?
-macro(Append var)
-  foreach(value ${ARGN})
-    set("${var}" "${${var}} ${value}")
-  endforeach()
-endmacro()
-# Creates a binary name from a given target
-macro(BinaryName var target)
-  set("${var}" "${CMAKE_EXECUTABLE_PREFIX}${target}${CMAKE_EXECUTABLE_SUFFIX}")
-endmacro()
+include("cmake/util.cmake")
+
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
-  BinaryName(target_binary "${target}")
+  ExecutableName(target_binary "${target}")
   if (CMAKE_CROSSCOMPILING AND WIN32)
     add_test("${target}" wine "${target_binary}" ${ARGN})
   else()
@@ -44,14 +35,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS_DEBUG ${flags})
   set(CMAKE_C_FLAGS_DEBUG ${flags})
 
-  set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
-  Append(CMAKE_CXX_FLAGS ${flags} "-std=c++11")
-  Append(CMAKE_C_FLAGS ${flags})
+  AppendCXXFlags("-std=c++11")
+  AppendCCFlags("-Wall -Wno-unused-function -Wno-unused-value -g3")
   if (STATIC_RUNTIME)
-    set(flags "-static-libstdc++ -static-libgcc")
-    Append(CMAKE_EXE_LINKER_FLAGS ${flags})
-    Append(CMAKE_SHARED_LINKER_FLAGS ${flags})
-    Append(CMAKE_MODULE_LINKER_FLAGS ${flags})
+    AppendLinkFlags("-static-libstdc++ -static-libgcc")
   endif()
 endif()
 
@@ -63,17 +50,15 @@ endif()
 add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 
 
-# Maintained libraries/binaries
-if(CMAKE_COMPILER_IS_GNUCXX)
-  # Treat warnings as errors
-  set(flags "-Werror")
-  Append(CMAKE_CXX_FLAGS ${flags})
-  Append(CMAKE_C_FLAGS ${flags})
-endif()
-
 ########################################################################
 #
 # Defines the nx & nx libraries.  User projects should link with one of them.
+
+# Maintained libraries/binaries
+if(CMAKE_COMPILER_IS_GNUCXX)
+  # Treat warnings as errors
+  AppendCCFlags("-Werror")
+endif()
 
 include_directories("${nx_SOURCE_DIR}/include")
 

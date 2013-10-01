@@ -13,7 +13,17 @@ project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 enable_testing()
 
-include("cmake/util.cmake")
+# Appends values to a space-delimited string
+macro(Append var)
+  foreach(value ${ARGN})
+    set("${var}" "${${var}} ${value}")
+  endforeach()
+endmacro()
+
+# Creates a binary name from a given target
+macro(ExecutableName var target)
+  set("${var}" "${CMAKE_EXECUTABLE_PREFIX}${target}${CMAKE_EXECUTABLE_SUFFIX}")
+endmacro()
 
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
@@ -28,17 +38,21 @@ endfunction()
 # Compilation settings
 if(CMAKE_COMPILER_IS_GNUCXX)
   set(flags "-O3 -DNDEBUG")
-  set(CMAKE_CXX_FLAGS_RELEASE ${flags})
-  set(CMAKE_C_FLAGS_RELEASE ${flags})
+  set(CMAKE_C_FLAGS_RELEASE "${flags}")
+  set(CMAKE_CXX_FLAGS_RELEASE "${flags}")
 
   set(flags "-O0 -fno-inline -DDEBUG")
-  set(CMAKE_CXX_FLAGS_DEBUG ${flags})
-  set(CMAKE_C_FLAGS_DEBUG ${flags})
+  set(CMAKE_C_FLAGS_DEBUG "${flags}")
+  set(CMAKE_CXX_FLAGS_DEBUG "${flags}")
 
-  AppendCXXFlags("-std=c++11")
-  AppendCCFlags("-Wall -Wno-unused-function -Wno-unused-value -g3")
+  set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
+  Append(CMAKE_C_FLAGS "${flags}")
+  Append(CMAKE_CXX_FLAGS "${flags} -std=c++11")
   if (STATIC_RUNTIME)
-    AppendLinkFlags("-static-libstdc++ -static-libgcc")
+    set(flags "-static-libstdc++ -static-libgcc")
+    Append(CMAKE_EXE_LINKER_FLAGS "${flags}")
+    Append(CMAKE_SHARED_LINKER_FLAGS "${flags}")
+    Append(CMAKE_MODULE_LINKER_FLAGS "${flags}")
   endif()
 endif()
 
@@ -57,7 +71,9 @@ add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 # Maintained libraries/binaries
 if(CMAKE_COMPILER_IS_GNUCXX)
   # Treat warnings as errors
-  AppendCCFlags("-Werror")
+  set(flags "-Werror")
+  Append(CMAKE_C_FLAGS "${flags}")
+  Append(CMAKE_CXX_FLAGS "${flags}")
 endif()
 
 include_directories("${nx_SOURCE_DIR}/include")
@@ -80,7 +96,6 @@ target_link_libraries(hello_world nx_main)
 ########################################################################
 #
 # NX Unit Tests
-# TODO: test how this works on windows when not cross-compiling
 
 include_directories(SYSTEM "${gtest_SOURCE_DIR}/include")
 

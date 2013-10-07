@@ -28,10 +28,11 @@ endmacro()
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
   ExecutableName(target_binary "${target}")
+  set(GTEST_XML_ARGS "--gtest_output=xml:${target}_results.xml")
   if (CMAKE_CROSSCOMPILING AND WIN32)
-    add_test("${target}" wine "${target_binary}" ${ARGN})
+    add_test("${target}" wine "${target_binary}" "${GTEST_XML_ARGS}" ${ARGN})
   else()
-    add_test("${target}" "${target_binary}" ${ARGN})
+    add_test("${target}" "${target_binary}" "${GTEST_XML_ARGS}" ${ARGN})
   endif()
 endfunction()
 

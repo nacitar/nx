@@ -24,9 +24,6 @@ function die() {
   exit 1
 }
 
-# Clear the log
-echo -n "" > "$log_file"
-
 # Get google test
 pushd 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
 gtest_dir="googletest"

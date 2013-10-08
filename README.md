@@ -8,12 +8,20 @@ Compiling
 =========
 
 Look at prepare.sh, particularly where it makes build environments, if you wish
-to manually setup your build environment.  Otherwise, you can build it by
-executing the "Build" commands listed under the Configuring Jenkins section
-below.
+to manually setup your build environment.  Within the environment, building can
+be performed simply with "make" and then "make test".  Otherwise, you can build
+it by executing the "Build" commands listed under the Configuring Jenkins
+section below.
+
+Documentation
+=============
+
+Run "doxygen" in the repository root folder, and documentation will be
+available in doc/html/index.html
 
 Configuring Jenkins
 ===================
+
 Jenkins support currently only works for building on linux, and requires bash,
 sed, git, svn, wine, and the github plugin for Jenkins.  Wine is required
 specifically because the windows builds of this library are intended to

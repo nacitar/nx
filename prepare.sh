@@ -59,7 +59,7 @@ if mkdir winbuild && pushd winbuild; then
   echo "Attempting to create cross build environment."
   cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-mingw32.cmake \
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake \
     -DSTATIC_RUNTIME=1 \
     ..
   popd  # winbuild

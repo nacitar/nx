@@ -28,6 +28,8 @@ function process_folder() {
   done
 }
 
+# Native tests
 process_folder "Native" build
+# Windows tests; labeling as WINE because the tests are run via WINE
 process_folder "Wine" winbuild
 

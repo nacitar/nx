@@ -21,7 +21,10 @@ cd "$(dirname "$0")"
 # takes a label, and a folder
 function process_folder() {
   for file in "$2"/*_results.xml; do
-    sed -i -e's/classname="/classname="'"$1"'./g' "$file"
+    if [ -r "$file" ]; then
+      sed -i -e's/classname="/classname="'"$1"'./g' "$file" ||
+        echo "Error labeling file: $file" 1>&2
+    fi
   done
 }
 

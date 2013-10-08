@@ -28,10 +28,15 @@ function die() {
 arg=""
 [ "$1" == "test" ] && arg="test"
 
+result=0
 pushd build || die "Native build environment is not present in build/"
-make $arg
+make $arg || result=1
 popd
 
+echo
+
 pushd winbuild || die "Cross build environment is not present in winbuild/"
-make $arg
+make $arg || result=1
 popd
+
+exit $result

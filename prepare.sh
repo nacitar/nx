@@ -18,74 +18,60 @@
 
 cd "$(dirname "$0")"
 
-root_dir="$(pwd)"
-log_file_name=".prepare.log"
-log_file="$root_dir/$log_file_name"
 gtest_svn="http://googletest.googlecode.com/svn/trunk/"
 function die() {
   echo "$@" 1>&2
   exit 1
-}
-function log() {
-  echo "$@" &>> "$log_file"
-}
-function enter_dir() {
-  pushd "$@" &>> "$log_file"
-}
-function exit_dir() {
-  popd &>> "$log_file"
 }
 
 # Clear the log
 echo -n "" > "$log_file"
 
 # Get google test
-enter_dir 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
+pushd 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
 gtest_dir="googletest"
-if enter_dir "$gtest_dir"; then
-  log "Attempting to update googletest:"
-  svn update &>> "$log_file" || log "Error updating googletest; ignoring."
+if pushd "$gtest_dir"; then
+  echo "Attempting to update googletest:"
+  svn update || echo "Error updating googletest; ignoring."
   gtest_operation="Updated"
-  exit_dir  # $gtest_dir
+  popd  # $gtest_dir
 else
-  log "Attempting to check out googletest:"
-  svn checkout "$gtest_svn" "$gtest_dir" &>> "$log_file" ||
-    die "Failed to fetch googletest."
+  echo "Attempting to check out googletest:"
+  svn checkout "$gtest_svn" "$gtest_dir" || die "Failed to fetch googletest."
   gtest_operation="Checked out"
 fi
-exit_dir  # 3rdparty
-log
+popd  # 3rdparty
+echo
 
 # Make a brand new native build environment
 [ -d build ] && rm -rf build
-if mkdir build && enter_dir build; then
-  log "Attempting to create native build environment."
+if mkdir build && pushd build; then
+  echo "Attempting to create native build environment."
   cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    .. &>> "$log_file"
-  exit_dir  # build
-  log
+    ..
+  popd  # build
+  echo
 else
   die "Failed to setup native  build environment in build/"
 fi
 
 # Make a brand new windows cross build environment
 [ -d winbuild ] && rm -rf winbuild
-if mkdir winbuild && enter_dir winbuild; then
-  log "Attempting to create cross build environment."
+if mkdir winbuild && pushd winbuild; then
+  echo "Attempting to create cross build environment."
   cmake \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-mingw32.cmake \
     -DSTATIC_RUNTIME=1 \
-    .. &>> "$log_file"
-  exit_dir  # winbuild
+    ..
+  popd  # winbuild
 else
   die "Failed to setup cross build environment in winbuild/"
 fi
 
 # Summary
 echo "Operations:"
-echo "- Log in $log_file_name"
 echo "- $gtest_operation googletest in 3rdparty/$gtest_dir"
 echo "- Prepared native environment in build/"
 echo "- Prepared cross environment in winbuild/"

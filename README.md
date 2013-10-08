@@ -15,7 +15,10 @@ below.
 Configuring Jenkins
 ===================
 Jenkins support currently only works for building on linux, and requires bash,
-sed, git, svn, and the github plugin for Jenkins.
+sed, git, svn, wine, and the github plugin for Jenkins.  Wine is required
+specifically because the windows builds of this library are intended to
+function under wine, and as such jenkins builds windows binaries and executes
+their test cases under wine.
 
 - Github Project
 

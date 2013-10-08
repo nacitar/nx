@@ -30,24 +30,24 @@ their test cases under wine.
 
 - Github Project
 
-    http://github.com/nacitar/nx/
+        http://github.com/nacitar/nx/
 
 - Git repositories
 
-    https://github.com/nacitar/nx.git
+        https://github.com/nacitar/nx.git
 
 - Build - Execute Shell (for compilation)
 
-    ./prepare.sh
-    ./jenkins_build.sh
+        ./prepare.sh
+        ./jenkins_build.sh
 
 - Build - Execute Shell (for test execution)
 
-    ./jenkins_build.sh test
-    ./label_results.sh
+        ./jenkins_build.sh test
+        ./label_results.sh
 
 - Post Build - Public JUnit Test Results Report
 
-    build/*.xml, winbuild/*.xml
+        build/*.xml, winbuild/*.xml
 
 

@@ -20,7 +20,15 @@
 
 cd "$(dirname "$0")"
 
+function die() {
+  echo "$@" 1>&2
+  exit 1
+}
+
 cpplint="3rdparty/google-styleguide/cpplint/cpplint.py"
+
+[ -x "$cpplint" ] || die "ERROR: 3rdparty google-styleguide is required."
+
 code_dirs="src/ test/ include/nx/"
 
 find $code_dirs -type f -name "*.cc" -o -name "*.h" | sort | while read fn; do

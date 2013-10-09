@@ -64,8 +64,8 @@ echo
 if mkdir build && pushd build; then
   echo "Attempting to create native build environment."
   cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
+      -DCMAKE_BUILD_TYPE=Release \
+      ..
   popd  # build
   echo
 else
@@ -77,10 +77,10 @@ fi
 if mkdir winbuild && pushd winbuild; then
   echo "Attempting to create cross build environment."
   cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake \
-    -DSTATIC_RUNTIME=1 \
-    ..
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake \
+      -DSTATIC_RUNTIME=1 \
+      ..
   popd  # winbuild
 else
   die "Failed to setup cross build environment in winbuild/"

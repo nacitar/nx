@@ -76,11 +76,12 @@ struct binary_literal_helper<
 };
 
 }  // namespace detail
+/// @endcond
 
 }  // namespace nx
 
 /// @brief A binary literal, implemented as a user-defined literal.  This
-/// allows specification of binary literals via: {@code 10110110_nx_b}
+/// allows specification of binary literals via: @code 10110110_nx_b @endcode
 template<char... digits>
 constexpr nx::uint_least_t<sizeof...(digits)> operator "" _nx_b() {
   return nx::detail::binary_literal_helper<void, digits...>::value;

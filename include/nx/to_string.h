@@ -133,6 +133,7 @@ std::string> ToString(T value, unsigned int digits = 0) {
 /// character buffer.
 ///
 /// @tparam T The type of the passed value.
+/// @param value The value to process.
 /// @param buffer The location to write the string representation.
 /// @param digits The digit length to be assumed for the passed value.
 /// This may deviate from the actual length, if you wish to extract only the
@@ -149,7 +150,9 @@ unsigned int ToString(T value, char*buffer, unsigned int digits = 0) {
 /// @brief Appends a string representation of an integral value to the provided
 /// string.
 ///
+/// @param value
 /// @param buffer A pointer to the output string buffer.
+/// @param digits
 /// @see ToString(T,char*,unsigned int)
 ///
 /// @return The number of characters appended to the string.

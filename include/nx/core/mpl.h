@@ -179,6 +179,7 @@ class InvalidType {
 template <bool kAssert, typename T, typename Fallback = T>
 class CheckValidType : public Bool<true> {
  public:
+  /// @brief T, because T is not InvalidType
   typedef T type;
 };
 
@@ -186,6 +187,7 @@ class CheckValidType : public Bool<true> {
 template <typename Fallback>
 class CheckValidType<true, InvalidType, Fallback> : public Bool<false> {
  public:
+  /// @brief Fallback, because T is not InvalidType
   typedef Fallback type;
   static_assert(
       DependentBool<false, Fallback>::value,
@@ -197,6 +199,7 @@ class CheckValidType<true, InvalidType, Fallback> : public Bool<false> {
 template <typename Fallback>
 class CheckValidType<false, InvalidType, Fallback> : public Bool<false> {
  public:
+  /// @brief Fallback, because T is not InvalidType
   typedef Fallback type;
 };
 

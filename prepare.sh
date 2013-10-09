@@ -19,13 +19,15 @@
 cd "$(dirname "$0")"
 
 gtest_svn="http://googletest.googlecode.com/svn/trunk/"
+gstyle_svn="http://google-styleguide.googlecode.com/svn/trunk/"
 function die() {
   echo "$@" 1>&2
   exit 1
 }
 
-# Get google test
+# Get 3rdparty libraries
 pushd 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
+# Get googletest
 gtest_dir="googletest"
 if pushd "$gtest_dir"; then
   echo "Attempting to update googletest:"
@@ -36,6 +38,23 @@ else
   echo "Attempting to check out googletest:"
   svn checkout "$gtest_svn" "$gtest_dir" || die "Failed to fetch googletest."
   gtest_operation="Checked out"
+fi
+echo
+# Get google-styleguide
+gstyle_dir="google-styleguide"
+if pushd "$gstyle_dir"; then
+  echo "Attempting to update google-styleguide:"
+  svn update || echo "Error updating google-styleguide; ignoring."
+  gstyle_operation="Updated"
+  popd  # $gstyle_dir
+else
+  echo "Attempting to check out google-styleguide:"
+  if svn checkout "$gstyle_svn" "$gstyle_dir"; then
+    gstyle_operation="Checked out"
+  else
+    echo "Failed to fetch google-styleguide; ignoring."
+    gstyle_operation="Failed to check out"
+  fi
 fi
 popd  # 3rdparty
 echo

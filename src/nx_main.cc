@@ -18,14 +18,18 @@
 /// @brief An implementation of the main()/other startup functions required
 /// to properly instantiate the user's application instance and run its main.
 
+#ifdef NX_OS_WINDOWS
+#include <stdlib.h>  // for __argc and __argv
+#endif
+
 #include "nx/application.h"
 
 /// @brief Main driver; invokes the {@link nx::Application} instance for this
 /// app.
 int main(int argc, char*argv[]) {
   nx::PlatformData * data = new nx::PlatformData();
-  data->argc=argc;
-  data->argv=argv;
+  data->argc = argc;
+  data->argv = argv;
 
   nx::Application&application = nx::GetApplication();
   application.set_platform_data(data);
@@ -34,7 +38,6 @@ int main(int argc, char*argv[]) {
 }
 
 #ifdef NX_OS_WINDOWS
-#include <stdlib.h>  // for __argc and __argv
 /// @brief Windows main driver; invokes the {@link nx::Application} instance
 /// for this app.
 int WINAPI WinMain(
@@ -43,8 +46,8 @@ int WINAPI WinMain(
     LPSTR lpCmdLine, int nCmdShow) {
   nx::PlatformData * data = new nx::PlatformData();
   // TODO(nacitar): make this utf8 from GetCommandLine()
-  data->argc=__argc;
-  data->argv=__argv;
+  data->argc = __argc;
+  data->argv = __argv;
   data->hInstance = hInstance;
   data->nCmdShow = nCmdShow;
 

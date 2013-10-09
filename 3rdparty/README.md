@@ -3,3 +3,4 @@ folder.
 
 Currently expected:
 - googletest
+- google-styleguide

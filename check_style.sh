@@ -16,20 +16,13 @@
 # limitations under the License.
 #
 
+# This file checks all C++ source files for adherence to google-styleguide.
+
 cd "$(dirname "$0")"
 
-# takes a label, and a folder
-function process_folder() {
-  for file in "$2"/*_results.xml; do
-    if [ -r "$file" ]; then
-      sed -i -e's/classname="/classname="'"$1"'./g' "$file" ||
-          echo "Error labeling file: $file" 1>&2
-    fi
-  done
-}
+cpplint="3rdparty/google-styleguide/cpplint/cpplint.py"
+code_dirs="src/ test/ include/nx/"
 
-# Native tests
-process_folder "Native" build
-# Windows tests; labeling as WINE because the tests are run via WINE
-process_folder "Wine" winbuild
-
+find $code_dirs -type f -name "*.cc" -o -name "*.h" | sort | while read fn; do
+  "$cpplint" "$fn" 2>&1 | grep -v "^Total errors found: 0$"
+done

@@ -16,7 +16,7 @@
 
 /// @file nx-all.cc
 /// @brief A single file containing all implementations for cases where it is
-/// convenient to build a single file.
+/// convenient to build a single file (a Unity Build).
 
 #include "application.cc"
 #include "string_util.cc"

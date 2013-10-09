@@ -85,6 +85,7 @@ if mkdir winbuild && pushd winbuild; then
 else
   die "Failed to setup cross build environment in winbuild/"
 fi
+echo
 
 # Summary
 echo "Operations:"

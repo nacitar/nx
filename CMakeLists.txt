@@ -95,7 +95,10 @@ endif()
 
 include_directories("${nx_SOURCE_DIR}/include")
 
-add_library(nx "src/nx-all.cc")
+add_library(nx
+    "src/application.cc"
+    "src/string_util.cc"
+    "src/time.cc")
 add_library(nx_main "src/nx_main.cc")
 if (UNIX)
   target_link_libraries(nx rt)

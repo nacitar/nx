@@ -90,5 +90,6 @@ echo
 # Summary
 echo "Operations:"
 echo "- $gtest_operation googletest in 3rdparty/$gtest_dir"
+echo "- $gstyle_operation google-style in 3rdparty/$gstyle_dir"
 echo "- Prepared native environment in build/"
 echo "- Prepared cross environment in winbuild/"

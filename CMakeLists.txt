@@ -122,3 +122,7 @@ include_directories(SYSTEM "${gtest_SOURCE_DIR}/include")
 add_executable(digits_unittest "test/digits_unittest.cc")
 target_link_libraries(digits_unittest nx gtest_main)
 AddTest(digits_unittest)
+
+add_executable(core_unittest "test/core_unittest.cc")
+target_link_libraries(core_unittest nx gtest_main)
+AddTest(core_unittest)

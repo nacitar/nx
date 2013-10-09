@@ -111,10 +111,6 @@ template <unsigned int kValue>
 class UInt : public std::integral_constant<unsigned int, kValue> {
 };
 
-/// @brief Alias for removing typename and type members from boilerplate.
-template <typename T>
-using Invoke = typename T::type;
-
 /// @brief Basic identity metafunction; provides the type unaltered. Useful for
 /// passing raw types to templates expecting a type member.
 template <typename T>
@@ -125,6 +121,10 @@ class Identity {
  private:
   NX_NONCOPYABLE(Identity);
 };
+
+/// @brief Alias for removing typename and type members from boilerplate.
+template <typename T>
+using Invoke = typename T::type;
 
 /// @brief Alias to get the conditional of something with a value member.
 template <typename If, typename Then, typename Else>

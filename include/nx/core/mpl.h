@@ -111,6 +111,14 @@ template <unsigned int kValue>
 class UInt : public std::integral_constant<unsigned int, kValue> {
 };
 
+/// @brief Meta-constant true value; equivalent to std::true_type
+class True : public Bool<true> {
+};
+
+/// @brief Meta-constant false value; equivalent to std::false_type
+class False : public Bool<false> {
+};
+
 /// @brief Basic identity metafunction; provides the type unaltered. Useful for
 /// passing raw types to templates expecting a type member.
 template <typename T>
@@ -309,7 +317,8 @@ class SetSigned : public std::conditional<
 /// @brief Determines if multiplying kLHS with kRHS will result in an overflow.
 template <class T, T kLHS, T kRHS>
 class OverflowMult
-    : public Bool<(kRHS != 0 && kLHS > std::numeric_limits<T>::max() / kRHS)> {
+    : public Bool<(
+        kRHS != 0 && (static_cast<T>(kLHS * kRHS) / kRHS) != kLHS)> {
 };
 
 /// @brief Instantiates to be the specified number of bytes in size.
@@ -332,19 +341,16 @@ namespace detail {
 
 template <
     class T, T kBase, unsigned int kPower, class Enable = void>
-class Power {
- public:
-  static constexpr T previous = Power<T, kBase, kPower-1>::value;
-  static constexpr T value = kBase * previous;
+class Power : public std::integral_constant<
+    T, kBase * Power<T, kBase, kPower-1>::value> {
   static_assert(
-      !OverflowMult<T, kBase, previous>::value,
+      !OverflowMult<T, kBase, Power<T, kBase, kPower-1>::value>::value,
       "Value overflows type.");
 };
 
 template <class T, T kBase, unsigned int kPower>
-class Power<T, kBase, kPower, EnableIf< Bool<kPower == 0>>> {
- public:
-  static constexpr T value = 1;
+class Power<T, kBase, kPower, EnableIf< Bool<kPower == 0>>>
+    : public std::integral_constant<T, 1> {
 };
 
 }  // namespace detail

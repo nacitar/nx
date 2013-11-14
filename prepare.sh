@@ -72,6 +72,19 @@ else
   die "Failed to setup native  build environment in build/"
 fi
 
+# Make a brand new native build environment using clang
+[ -d clangbuild ] && rm -rf clangbuild
+if mkdir clangbuild && pushd clangbuild; then
+  echo "Attempting to create native build environment for clang."
+  CC=clang CXX=clang++ cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      ..
+  popd  # clangbuild
+  echo
+else
+  die "Failed to setup native  build environment in clangbuild/"
+fi
+
 # Make a brand new windows cross build environment
 [ -d winbuild ] && rm -rf winbuild
 if mkdir winbuild && pushd winbuild; then

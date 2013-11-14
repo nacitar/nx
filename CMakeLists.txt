@@ -53,7 +53,13 @@ function(AddTest target)
 endfunction()
 
 # Compilation settings
-if(CMAKE_COMPILER_IS_GNUCXX)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	set(CMAKE_COMPILER_IS_CLANG "1")
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
+	set(GCC_COMPAT "1")
+endif()
+if(GCC_COMPAT)
   set(flags "-O3 -DNDEBUG")
   set(CMAKE_C_FLAGS_RELEASE "${flags}")
   set(CMAKE_CXX_FLAGS_RELEASE "${flags}")
@@ -86,7 +92,7 @@ add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 # Defines the nx & nx libraries.  User projects should link with one of them.
 
 # Maintained libraries/binaries
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(GCC_COMPAT)
   # Treat warnings as errors
   set(flags "-Werror")
   Append(CMAKE_C_FLAGS "${flags}")

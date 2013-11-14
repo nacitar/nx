@@ -136,7 +136,7 @@ using Invoke = typename T::type;
 
 /// @brief Alias to get the conditional of something with a value member.
 template <typename If, typename Then, typename Else>
-using Conditional = Invoke<std::conditional<If::value, Then, Else>>;
+using Conditional = Invoke<std::conditional<static_cast<bool>(If::value), Then, Else>>;
 
 /// @brief Meta-logical negation (Not)
 template <typename T>

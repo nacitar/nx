@@ -15,13 +15,6 @@
 #
 
 ########################################################################
-# CMake build script for NX.
-
-if(CMAKE_COMPILER_IS_GNUCXX)
-  option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
-endif()
-
-########################################################################
 #
 # Project-wide settings
 
@@ -52,13 +45,22 @@ function(AddTest target)
   endif()
 endfunction()
 
-# Compilation settings
+# Clang support
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 	set(CMAKE_COMPILER_IS_CLANG "1")
 endif()
+
+# GCC support
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
 	set(GCC_COMPAT "1")
 endif()
+
+# Options
+if(GCC_COMPAT)
+  option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
+endif()
+
+# Compilation settings
 if(GCC_COMPAT)
   set(flags "-O3 -DNDEBUG")
   set(CMAKE_C_FLAGS_RELEASE "${flags}")

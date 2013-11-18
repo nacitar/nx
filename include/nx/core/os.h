@@ -21,22 +21,25 @@
 #define INCLUDE_NX_CORE_OS_H_
 
 // Toolchain detection
-#if defined(__GNUC__)
-  /// @brief Set if the toolchain in use is GCC
-  #define NX_TC_GCC 1
-  /// @brief The precise version of GCC in a single number
-  #define NX_GCC_VERSION (__GNUC__ * 10000 \
+#if defined(__clang__)
+  /// @brief Set if the toolchain in use is Clang
+  #define NX_TC_CLANG 1
+#elif defined(__GNUC__)
+  /// @brief Set to GCC's version number as an integer if using GCC
+  #define NX_TC_GCC (__GNUC__ * 10000 \
       + __GNUC_MINOR__ * 100 \
       + __GNUC_PATCHLEVEL__)
+  #if (NX_TC_GCC == 0)
+    #warning Couldn't get GCC version number accurately
+    #define NX_TC_GCC 1
+  #endif
 #elif defined(_MSC_VER)
   /// @brief Set if the toolchain in use is visual studio
   #define NX_TC_VS 1
 #endif
 
 // C++11 requirement
-#if \
-    (__cplusplus < 201103L && !defined(__GXX_EXPERIMENTAL_CXX0X__)) || \
-    (defined(NX_GCC_VERSION) && NX_GCC_VERSION < 40700)
+#if (__cplusplus < 201103L)
   #error This library is written with c++11 in mind; backwards compatibility \
       has been removed.  If using gcc, this requires 4.7+
 #endif

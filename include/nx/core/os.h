@@ -30,7 +30,7 @@
       + __GNUC_MINOR__ * 100 \
       + __GNUC_PATCHLEVEL__)
   #if (NX_TC_GCC == 0)
-    #warning Couldn't get GCC version number accurately
+    #warning "Could not get GCC version number accurately"
     #define NX_TC_GCC 1
   #endif
 #elif defined(_MSC_VER)
@@ -39,9 +39,9 @@
 #endif
 
 // C++11 requirement
-#if (__cplusplus < 201103L)
-  #error This library is written with c++11 in mind; backwards compatibility \
-      has been removed.  If using gcc, this requires 4.7+
+#if (__cplusplus < 201103L) || (defined(NX_TC_GCC) && NX_TC_GCC < 40801)
+  #error "This library is written with c++11 in mind; backward" \
+      " compatibility has been removed.  If using gcc, this requires 4.8.1+"
 #endif
 
 // OS detection

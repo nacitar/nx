@@ -54,7 +54,7 @@ void Sleep(msec_t millisecs) {
   // Loop until the time elapses, calling again for the remainder if
   // interrupted by a signal.
   while (nanosleep(&tspec, &tspec) == -1 && errno == EINTR) {
-  };
+  }
 }
 #else
 msec_t Fixed() {

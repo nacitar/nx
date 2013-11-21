@@ -170,11 +170,11 @@ TEST(CoreTest, IsValidType) {
 
 TEST(CoreTest, BitSize) {
   EXPECT_EQ(nx::BitSize<int>::value,
-      sizeof(int)*CHAR_BIT);  // NOLINT(runtime/sizeof)
+      sizeof(int)*CHAR_BIT);
   EXPECT_EQ(nx::BitSize<float>::value,
-      sizeof(float)*CHAR_BIT);  // NOLINT(runtime/sizeof)
+      sizeof(float)*CHAR_BIT);
   EXPECT_EQ(nx::BitSize<char>::value,
-      sizeof(char)*CHAR_BIT);  // NOLINT(runtime/sizeof)
+      sizeof(char)*CHAR_BIT);
 }
 
 TEST(CoreTest, BitMask) {
@@ -246,9 +246,9 @@ TEST(CoreTest, SpecificSize) {
 
 TEST(CoreTest, SameSize) {
   EXPECT_EQ(sizeof(nx::SameSize<char>),
-      sizeof(char));  // NOLINT(runtime/sizeof)
+      sizeof(char));
   EXPECT_EQ(sizeof(nx::SameSize<float>),
-      sizeof(float));  // NOLINT(runtime/sizeof)
+      sizeof(float));
 }
 
 TEST(CoreTest, Power) {

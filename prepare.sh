@@ -69,7 +69,7 @@ if mkdir build && pushd build; then
   popd  # build
   echo
 else
-  die "Failed to setup native  build environment in build/"
+  die "Failed to setup native build environment in build/"
 fi
 
 # Make a brand new native build environment using clang
@@ -82,7 +82,7 @@ if mkdir clangbuild && pushd clangbuild; then
   popd  # clangbuild
   echo
 else
-  die "Failed to setup native  build environment in clangbuild/"
+  die "Failed to setup native clang build environment in clangbuild/"
 fi
 
 # Make a brand new windows cross build environment
@@ -105,4 +105,5 @@ echo "Operations:"
 echo "- $gtest_operation googletest in 3rdparty/$gtest_dir"
 echo "- $gstyle_operation google-style in 3rdparty/$gstyle_dir"
 echo "- Prepared native environment in build/"
+echo "- Prepared clang native environment in clangbuild/"
 echo "- Prepared cross environment in winbuild/"

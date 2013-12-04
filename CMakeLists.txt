@@ -72,7 +72,7 @@ if(GCC_COMPAT)
 
   set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
   Append(CMAKE_C_FLAGS "${flags}")
-  Append(CMAKE_CXX_FLAGS "${flags} -std=c++11")
+  Append(CMAKE_CXX_FLAGS "${flags} -Wold-style-cast -std=c++11")
   if (STATIC_RUNTIME)
     set(flags "-static-libstdc++ -static-libgcc")
     Append(CMAKE_EXE_LINKER_FLAGS "${flags}")

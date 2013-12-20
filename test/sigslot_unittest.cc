@@ -23,14 +23,14 @@
 
 class SimpleSlotObject {
   nx::SlotRegistrar registrar_;
-  public:
+ public:
     int fireCount;
     static int mooseCount;
-    SimpleSlotObject(nx::Signal<int>&signal)
+    explicit SimpleSlotObject(nx::Signal<int>* signal)
         : fireCount(0) {
-      signal.connect(&registrar_, this, &SimpleSlotObject::onFire);
-      signal.connect(&registrar_, this, &SimpleSlotObject::onFire);
-      signal.connect(&registrar_, onMoose);
+      signal->connect(&registrar_, this, &SimpleSlotObject::onFire);
+      signal->connect(&registrar_, this, &SimpleSlotObject::onFire);
+      signal->connect(&registrar_, onMoose);
     }
 
     void onFire(int x) {
@@ -40,14 +40,13 @@ class SimpleSlotObject {
     static void onMoose(int x) {
       ++mooseCount;
     }
-
 };
 int SimpleSlotObject::mooseCount = 0;
 
 
 TEST(SigSlotTest, Basic) {
   nx::Signal<int> realSignal;
-  SimpleSlotObject obj(realSignal);
+  SimpleSlotObject obj(&realSignal);
 
   nx::SlotRegistrar registrar;
   nx::Signal<int> otherSignal;

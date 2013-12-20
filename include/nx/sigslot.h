@@ -22,10 +22,10 @@
 #define INCLUDE_NX_SIGSLOT_H_
 
 
-#include "nx/core.h"
 #include <set>
 #include <list>
 #include <map>
+#include "nx/core.h"
 
 /// @brief Library namespace.
 namespace nx {
@@ -33,7 +33,7 @@ namespace nx {
 // Forward declaration due to tight coupling with SignalBase
 class SlotRegistrar;
 
-/// @cond nx_detail 
+/// @cond nx_detail
 namespace detail {
 
 /// @brief A base type for all slots
@@ -50,7 +50,7 @@ class SlotFunction : public SlotBase<Arguments...> {
  public:
   typedef Function<void, Arguments...> FunctionType;
   FunctionType function_;
-  SlotFunction(FunctionType function)
+  explicit SlotFunction(FunctionType function)
       : function_(function) {
   }
   virtual ~SlotFunction() = default;
@@ -136,7 +136,7 @@ class Signal : public detail::SignalBase {
   /// @param registrar The SlotRegistrar
   /// @param slotBaseType A 'new'-allocated Slot whose ownership will be
   /// transferred.
-  void connect(SlotRegistrar*registrar,SlotBaseType*slotBaseType) {
+  void connect(SlotRegistrar*registrar, SlotBaseType*slotBaseType) {
     auto iterator = connectedSlots_.insert(connectedSlots_.end(),
         slotBaseType);
     // store iterators for deletion
@@ -154,16 +154,16 @@ class Signal : public detail::SignalBase {
 
   /// @brief Connects any class member function.
   template <class Class>
-  void connect(
-      SlotRegistrar*registrar,
-      Class*object,MemberFunction<void,Class,Arguments...> memberFunction) {
+  void connect(SlotRegistrar*registrar, Class*object,
+      MemberFunction<void, Class, Arguments...> memberFunction) {
     // deleted in disconnect
     connect(registrar, new detail::SlotMemberFunction<Class, Arguments...>(
         object, memberFunction));
   }
 
   /// @brief Connects any free function.
-  void connect(SlotRegistrar*registrar, Function<void,Arguments...> function) {
+  void connect(SlotRegistrar*registrar,
+      Function<void, Arguments...> function) {
     // deleted in disconnect
     connect(registrar, new detail::SlotFunction<Arguments...>(function));
   }
@@ -188,7 +188,7 @@ class Signal : public detail::SignalBase {
     auto objectIt = registrarToSlots_.find(registrar);
     if (objectIt != registrarToSlots_.end()) {
       for (auto it : objectIt->second) {
-        delete *it; // deleting the slots created above
+        delete *it;  // deleting the slots created above
         connectedSlots_.erase(it);
       }
       registrarToSlots_.erase(objectIt);
@@ -202,7 +202,6 @@ class Signal : public detail::SignalBase {
       slot->call(args...);
     }
   }
-
 };
 
 }  // namespace nx

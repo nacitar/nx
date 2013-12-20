@@ -365,6 +365,16 @@ template <class T, T kBase, unsigned int kPower>
 class Power : public detail::Power<T, kBase, kPower> {
 };
 
+/// @brief A function pointer type returning the type Return and accepting the
+/// provided argument types.
+template <typename Return, typename... Arguments>
+using Function = Return (*)(Arguments...);
+
+/// @brief A member function pointer type for a member of Class which returns
+/// the type Return and accepting the provided argument types.
+template <typename Return, typename Class, typename... Arguments>
+using MemberFunction = Return (Class::*)(Arguments...);
+
 }  // namespace nx
 
 #endif  // INCLUDE_NX_CORE_MPL_H_

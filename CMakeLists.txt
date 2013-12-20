@@ -105,6 +105,7 @@ include_directories("${nx_SOURCE_DIR}/include")
 
 add_library(nx
     "src/application.cc"
+    "src/sigslot.cc"
     "src/string_util.cc"
     "src/time.cc")
 add_library(nx_main "src/nx_main.cc")
@@ -134,3 +135,7 @@ AddTest(digits_unittest)
 add_executable(core_unittest "test/core_unittest.cc")
 target_link_libraries(core_unittest nx gtest_main)
 AddTest(core_unittest)
+
+add_executable(sigslot_unittest "test/sigslot_unittest.cc")
+target_link_libraries(sigslot_unittest nx gtest_main)
+AddTest(sigslot_unittest)

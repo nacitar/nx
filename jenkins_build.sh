@@ -33,6 +33,10 @@ pushd build || die "Native build environment is not present in build/"
 make $arg || result=1
 popd
 
+pushd clangbuild || die "Clang build environment is not present in clangbuild/"
+make $arg || result=1
+popd
+
 echo
 
 pushd winbuild || die "Cross build environment is not present in winbuild/"

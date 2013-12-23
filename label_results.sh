@@ -30,6 +30,7 @@ function process_folder() {
 
 # Native tests
 process_folder "Native" build
+process_folder "Clang" clangbuild
 # Windows tests; labeling as WINE because the tests are run via WINE
 process_folder "Wine" winbuild
 

@@ -18,92 +18,71 @@
 
 cd "$(dirname "$0")"
 
-gtest_svn="http://googletest.googlecode.com/svn/trunk/"
-gstyle_svn="http://google-styleguide.googlecode.com/svn/trunk/"
 function die() {
   echo "$@" 1>&2
   exit 1
 }
 
-# Get 3rdparty libraries
-pushd 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
-# Get googletest
-gtest_dir="googletest"
-if pushd "$gtest_dir"; then
-  echo "Attempting to update googletest:"
-  svn update || echo "Error updating googletest; ignoring."
-  gtest_operation="Updated"
-  popd  # $gtest_dir
-else
-  echo "Attempting to check out googletest:"
-  svn checkout "$gtest_svn" "$gtest_dir" || die "Failed to fetch googletest."
-  gtest_operation="Checked out"
-fi
-echo
-# Get google-styleguide
-gstyle_dir="google-styleguide"
-if pushd "$gstyle_dir"; then
-  echo "Attempting to update google-styleguide:"
-  svn update || echo "Error updating google-styleguide; ignoring."
-  gstyle_operation="Updated"
-  popd  # $gstyle_dir
-else
-  echo "Attempting to check out google-styleguide:"
-  if svn checkout "$gstyle_svn" "$gstyle_dir"; then
-    gstyle_operation="Checked out"
-  else
-    echo "Failed to fetch google-styleguide; ignoring."
-    gstyle_operation="Failed to check out"
-  fi
-fi
-popd  # 3rdparty
-echo
+# defaults
+debug=0
+cross=0
+dest_dir=""
+use_clang=0
 
-# Make a brand new native build environment
-[ -d build ] && rm -rf build
-if mkdir build && pushd build; then
-  echo "Attempting to create native build environment."
-  cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
+# argument handling
+for arg in "$@"
+do
+  if [ "$arg" == "--clang" ]; then
+    use_clang=1
+  elif [ "$arg" == "--cross" ]; then
+    cross=1
+  elif [ "$arg" == "--debug" ]; then
+    debug=1
+  elif [ "${arg:0:1}" == "-" ]; then
+    die "Unknown argument $arg"
+  elif [ -z "$dest_dir" ]; then
+    cwd_real_path="$(readlink -f .)"
+    dest_real_path="$(readlink -f "$arg")"
+    if [ "${dest_real_path:0:${#cwd_real_path}}" != "$cwd_real_path" ]; then
+      die "Build directory must be a child of the CWD, for safety."
+    fi
+    dest_dir="$arg"
+  else
+    die "Multiple destination directories found."
+  fi
+done
+
+# default
+if [ -z "$dest_dir" ]; then
+  dest_dir="build"
+fi
+
+# flag preparation
+cmake_flags=""
+clang_flags=""
+if [ "$debug" -ne 0 ]; then
+  cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Debug"
+else
+  cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Release"
+fi
+
+if [ "$cross" -ne 0 ]; then
+  toolchain="-DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake"
+  cmake_flags="$cmake_flags $toolchain -DSTATIC_RUNTIME=1"
+fi
+
+# Make a new build environment
+[ -d "$dest_dir" ] && rm -rf "$dest_dir"
+if mkdir "$dest_dir" && pushd "$dest_dir"; then
+  echo "Attempting to create build environment."
+  if [ "$use_clang" -ne 0 ]; then
+    CC=clang CXX=clang++ cmake $cmake_flags ..
+  else
+    cmake $cmake_flags ..
+  fi
   popd  # build
   echo
 else
-  die "Failed to setup native build environment in build/"
+  die "Failed to setup build environment in $dest_dir"
 fi
 
-# Make a brand new native build environment using clang
-[ -d clangbuild ] && rm -rf clangbuild
-if mkdir clangbuild && pushd clangbuild; then
-  echo "Attempting to create native build environment for clang."
-  CC=clang CXX=clang++ cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-  popd  # clangbuild
-  echo
-else
-  die "Failed to setup native clang build environment in clangbuild/"
-fi
-
-# Make a brand new windows cross build environment
-[ -d winbuild ] && rm -rf winbuild
-if mkdir winbuild && pushd winbuild; then
-  echo "Attempting to create cross build environment."
-  cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake \
-      -DSTATIC_RUNTIME=1 \
-      ..
-  popd  # winbuild
-else
-  die "Failed to setup cross build environment in winbuild/"
-fi
-echo
-
-# Summary
-echo "Operations:"
-echo "- $gtest_operation googletest in 3rdparty/$gtest_dir"
-echo "- $gstyle_operation google-style in 3rdparty/$gstyle_dir"
-echo "- Prepared native environment in build/"
-echo "- Prepared clang native environment in clangbuild/"
-echo "- Prepared cross environment in winbuild/"

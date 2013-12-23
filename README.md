@@ -61,7 +61,8 @@ their test cases under wine.
 
 - Build - Execute Shell (for compilation)
 
-        ./prepare.sh
+        ./prepare_3rdparty.sh
+        ./common_builds.sh
         ./jenkins_build.sh
 
 - Build - Execute Shell (for test execution)

@@ -34,6 +34,10 @@ void SignalBase::registrarDisconnectedFromSignal(
 
 }  // namespace detail
 
+SlotRegistrar::~SlotRegistrar() {
+  clear();
+}
+
 void SlotRegistrar::disconnect(detail::SignalBase*signal) {
   signal->disconnect(this);
 }

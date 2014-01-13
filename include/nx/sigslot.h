@@ -106,9 +106,7 @@ class SlotRegistrar {
   std::set<detail::SignalBase*> connectedSignals_;
  public:
   /// @brief Invokes clear() to disconnect correctly.
-  ~SlotRegistrar() {
-    clear();
-  }
+  ~SlotRegistrar();
 
   /// @brief Disconnects all slots connected to the provided signal.
   void disconnect(detail::SignalBase*signal);

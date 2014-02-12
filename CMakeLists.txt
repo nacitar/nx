@@ -107,7 +107,9 @@ add_library(nx
     "src/application.cc"
     "src/sigslot.cc"
     "src/string_util.cc"
-    "src/time.cc")
+	"src/handler.cc"
+	"src/looper.cc"
+	"src/message.cc")
 add_library(nx_main "src/nx_main.cc")
 if (UNIX)
   target_link_libraries(nx rt)
@@ -121,6 +123,9 @@ target_link_libraries(nx_main nx)
 
 add_executable(hello_world "samples/hello_world/main.cc")
 target_link_libraries(hello_world nx_main)
+
+add_executable(handler "samples/handler/main.cc")
+target_link_libraries(handler nx_main)
 
 ########################################################################
 #

@@ -23,14 +23,16 @@
 /// @brief Library namespace.
 namespace nx {
 
-MessageEnvelope::MessageEnvelope(Handler* handler,
-    unsigned int id, void* data)
-    : Message(id, data)
-    , handler_(handler) {
+MessageEnvelope::MessageEnvelope(Handler* handler,Message message)
+    : handler_(handler)
+    , message_(message) {
 }
 
 Handler* MessageEnvelope::handler() const {
   return handler_;
+}
+const Message* MessageEnvelope::message() const {
+  return &message_;
 }
 
 namespace detail {
@@ -74,7 +76,7 @@ void Looper::send(MessageEnvelope envelope, SteadyTimePoint triggerTime) {
       QueueType::value_type(triggerTime,QueueData(envelope)));
 
   IdMapIterator idIt = messageIdMap_.insert(
-      IdMapType::value_type(envelope.id(),queueIt));
+      IdMapType::value_type(envelope.message()->id(),queueIt));
 
   queueIt->second.idIterator_ = idIt;
 
@@ -97,7 +99,7 @@ void Looper::remove(Handler* handler, unsigned int id,
   while (range.first != range.second) {
     MessageEnvelope* envelope = &range.first->second->second.envelope_;
     if (envelope->handler() == handler
-        && (!checkData || envelope->data() == data)) {
+        && (!checkData || envelope->message()->data() == data)) {
       messageQueue_.erase(range.first->second);
       range.first = messageIdMap_.erase(range.first);
     } else {
@@ -115,7 +117,7 @@ bool Looper::hasMessages(const Handler* handler, unsigned int id,
       range.first != range.second; ++range.first) {
     MessageEnvelope* envelope = &range.first->second->second.envelope_;
     if (envelope->handler() == handler
-        && (!checkData || envelope->data() == data)) {
+        && (!checkData || envelope->message()->data() == data)) {
       return true;
     }
   }
@@ -150,7 +152,7 @@ void Looper::runLoop() {
         // Calling while unlocked, because other threads can send messages
         // while we handle one.  In fact, the message handler itself may want
         // to add messages.
-        envelope->handler()->dispatchMessage(*static_cast<Message*>(envelope));
+        envelope->handler()->dispatchMessage(*envelope->message());
         lock.lock();
       } else {
         conditionVariable_.wait_for(lock,delay);

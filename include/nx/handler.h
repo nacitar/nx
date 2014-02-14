@@ -58,8 +58,8 @@ class Handler {
   bool hasMessages(unsigned int id, void* data) const;
 
   // TODO
-  //bool sendMessage(Message message);
   //bool sendMessageAtFrontOfQueue(Message message);
+  //bool sendMessage(Message message);
   //bool sendMessageAtTime(Message msg, SteadyTimePoint triggerTime);
   //bool sendMessageAtTime(Message msg, std::chrono::milliseconds delay)
   bool sendEmptyMessage(unsigned int id, SteadyTimePoint triggerTime);

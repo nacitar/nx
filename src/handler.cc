@@ -65,13 +65,13 @@ bool Handler::hasMessages(unsigned int id, void* data) const {
 
 bool Handler::sendEmptyMessage(
     unsigned int id, Handler::SteadyTimePoint triggerTime) {
-  looper_->send(MessageEnvelope(this, id), triggerTime);
+  looper_->send(MessageEnvelope(this, Message(id)), triggerTime);
   return true; // TODO
 }
 
 bool Handler::sendEmptyMessage(
     unsigned int id, std::chrono::milliseconds delay) {
-  looper_->send(MessageEnvelope(this, id), delay);
+  looper_->send(MessageEnvelope(this, Message(id)), delay);
   return true; // TODO
 }
 

@@ -33,11 +33,13 @@ namespace nx {
 
 class Handler;
 
-class MessageEnvelope : public Message {
+class MessageEnvelope {
   Handler* const handler_;
+  const Message message_;
  public: // for now
-  MessageEnvelope(Handler* handler,unsigned int id = 0, void* data = nullptr);
+  MessageEnvelope(Handler* handler,Message message=Message());
   Handler* handler() const;
+  const Message* message() const;
 };
 
 namespace detail {

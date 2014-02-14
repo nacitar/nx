@@ -18,6 +18,7 @@
 /// @brief Implementation for application.h
 
 #include "nx/application.h"
+#include "nx/looper.h"
 
 /// @brief Library namespace.
 namespace nx {
@@ -28,7 +29,7 @@ Application::~Application() {
 Application::Application() {
 }
 
-bool Application::set_arguments(
+bool Application::setArguments(
     const int argc,
     const char* const * const argv) {
   if (argc < 0) return false;
@@ -43,14 +44,31 @@ Application::ArgumentVector& Application::arguments() {
   return arguments_;
 }
 
-const PlatformData* Application::platform_data() const {
-  return platform_data_.get();
+const PlatformData* Application::platformData() const {
+  return platformData_.get();
 }
-PlatformData* Application::platform_data() {
-  return platform_data_.get();
+PlatformData* Application::platformData() {
+  return platformData_.get();
 }
-void Application::set_platform_data(PlatformData*data) {
-  platform_data_.reset(data);
+void Application::setPlatformData(PlatformData*data) {
+  platformData_.reset(data);
+}
+
+namespace detail {
+const std::thread::id mainThreadId = std::this_thread::get_id();
+}  // namespace detail
+
+std::thread::id MainThreadId() {
+  return detail::mainThreadId;
+}
+
+void Initialize() {
+  static bool initialized = false;
+  if (initialized || std::this_thread::get_id() != MainThreadId()) {
+    return;
+  }
+  initialized = true;
+  Looper::prepare();
 }
 
 }  // namespace nx

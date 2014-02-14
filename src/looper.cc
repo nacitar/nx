@@ -78,24 +78,50 @@ void Looper::send(MessageEnvelope envelope, SteadyTimePoint triggerTime) {
 
   queueIt->second.idIterator_ = idIt;
 
-  conditionVariable_.notify_one();
+  // we need to wake up if we added this to the beginning, otherwise we're
+  // already set up properly
+  if (queueIt == messageQueue_.begin()) {
+    conditionVariable_.notify_one();
+  }
 }
 void Looper::send(MessageEnvelope envelope, std::chrono::milliseconds delay) {
   send(envelope,std::chrono::steady_clock::now() + delay);
 }
 
-void Looper::remove(unsigned int id) {
+void Looper::remove(Handler* handler, unsigned int id,
+    bool checkData, void* data) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   std::pair<IdMapIterator, IdMapIterator> range =
       messageIdMap_.equal_range(id);
   while (range.first != range.second) {
-    messageQueue_.erase(range.first->second);
-    range.first = messageIdMap_.erase(range.first);
+    MessageEnvelope* envelope = &range.first->second->second.envelope_;
+    if (envelope->handler() == handler
+        && (!checkData || envelope->data() == data)) {
+      messageQueue_.erase(range.first->second);
+      range.first = messageIdMap_.erase(range.first);
+    } else {
+      ++range.first;
+    }
   }
 
   conditionVariable_.notify_one();
 }
+
+bool Looper::hasMessages(const Handler* handler, unsigned int id,
+    bool checkData, void* data) const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  for(auto range = messageIdMap_.equal_range(id);
+      range.first != range.second; ++range.first) {
+    MessageEnvelope* envelope = &range.first->second->second.envelope_;
+    if (envelope->handler() == handler
+        && (!checkData || envelope->data() == data)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
 void Looper::loop() {
   myLooper()->runLoop();
@@ -111,7 +137,7 @@ void Looper::runLoop() {
   for (;!quit_;) { // infinite
     if (!messageQueue_.empty()) {
       it = messageQueue_.begin();
-      MessageEnvelope* envelope = &(it->second.envelope_);
+      MessageEnvelope* envelope = &it->second.envelope_;
       when = it->first;
       now = steady_clock::now();
       delay =
@@ -124,7 +150,7 @@ void Looper::runLoop() {
         // Calling while unlocked, because other threads can send messages
         // while we handle one.  In fact, the message handler itself may want
         // to add messages.
-        envelope->handler()->handleMessage(*static_cast<Message*>(envelope));
+        envelope->handler()->dispatchMessage(*static_cast<Message*>(envelope));
         lock.lock();
       } else {
         conditionVariable_.wait_for(lock,delay);

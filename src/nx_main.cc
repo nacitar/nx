@@ -24,16 +24,19 @@
 
 #include "nx/application.h"
 
+
 /// @brief Main driver; invokes the {@link nx::Application} instance for this
 /// app.
 int main(int argc, char*argv[]) {
+  nx::Initialize();
+
   nx::PlatformData * data = new nx::PlatformData();
   data->argc = argc;
   data->argv = argv;
 
   nx::Application&application = nx::GetApplication();
-  application.set_platform_data(data);
-  application.set_arguments(data->argc, data->argv);
+  application.setPlatformData(data);
+  application.setArguments(data->argc, data->argv);
   return application.main();
 }
 
@@ -44,6 +47,8 @@ int WINAPI WinMain(
     HINSTANCE hInstance,
     HINSTANCE hPrevInstance,
     LPSTR lpCmdLine, int nCmdShow) {
+  nx::Initialize();
+
   nx::PlatformData * data = new nx::PlatformData();
   // TODO(nacitar): make this utf8 from GetCommandLine()
   data->argc = __argc;
@@ -52,8 +57,8 @@ int WINAPI WinMain(
   data->nCmdShow = nCmdShow;
 
   nx::Application&application = nx::GetApplication();
-  application.set_platform_data(data);
-  application.set_arguments(data->argc, data->argv);
+  application.setPlatformData(data);
+  application.setArguments(data->argc, data->argv);
   return application.main();
 }
 #endif  // NX_OS_WINDOWS

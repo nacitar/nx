@@ -24,32 +24,65 @@
 namespace nx {
 
 Handler::Handler()
-   : Handler::Handler(Looper::myLooper()) {
+   : Handler(Looper::myLooper(),NULL) {
+}
+Handler::Handler(Callback* callback)
+    : Handler(Looper::myLooper(),callback) {
 }
 Handler::Handler(Looper*looper)
-   : looper_(looper) {
+   : Handler(looper, NULL) {
+}
+Handler::Handler(Looper* looper, Callback* callback)
+    : looper_(looper), callback_(callback) {
   if (!looper) {
-    throw std::runtime_error("Looper specified is nullptr.");
+    throw std::runtime_error("Looper specified is nullptr.  Did you call"
+        " Looper::prepare()?");
   }
+}
+
+void Handler::dispatchMessage(Message message) {
+  if (callback_) {
+    if (callback_->handleMessage(message)) {
+      return;
+    }
+  }
+  handleMessage(message);
 }
 Looper* Handler::looper() {
   return looper_;
 }
+const Looper* Handler::looper() const {
+  return looper_;
+}
 
-bool Handler::sendEmptyMessage(int id, Handler::SteadyTimePoint triggerTime) {
-  looper_->send(MessageEnvelope(this,id),triggerTime);
+bool Handler::hasMessages(unsigned int id) const {
+  return looper()->hasMessages(this, id);
+}
+
+bool Handler::hasMessages(unsigned int id, void* data) const {
+  return looper()->hasMessages(this, id, true, data);
+}
+
+bool Handler::sendEmptyMessage(
+    unsigned int id, Handler::SteadyTimePoint triggerTime) {
+  looper_->send(MessageEnvelope(this, id), triggerTime);
   return true; // TODO
 }
 
-bool Handler::sendEmptyMessage(int id, std::chrono::milliseconds delay) {
-  looper_->send(MessageEnvelope(this,id),delay);
+bool Handler::sendEmptyMessage(
+    unsigned int id, std::chrono::milliseconds delay) {
+  looper_->send(MessageEnvelope(this, id), delay);
   return true; // TODO
 }
 
-void Handler::removeMessages(int id) {
-  looper_->remove(id);
+void Handler::removeMessages(unsigned int id) {
+  looper_->remove(this, id);
+}
+void Handler::removeMessages(unsigned int id, void* data) {
+  looper_->remove(this, id, true, data);
 }
 
-//void Handler::handleMessage(Message message)=0;
+void Handler::handleMessage(Message message) {
+}
 
 }  // namespace nx

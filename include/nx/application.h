@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <thread>
 
 #include "nx/core.h"
 
@@ -76,7 +77,7 @@ class Application {
   /// @param argc The number of arguments passed.
   /// @param argv The array of argument values.
   /// @return true if the arguments were set successfully.
-  bool set_arguments(const int argc, const char* const * const argv);
+  bool setArguments(const int argc, const char* const * const argv);
 
   /// @brief Accessor for the stored arguments.
   /// @return A const reference to the stored arguments.
@@ -88,21 +89,21 @@ class Application {
 
   /// @brief Accessor for any platform-specific data.
   /// @return A const pointer to the PlatformData.
-  const PlatformData* platform_data() const;
+  const PlatformData* platformData() const;
 
   /// @brief Accessor for any platform-specific data.
   /// @return A pointer to the PlatformData.
-  PlatformData* platform_data();
+  PlatformData* platformData();
 
   /// @brief Sets the platform-specific data, transferring ownership to this
   /// object.
   ///
   /// @param data The new platform-specific data.  Must be allocated with new.
-  void set_platform_data(PlatformData*data);
+  void setPlatformData(PlatformData*data);
 
  private:
   /// @brief The platform-specific data.
-  std::unique_ptr<PlatformData> platform_data_;
+  std::unique_ptr<PlatformData> platformData_;
 
   /// @brief The stored arguments.
   ArgumentVector arguments_;
@@ -114,6 +115,17 @@ class Application {
 /// order to instantiate the application, because no other portion of the
 /// library references this function.
 Application& GetApplication();
+
+namespace detail {
+  extern const std::thread::id mainThreadId;
+}  // namespace detail
+
+/// @brief Returns the id of the thread which invoked the application's entry
+/// point.
+std::thread::id MainThreadId();
+
+/// @brief Performs common initialization; must be called from the main thread.
+void Initialize();
 
 }  // namespace nx
 

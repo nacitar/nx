@@ -31,20 +31,46 @@ class Looper;
 
 class Handler {
  public:
+  class Callback {
+   public:
+    /// @return True if handled and no further processing is necessary,
+    /// otherwise False and the Handler's member handleMessage() will be
+    /// invoked.
+    virtual bool handleMessage(Message message) = 0;
+  };
+
   Looper* const looper_;
+  Callback* const callback_;
+  
  public:
   typedef std::chrono::time_point<std::chrono::steady_clock> SteadyTimePoint;
   Handler();
-  Handler(Looper*looper);
-  Looper* looper();
+  Handler(Callback* callback);
+  Handler(Looper* looper);
+  Handler(Looper* looper, Callback* callback);
 
-  bool sendEmptyMessage(int id, SteadyTimePoint triggerTime);
-  bool sendEmptyMessage(int id,
+  void dispatchMessage(Message message);
+
+  Looper* looper();
+  const Looper* looper() const;
+
+  bool hasMessages(unsigned int id) const;
+  bool hasMessages(unsigned int id, void* data) const;
+
+  // TODO
+  //bool sendMessage(Message message);
+  //bool sendMessageAtFrontOfQueue(Message message);
+  //bool sendMessageAtTime(Message msg, SteadyTimePoint triggerTime);
+  //bool sendMessageAtTime(Message msg, std::chrono::milliseconds delay)
+  bool sendEmptyMessage(unsigned int id, SteadyTimePoint triggerTime);
+  bool sendEmptyMessage(unsigned int id,
       std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
-  void removeMessages(int id);
+  void removeMessages(unsigned int id);
+  void removeMessages(unsigned int id, void* data);
 
-  virtual void handleMessage(Message message)=0;
+  //
+  virtual void handleMessage(Message message);
 };
 
 }  // namespace nx

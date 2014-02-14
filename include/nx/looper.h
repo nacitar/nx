@@ -80,7 +80,7 @@ class Looper {
   typedef detail::Looper::IdMapType IdMapType;
   typedef detail::Looper::IdMapIterator IdMapIterator;
 
-  std::mutex mutex_;
+  mutable std::mutex mutex_; // mutable for hasMessages... should it be?
   std::condition_variable conditionVariable_;
 
   bool quit_;
@@ -103,7 +103,10 @@ class Looper {
   void send(MessageEnvelope envelope, SteadyTimePoint triggerTime);
   void send(MessageEnvelope envelope, std::chrono::milliseconds delay);
 
-  void remove(unsigned int id);
+  void remove(Handler* handler, unsigned int id,
+      bool checkData = false, void* data = nullptr);
+  bool hasMessages(const Handler* handler, unsigned int id,
+      bool checkData = false, void* data = nullptr) const;
 
   static void loop();
 

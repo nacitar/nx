@@ -15,18 +15,21 @@
 //
 
 /// @file looper.h
-/// @brief An android-esque looper.
+/// @brief An android-esque looper.  Using this directly is not supported;
+/// create a HandlerThread.
 
 #ifndef INCLUDE_NX_LOOPER_H_
 #define INCLUDE_NX_LOOPER_H_
-
-#include "nx/message.h"
 
 #include <chrono>
 #include <map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
+#include <memory>
+
+#include "nx/message.h"
 
 /// @brief Library namespace.
 namespace nx {
@@ -36,8 +39,8 @@ class Handler;
 class MessageEnvelope {
   Handler* const handler_;
   const Message message_;
- public: // for now
-  MessageEnvelope(Handler* handler,Message message=Message());
+ public:  // TODO(nacitar): for now?
+  MessageEnvelope(Handler* handler, Message message = Message());
   Handler* handler() const;
   const Message* message() const;
 };
@@ -62,7 +65,7 @@ typedef IdMapType::iterator IdMapIterator;
 
 class QueueData {
  public:
-  QueueData(MessageEnvelope envelope);
+  explicit QueueData(MessageEnvelope envelope);
 
   MessageEnvelope envelope_;
   IdMapIterator idIterator_;
@@ -73,7 +76,7 @@ class QueueData {
 }  // namespace detail
 
 class Looper {
-  thread_local static Looper* looper_;
+  thread_local static std::shared_ptr<Looper> looper_;
   std::thread::id threadId_;
 
   typedef detail::Looper::QueueData QueueData;
@@ -82,38 +85,48 @@ class Looper {
   typedef detail::Looper::IdMapType IdMapType;
   typedef detail::Looper::IdMapIterator IdMapIterator;
 
-  mutable std::mutex mutex_; // mutable for hasMessages... should it be?
+  std::mutex mutex_;
   std::condition_variable conditionVariable_;
+  std::condition_variable runningConditionVariable_;
 
-  bool quit_;
+  std::atomic_bool hasLooped_;
+  std::atomic_bool isQuitting_;
 
  private:
   QueueType messageQueue_;
   IdMapType messageIdMap_;
 
   Looper();
+
  public:
   typedef detail::Looper::SteadyTimePoint SteadyTimePoint;
 
-  static Looper* myLooper();
+  static std::shared_ptr<Looper> threadLooper();
 
   // can be called more than once
   static bool prepare();
 
   std::thread::id getThreadId() const;
 
-  void send(MessageEnvelope envelope, SteadyTimePoint triggerTime);
-  void send(MessageEnvelope envelope, std::chrono::milliseconds delay);
+  static void loop();
+
+  bool isAlive();
+  void quit();
+  /// @brief Waits if the looper has not yet had loop() invoked.
+  void waitForLoop();
+
+ private:
+  void runLoop();
+  bool send(MessageEnvelope envelope, SteadyTimePoint triggerTime);
+  bool send(MessageEnvelope envelope, std::chrono::milliseconds delay);
 
   void remove(Handler* handler, unsigned int id,
       bool checkData = false, void* data = nullptr);
   bool hasMessages(const Handler* handler, unsigned int id,
-      bool checkData = false, void* data = nullptr) const;
+      bool checkData = false, void* data = nullptr);
 
-  static void loop();
 
-  void runLoop();
-  void quit();
+  friend class Handler;
 };
 
 }  // namespace nx

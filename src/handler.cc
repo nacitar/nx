@@ -24,13 +24,13 @@
 namespace nx {
 
 Handler::Handler()
-   : Handler(Looper::myLooper(),NULL) {
+    : Handler(Looper::threadLooper().get(), NULL) {
 }
 Handler::Handler(Callback* callback)
-    : Handler(Looper::myLooper(),callback) {
+    : Handler(Looper::threadLooper().get(), callback) {
 }
 Handler::Handler(Looper*looper)
-   : Handler(looper, NULL) {
+    : Handler(looper, NULL) {
 }
 Handler::Handler(Looper* looper, Callback* callback)
     : looper_(looper), callback_(callback) {
@@ -56,23 +56,35 @@ const Looper* Handler::looper() const {
 }
 
 bool Handler::hasMessages(unsigned int id) const {
-  return looper()->hasMessages(this, id);
+  return looper_->hasMessages(this, id);
 }
 
 bool Handler::hasMessages(unsigned int id, void* data) const {
-  return looper()->hasMessages(this, id, true, data);
+  return looper_->hasMessages(this, id, true, data);
+}
+
+bool Handler::sendMessageAtFrontOfQueue(Message message) {
+  return looper_->send(MessageEnvelope(this, message), SteadyTimePoint::min());
+}
+
+bool Handler::sendMessage(
+    Message message, Handler::SteadyTimePoint triggerTime) {
+  return looper_->send(MessageEnvelope(this, message), triggerTime);
+}
+
+bool Handler::sendMessage(
+    Message message, std::chrono::milliseconds delay) {
+  return looper_->send(MessageEnvelope(this, message), delay);
 }
 
 bool Handler::sendEmptyMessage(
     unsigned int id, Handler::SteadyTimePoint triggerTime) {
-  looper_->send(MessageEnvelope(this, Message(id)), triggerTime);
-  return true; // TODO
+  return looper_->send(MessageEnvelope(this, Message(id)), triggerTime);
 }
 
 bool Handler::sendEmptyMessage(
     unsigned int id, std::chrono::milliseconds delay) {
-  looper_->send(MessageEnvelope(this, Message(id)), delay);
-  return true; // TODO
+  return looper_->send(MessageEnvelope(this, Message(id)), delay);
 }
 
 void Handler::removeMessages(unsigned int id) {
@@ -83,6 +95,48 @@ void Handler::removeMessages(unsigned int id, void* data) {
 }
 
 void Handler::handleMessage(Message message) {
+}
+
+
+// HandlerThread
+
+void HandlerThread::threadFunction() {
+  Looper::prepare();
+  { // arbitrary block
+    std::lock_guard<std::mutex> lock(mutex_);
+    looper_ = Looper::threadLooper();
+    conditionVariable_.notify_all();
+  }
+  Looper::loop();
+}
+
+HandlerThread::HandlerThread(const std::string& name)
+    : name_(name)
+    , looper_(nullptr) {
+  threadObject_.reset(new std::thread(&HandlerThread::threadFunction, this));
+}
+HandlerThread::~HandlerThread() {
+  getLooper()->quit();
+  if (threadObject_->joinable()) {
+    try {
+      threadObject_->join();
+    } catch (...) {
+      // TODO(nacitar): std::cerr << "Error while joining." << std::endl;
+    }
+  }
+}
+Looper* HandlerThread::getLooper() {
+  // TODO(nacitar): spinlock?
+  std::unique_lock<std::mutex> lock(mutex_);
+  if (!looper_) {
+    conditionVariable_.wait(lock);
+  }
+  looper_->waitForLoop();
+  return looper_.get();
+}
+
+void HandlerThread::join() {
+  return threadObject_->join();
 }
 
 }  // namespace nx

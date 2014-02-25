@@ -23,7 +23,7 @@
 /// @brief Library namespace.
 namespace nx {
 
-MessageEnvelope::MessageEnvelope(Handler* handler,Message message)
+MessageEnvelope::MessageEnvelope(Handler* handler, Message message)
     : handler_(handler)
     , message_(message) {
 }
@@ -48,18 +48,19 @@ QueueData::QueueData(MessageEnvelope envelope)
 }  // namespace detail
 
 
-thread_local Looper* Looper::looper_;
+thread_local std::shared_ptr<Looper> Looper::looper_;
 Looper::Looper()
-    : quit_(false) {
+    : hasLooped_(false)
+    , isQuitting_(false) {
 }
-Looper* Looper::myLooper() {
+std::shared_ptr<Looper> Looper::threadLooper() {
   return looper_;
 }
 
 // can be called more than once
 bool Looper::prepare() {
   if (!looper_) {
-    looper_ = new Looper();
+    looper_.reset(new Looper());
     looper_->threadId_ = std::this_thread::get_id();
     return true;
   }
@@ -69,14 +70,16 @@ bool Looper::prepare() {
 std::thread::id Looper::getThreadId() const {
   return threadId_;
 }
-void Looper::send(MessageEnvelope envelope, SteadyTimePoint triggerTime) {
+bool Looper::send(MessageEnvelope envelope, SteadyTimePoint triggerTime) {
   std::lock_guard<std::mutex> lock(mutex_);
 
+  if (!isAlive()) return false;
+
   QueueIterator queueIt = messageQueue_.insert(
-      QueueType::value_type(triggerTime,QueueData(envelope)));
+      QueueType::value_type(triggerTime, QueueData(envelope)));
 
   IdMapIterator idIt = messageIdMap_.insert(
-      IdMapType::value_type(envelope.message()->id(),queueIt));
+      IdMapType::value_type(envelope.message()->id(), queueIt));
 
   queueIt->second.idIterator_ = idIt;
 
@@ -85,9 +88,11 @@ void Looper::send(MessageEnvelope envelope, SteadyTimePoint triggerTime) {
   if (queueIt == messageQueue_.begin()) {
     conditionVariable_.notify_one();
   }
+
+  return true;
 }
-void Looper::send(MessageEnvelope envelope, std::chrono::milliseconds delay) {
-  send(envelope,std::chrono::steady_clock::now() + delay);
+bool Looper::send(MessageEnvelope envelope, std::chrono::milliseconds delay) {
+  return send(envelope, std::chrono::steady_clock::now() + delay);
 }
 
 void Looper::remove(Handler* handler, unsigned int id,
@@ -111,9 +116,9 @@ void Looper::remove(Handler* handler, unsigned int id,
 }
 
 bool Looper::hasMessages(const Handler* handler, unsigned int id,
-    bool checkData, void* data) const {
+    bool checkData, void* data) {
   std::lock_guard<std::mutex> lock(mutex_);
-  for(auto range = messageIdMap_.equal_range(id);
+  for (auto range = messageIdMap_.equal_range(id);
       range.first != range.second; ++range.first) {
     MessageEnvelope* envelope = &range.first->second->second.envelope_;
     if (envelope->handler() == handler
@@ -126,46 +131,66 @@ bool Looper::hasMessages(const Handler* handler, unsigned int id,
 
 
 void Looper::loop() {
-  myLooper()->runLoop();
+  threadLooper()->runLoop();
 }
 
+bool Looper::isAlive() {
+  return !isQuitting_.load() && hasLooped_.load();
+}
+void Looper::waitForLoop() {
+  if (!hasLooped_.load()) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (!hasLooped_.load()) {
+      runningConditionVariable_.wait(lock);
+    }
+  }
+}
 void Looper::runLoop() {
-  using namespace std::chrono;
+  using std::chrono::steady_clock;
+  using std::chrono::milliseconds;
+  using std::chrono::duration_cast;
   decltype(messageQueue_)::iterator it;
   SteadyTimePoint when, now;
   milliseconds delay;
 
   std::unique_lock<std::mutex> lock(mutex_);
-  for (;!quit_;) { // infinite
-    if (!messageQueue_.empty()) {
-      it = messageQueue_.begin();
-      MessageEnvelope* envelope = &it->second.envelope_;
-      when = it->first;
-      now = steady_clock::now();
-      delay =
-          duration_cast<milliseconds>(when - now);
-      if (delay.count() <= 0) {
-        // remove from queue
-        messageIdMap_.erase(it->second.idIterator_);
-        messageQueue_.erase(it);
-        lock.unlock();
-        // Calling while unlocked, because other threads can send messages
-        // while we handle one.  In fact, the message handler itself may want
-        // to add messages.
-        envelope->handler()->dispatchMessage(*envelope->message());
-        lock.lock();
+  // We only allow you to loop once
+  if (!isQuitting_.load()) {
+    hasLooped_.store(true);
+    runningConditionVariable_.notify_all();
+    for ( ; !isQuitting_.load(); ) {
+      if (!messageQueue_.empty()) {
+        it = messageQueue_.begin();
+        MessageEnvelope* envelope = &it->second.envelope_;
+        when = it->first;
+        now = steady_clock::now();
+        delay =
+            duration_cast<milliseconds>(when - now);
+        if (delay.count() <= 0) {
+          // remove from queue
+          messageIdMap_.erase(it->second.idIterator_);
+          messageQueue_.erase(it);
+          lock.unlock();
+          // Calling while unlocked, because other threads can send messages
+          // while we handle one.  In fact, the message handler itself may want
+          // to add messages.
+          envelope->handler()->dispatchMessage(*envelope->message());
+          lock.lock();
+        } else {
+          conditionVariable_.wait_for(lock, delay);
+        }
       } else {
-        conditionVariable_.wait_for(lock,delay);
+        conditionVariable_.wait(lock);
       }
-    } else {
-      conditionVariable_.wait(lock);
     }
   }
-  quit_ = false;
+  messageQueue_.clear();
+  messageIdMap_.clear();
 }
 void Looper::quit() {
   std::unique_lock<std::mutex> lock(mutex_);
-  quit_ = true;
+  isQuitting_.store(true);
+  conditionVariable_.notify_one();
 }
 
 }  // namespace nx

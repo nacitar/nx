@@ -20,9 +20,14 @@
 #ifndef INCLUDE_NX_HANDLER_H_
 #define INCLUDE_NX_HANDLER_H_
 
-#include "nx/message.h"
-
 #include <chrono>
+#include <string>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <memory>
+
+#include "nx/message.h"
 
 /// @brief Library namespace.
 namespace nx {
@@ -41,12 +46,12 @@ class Handler {
 
   Looper* const looper_;
   Callback* const callback_;
-  
+
  public:
   typedef std::chrono::time_point<std::chrono::steady_clock> SteadyTimePoint;
   Handler();
-  Handler(Callback* callback);
-  Handler(Looper* looper);
+  explicit Handler(Callback* callback);
+  explicit Handler(Looper* looper);
   Handler(Looper* looper, Callback* callback);
 
   void dispatchMessage(Message message);
@@ -57,14 +62,13 @@ class Handler {
   bool hasMessages(unsigned int id) const;
   bool hasMessages(unsigned int id, void* data) const;
 
-  // TODO
-  //bool sendMessageAtFrontOfQueue(Message message);
-  //bool sendMessage(Message message);
-  //bool sendMessageAtTime(Message msg, SteadyTimePoint triggerTime);
-  //bool sendMessageAtTime(Message msg, std::chrono::milliseconds delay)
-  bool sendEmptyMessage(unsigned int id, SteadyTimePoint triggerTime);
+  bool sendMessageAtFrontOfQueue(Message message);
+  bool sendMessage(Message msg,
+      std::chrono::milliseconds delay = std::chrono::milliseconds(0));
+  bool sendMessage(Message msg, SteadyTimePoint triggerTime);
   bool sendEmptyMessage(unsigned int id,
       std::chrono::milliseconds delay = std::chrono::milliseconds(0));
+  bool sendEmptyMessage(unsigned int id, SteadyTimePoint triggerTime);
 
   void removeMessages(unsigned int id);
   void removeMessages(unsigned int id, void* data);
@@ -73,6 +77,22 @@ class Handler {
   virtual void handleMessage(Message message);
 };
 
+class HandlerThread {
+  std::string name_;
+  std::unique_ptr<std::thread> threadObject_;
+  std::shared_ptr<Looper> looper_;
+  std::mutex mutex_;
+  std::condition_variable conditionVariable_;
+
+  void threadFunction();
+
+ public:
+  explicit HandlerThread(const std::string& name);
+  ~HandlerThread();
+  /// @brief Blocks until the looper is available.
+  Looper* getLooper();
+  void join();
+};
 }  // namespace nx
 
 #endif  // INCLUDE_NX_HANDLER_H_

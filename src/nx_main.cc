@@ -18,7 +18,7 @@
 /// @brief An implementation of the main()/other startup functions required
 /// to properly instantiate the user's application instance and run its main.
 
-#ifdef NX_OS_WINDOWS
+#ifdef NX_TARGET_WINDOWS
 #include <stdlib.h>  // for __argc and __argv
 #endif
 
@@ -40,7 +40,7 @@ int main(int argc, char*argv[]) {
   return application.main();
 }
 
-#ifdef NX_OS_WINDOWS
+#ifdef NX_TARGET_WINDOWS
 /// @brief Windows main driver; invokes the {@link nx::Application} instance
 /// for this app.
 int WINAPI WinMain(
@@ -61,4 +61,4 @@ int WINAPI WinMain(
   application.setArguments(data->argc, data->argv);
   return application.main();
 }
-#endif  // NX_OS_WINDOWS
+#endif  // NX_TARGET_WINDOWS

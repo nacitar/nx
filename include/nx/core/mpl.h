@@ -15,38 +15,29 @@
 //
 
 /// @file mpl.h
-/// @brief A collection of metaprogramming tools.
+/// @brief A collection of metaprogramming tools.  Operations desired only at
+/// compilation time are stored directly in the library namespace.  However,
+/// operations which may be desired at runtime as well may have
+/// implementations for values not known at compilation-time which most
+/// naturally would have the same name.  For this reason, the compilation-time
+/// versions of these are placed into a sub-namespace "mpl".
 
 #ifndef INCLUDE_NX_CORE_MPL_H_
 #define INCLUDE_NX_CORE_MPL_H_
 
-
-#include <type_traits>
-#include <limits>
-
 #include "nx/core/os.h"
+
+#ifdef NX_EMBEDDED
+  #include "nx/core/embedded/type_traits.h"
+#else
+  #include <type_traits>
+#endif
 
 /// @brief Preprocessor text concatenation.
 #define NX_PP_CAT(x, y) NX_PP_CAT1(x, y)
 
 /// @brief Preprocessor text concatenation helper.
 #define NX_PP_CAT1(x, y) x##y
-
-/// @brief Simple static warning.
-#define NX_STATIC_WARNING(cond, msg) \
-struct NX_PP_CAT(static_warning, __LINE__) { \
-  NX_DEPRECATED(void _(::std::false_type const&), msg) {} \
-  void _(::std::true_type const&) {} \
-  NX_PP_CAT(static_warning, __LINE__)() {_(::nx::Bool<cond>());} \
-}
-
-/// @brief Static warning at template level.
-/// Note: using NX_STATIC_WARNING_TEMPLATE changes the meaning of a program in
-/// a small way.  It introduces a member/variable declaration.  This means at
-/// least one byte of space in each structure/class instantiation.
-/// NX_STATIC_WARNING should be preferred in any non-template situation.
-#define NX_STATIC_WARNING_TEMPLATE(cond, msg) \
-    NX_STATIC_WARNING(cond, msg) NX_PP_CAT(_localvar_staticwarning, __LINE__)
 
 /// @brief When placed within the private section of a class/structure this
 /// will disallow the default constructor.
@@ -81,6 +72,16 @@ struct NX_PP_CAT(static_warning, __LINE__) { \
 
 /// @brief Library namespace.
 namespace nx {
+
+/// @brief A function pointer type returning the type Return and accepting the
+/// provided argument types.
+template <typename Return, typename... Arguments>
+using Function = Return (*)(Arguments...);
+
+/// @brief A member function pointer type for a member of Class which returns
+/// the type Return and accepting the provided argument types.
+template <typename Return, typename Class, typename... Arguments>
+using MemberFunction = Return (Class::*)(Arguments...);
 
 /// @brief Simple wrapper around an integral constant.  Can be used to make a
 /// value depend upon a template parameter by passing the types as additional
@@ -176,7 +177,7 @@ using EnableIf = Invoke<std::enable_if<Condition::value, T>>;
 template <typename Condition, typename T = void>
 using DisableIf = Invoke<std::enable_if<Not<Condition>::value, T>>;
 
-/// @brief An distinct "invalid" type, useful for metaprogramming.
+/// @brief A distinct "invalid" type, useful for metaprogramming.
 class InvalidType {
  private:
   NX_UNINSTANTIABLE(InvalidType);
@@ -228,70 +229,10 @@ template <typename T>
 class BitSize : public UInt<sizeof(T)*CHAR_BIT> {
 };
 
-/// @cond nx_detail
-namespace detail {
-
-template <
-    typename T, unsigned int kBits, bool kAllowPartial, class Enable = void>
-class BitMaskInternal : public std::integral_constant<
-    T, (static_cast<T>(1) << kBits)-1> {
-};
-
-template <typename T, unsigned int kBits, bool kAllowPartial>
-class BitMaskInternal<
-    T, kBits, kAllowPartial,
-    EnableIf<Not<std::is_integral<T>>>> : public UInt<0> {
-  static_assert(
-      DependentBool<false, T>::value, "The provided type is not integral.");
-};
-
-template <typename T, unsigned int kBits, bool kAllowPartial>
-class BitMaskInternal<
-    T, kBits, kAllowPartial,
-    EnableIf<All<std::is_integral<T>, Bool<(kBits == BitSize<T>::value)>>>>
-    : public std::integral_constant<T, ~static_cast<T>(0)> {
-};
-
-// If we allow partial masks, we just max out what bits we have if we can't
-// hold them all.
-template <typename T, unsigned int kBits>
-class BitMaskInternal<
-    T, kBits, true,
-    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
-    : public std::integral_constant<T, ~static_cast<T>(0)> {
-};
-
-// If we don't allow partial masks, we fail a static assert if we can't hold
-// all the bits.
-template <typename T, unsigned int kBits>
-class BitMaskInternal<
-    T, kBits, false,
-    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
-    : public std::integral_constant<T, 0> {
-  static_assert(
-      DependentBool<false, T>::value,
-      "This type does not have enough bits to hold a mask of this size.");
-};
-
-}  // namespace detail
-/// @endcond
-
-/// @brief Provides a bit mask of type T with the lowest kBits bits set.
-template <typename T, unsigned int kBits, bool kAllowPartial = false>
-class BitMask : public detail::BitMaskInternal<T, kBits, kAllowPartial> {
-};
-
-/// @brief Stores a true value if kValue is in the range [kMin,kMax]
-template <unsigned int kValue, unsigned int kMin, unsigned int kMax>
-class InRange : public Bool< (kMin <= kValue && kValue <= kMax)> {
-};
-
 /// @brief Checks if the size of the type T is within the requested range.
-template <
-  typename T,
-  unsigned int kMin,
-  unsigned int kMax = std::numeric_limits<unsigned int>::max()>
-class BitRange : public InRange<BitSize<T>::value, kMin, kMax> {
+template <typename T, unsigned int kMin, unsigned int kMax = ~0u>
+class BitRange : public Bool<
+    (kMin <= BitSize<T>::value && BitSize<T>::value <= kMax)> {
 };
 
 /// @brief Determines if integer type T is <= the size of integer type
@@ -301,7 +242,7 @@ class IntegerFits
     : public All<
           std::is_integral<T>,
           std::is_integral<Destination>,
-          InRange<BitSize<T>::value, 0, BitSize<Destination>::value>> {
+          Bool<(BitSize<T>::value <= BitSize<Destination>::value)>> {
 };
 
 /// @brief Makes an integral type either signed or unsigned based upon the
@@ -322,19 +263,12 @@ class OverflowMult
         kRHS != 0 && (static_cast<T>(kLHS * kRHS) / kRHS) != kLHS)> {
 };
 
-/// @brief Instantiates to be the specified number of bytes in size.
-template<unsigned int kSize>
-class SpecificSize {
-  unsigned char buffer_[kSize];
-};
+/// @brief mpl namespace
+namespace mpl {
 
-/// @brief Instantiates to be exactly the same number of bytes as an object
-/// of type T would require on the stack.  Used to reserve space for a type
-/// without constructing it.  This allows much neater code in such cases.
-/// new same_size<T>[50]; instead of using something like
-/// new unsigned char[sizeof(T)*50];
-template<class T>
-class SameSize : public SpecificSize<sizeof(T)> {
+/// @brief Returns true if the passed integral value is a power of two.
+template <class T, T value_>
+struct IsPowerOfTwo : Bool<(value_ && !(value_ & (value_ - 1)))> {
 };
 
 /// @cond nx_detail
@@ -365,15 +299,229 @@ template <class T, T kBase, unsigned int kPower>
 class Power : public detail::Power<T, kBase, kPower> {
 };
 
-/// @brief A function pointer type returning the type Return and accepting the
-/// provided argument types.
-template <typename Return, typename... Arguments>
-using Function = Return (*)(Arguments...);
+/// @cond nx_detail
+namespace detail {
 
-/// @brief A member function pointer type for a member of Class which returns
-/// the type Return and accepting the provided argument types.
-template <typename Return, typename Class, typename... Arguments>
-using MemberFunction = Return (Class::*)(Arguments...);
+template <
+    typename T, unsigned int kBits, bool kAllowPartial, class Enable = void>
+class LowBitMaskInternal : public std::integral_constant<
+    T, (static_cast<T>(1) << kBits)-1> {
+};
+
+template <typename T, unsigned int kBits, bool kAllowPartial>
+class LowBitMaskInternal<
+    T, kBits, kAllowPartial,
+    EnableIf<Not<std::is_integral<T>>>> : public UInt<0> {
+  static_assert(
+      DependentBool<false, T>::value, "The provided type is not integral.");
+};
+
+template <typename T, unsigned int kBits, bool kAllowPartial>
+class LowBitMaskInternal<
+    T, kBits, kAllowPartial,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits == BitSize<T>::value)>>>>
+    : public std::integral_constant<T, ~static_cast<T>(0)> {
+};
+
+// If we allow partial masks, we just max out what bits we have if we can't
+// hold them all.
+template <typename T, unsigned int kBits>
+class LowBitMaskInternal<
+    T, kBits, true,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
+    : public std::integral_constant<T, ~static_cast<T>(0)> {
+};
+
+// If we don't allow partial masks, we fail a static assert if we can't hold
+// all the bits.
+template <typename T, unsigned int kBits>
+class LowBitMaskInternal<
+    T, kBits, false,
+    EnableIf<All<std::is_integral<T>, Bool<(kBits > BitSize<T>::value)>>>>
+    : public std::integral_constant<T, 0> {
+  static_assert(
+      DependentBool<false, T>::value,
+      "This type does not have enough bits to hold a mask of this size.");
+};
+
+}  // namespace detail
+/// @endcond
+
+/// @brief Provides a bit mask of type T with the lowest kBits bits set.
+template <typename T, unsigned int kBits, bool kAllowPartial = false>
+class LowBitMask : public detail::LowBitMaskInternal<T, kBits, kAllowPartial> {
+};
+
+/// @cond nx_detail
+namespace detail {
+
+template <typename Type, Type value_, class Enable = void>
+struct BitScanForward {
+  static constexpr const unsigned int value =
+      1 + BitScanForward<Type,(value_ >> 1)>::value;
+};
+
+template <typename Type, Type value_>
+struct BitScanForward<Type,value_,EnableIf<Bool<value_ & 0x1>,void>> {
+  static constexpr const unsigned int value = 0;
+};
+
+// Negative
+template <typename Type, Type value_>
+struct BitScanForward<Type,value_,EnableIf<Bool<(value_ < 0)>>> {
+  static constexpr const unsigned int value =
+      BitScanForward<typename std::make_unsigned<Type>::type,
+          static_cast<typename std::make_unsigned<Type>::type>(value_)>::value;
+};
+// The value '0' makes no sense for this operation.
+template <typename Type, Type value_>
+struct BitScanForward<Type,value_,EnableIf<Bool<value_ == 0>,void>> {
+  static constexpr const unsigned int value = 0; // defined to reduce errors
+  static_assert(sizeof(Type) < 0,"Argh.");
+};
+
+}  // namespace detail
+/// @endcond
+
+template <typename Type, Type value_>
+struct BitScanForward : public detail::BitScanForward<Type,value_> {
+};
+
+/// @cond nx_detail
+namespace detail {
+
+template <typename Type, Type value, class Enable = void>
+struct LowestBitRun {
+  static constexpr const Type offset =
+      BitScanForward<Type,value>::value;
+  static constexpr const Type length =
+      BitScanForward<Type,(~(value >> offset))>::value;
+};
+template <typename Type, Type value>
+struct LowestBitRun<Type, value, EnableIf<Bool<value == 0>>> {
+  static constexpr const Type offset = 0;
+  static constexpr const Type length = 0;
+};
+
+}  // namespace detail
+
+template <typename Type, Type value>
+struct LowestBitRun : public detail::LowestBitRun<Type,value> {
+};
+
+}  // namespace mpl
+
+/// @cond nx_detail
+namespace detail {
+
+template <typename Type, Type mask_, Type bits_>
+class BitValueBase {
+  public:
+    typedef Type value_type;
+    static constexpr const value_type mask = mask_;
+    static constexpr const value_type bits = bits_;
+    static_assert((bits_ & mask_) == bits_, "Unreferenced set bits in value.");
+};
+
+// multiple set bits, but not all
+template <typename Type, Type mask_, Type bits_, class Enable = void>
+class BitValue : public BitValueBase<Type, mask_, bits_> {
+ public:
+  template <class PointerType>
+  static NX_FORCEINLINE void set(PointerType* data) {
+    *data = bits_ | (*data & ~mask_);
+  }
+};
+
+// no bits in mask
+template <typename Type, Type mask_, Type bits_>
+class BitValue<Type, mask_, bits_, EnableIf<Bool<mask_ == 0>>>
+    : public BitValueBase<Type, mask_, bits_> {
+ public:
+  template <class PointerType>
+  static NX_FORCEINLINE void set(PointerType* data) {
+    /* NOOP */
+  }
+};
+// all bits in mask
+template <typename Type, Type mask_, Type bits_>
+class BitValue<Type, mask_, bits_, EnableIf<Bool<~mask_ == 0>>>
+    : public BitValueBase<Type, mask_, bits_> {
+ public:
+  template <class PointerType>
+  static NX_FORCEINLINE void set(PointerType* data) {
+    *data = bits_;
+  }
+};
+// single set bit
+template <typename Type, Type mask_, Type bits_>
+class BitValue<Type, mask_, bits_,
+    EnableIf<Bool<mpl::IsPowerOfTwo<Type, mask_>::value && bits_ != 0>>>
+    : public BitValueBase<Type, mask_, bits_> {
+ public:
+  template <class PointerType>
+  static NX_FORCEINLINE void set(PointerType* data) {
+    *data |= mask_;
+  }
+};
+// single unset bit
+template <typename Type, Type mask_, Type bits_>
+class BitValue<Type, mask_, bits_,
+    EnableIf<Bool<mpl::IsPowerOfTwo<Type, mask_>::value && bits_ == 0>>>
+    : public BitValueBase<Type, mask_, bits_> {
+ public:
+  template <class PointerType>
+  static NX_FORCEINLINE void set(PointerType* data) {
+    *data &= ~mask_;
+  }
+};
+
+template <typename Type, Type mask_, Type value_, class Enable = void>
+class BitField
+    : public BitValue<Type,mask_,
+        ((value_ &
+            mpl::LowBitMask<
+                Type, mpl::LowestBitRun<Type, mask_>::length>::value)
+            << mpl::LowestBitRun<Type, mask_>::offset) |
+        BitField<Type, (mask_ & ~(
+            mpl::LowBitMask<
+                Type, mpl::LowestBitRun<Type, mask_>::length>::value
+            << mpl::LowestBitRun<Type, mask_>::offset)),
+            (value_ >> mpl::LowestBitRun<Type, mask_>::length)>::bits>
+          {
+};
+template <typename Type, Type mask_, Type value_>
+class BitField<Type, mask_, value_, EnableIf<Bool<mask_ == 0>>>
+    : public BitValue<Type,0,0> {
+  // slightly different check than the one in BitValue
+  static_assert(value_ == 0, "Extra unused set bits in value.");
+};
+
+}  // namespace detail
+/// @endcond
+
+template <typename Type, Type mask_, Type value_>
+class BitValue : public detail::BitValue<Type, mask_, value_> {
+};
+template <typename Type, Type mask_, Type value_>
+class BitField : public detail::BitField<Type, mask_, value_> {
+};
+template <typename Mask, typename ... Masks>
+class BitTransaction
+    : public BitValue<typename Mask::value_type,
+        Mask::mask | BitTransaction<Masks...>::mask,
+        Mask::bits | BitTransaction<Masks...>::bits> {
+  static_assert(std::is_same<
+      typename Mask::value_type,
+      typename BitTransaction<Masks...>::value_type>::value,
+      "All mask types must be the same.");
+  static_assert((Mask::mask & BitTransaction<Masks...>::mask) == 0,
+      "Masks are not allowed to refer to the same bits; no overlapping.");
+};
+template <typename Mask>
+class BitTransaction<Mask>
+    : public BitValue<typename Mask::value_type, Mask::mask, Mask::bits> {
+};
 
 }  // namespace nx
 

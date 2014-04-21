@@ -53,19 +53,19 @@ template <unsigned int number_base, unsigned int version, class T>
 constexpr EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 32>>,
 unsigned int> Digits(T value) {
-  return  (value < Power<T, 10, 5>::value) ?
-      (value < Power<T, 10, 2>::value) ?
-        (value < Power<T, 10, 1>::value) ? 1 : 2
+  return  (value < mpl::Power<T, 10, 5>::value) ?
+      (value < mpl::Power<T, 10, 2>::value) ?
+        (value < mpl::Power<T, 10, 1>::value) ? 1 : 2
       :
-      (value < Power<T, 10, 4>::value) ?
-        (value < Power<T, 10, 3>::value) ? 3 : 4
+      (value < mpl::Power<T, 10, 4>::value) ?
+        (value < mpl::Power<T, 10, 3>::value) ? 3 : 4
       : 5
     :
-    (value < Power<T, 10, 7>::value) ?
-      (value < Power<T, 10, 6>::value) ? 6 : 7
+    (value < mpl::Power<T, 10, 7>::value) ?
+      (value < mpl::Power<T, 10, 6>::value) ? 6 : 7
     :
-    (value < Power<T, 10, 9>::value) ?
-      (value < Power<T, 10, 8>::value) ? 8 : 9
+    (value < mpl::Power<T, 10, 9>::value) ?
+      (value < mpl::Power<T, 10, 8>::value) ? 8 : 9
     : 10;
 }
 
@@ -74,22 +74,22 @@ template <unsigned int number_base, unsigned int version, class T>
 constexpr EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 64>>,
 unsigned int> Digits(T value) {
-  return  (value < Power<T, 10, 10>::value) ?
+  return  (value < mpl::Power<T, 10, 10>::value) ?
       Digits<number_base, 32>(value)
     :
-    (value < Power<T, 10, 15>::value) ?
-      (value < Power<T, 10, 12>::value) ?
-        (value < Power<T, 10, 11>::value) ? 11 : 12
+    (value < mpl::Power<T, 10, 15>::value) ?
+      (value < mpl::Power<T, 10, 12>::value) ?
+        (value < mpl::Power<T, 10, 11>::value) ? 11 : 12
       :
-      (value < Power<T, 10, 14>::value) ?
-        (value < Power<T, 10, 13>::value) ? 13 : 14
+      (value < mpl::Power<T, 10, 14>::value) ?
+        (value < mpl::Power<T, 10, 13>::value) ? 13 : 14
       : 15
     :
-    (value < Power<T, 10, 17>::value) ?
-      (value < Power<T, 10, 16>::value) ? 16 : 17
+    (value < mpl::Power<T, 10, 17>::value) ?
+      (value < mpl::Power<T, 10, 16>::value) ? 16 : 17
     :
-    (value < Power<T, 10, 19>::value) ?
-      (value < Power<T, 10, 18>::value) ? 18 : 19
+    (value < mpl::Power<T, 10, 19>::value) ?
+      (value < mpl::Power<T, 10, 18>::value) ? 18 : 19
     : 20;
 }
 
@@ -98,7 +98,7 @@ template <unsigned int number_base, unsigned int version, class T>
 EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 0>>,
 unsigned int> Digits(T value) {
-  constexpr const T next_pow10 = Power<T, 10, 20>::value;
+  constexpr const T next_pow10 = mpl::Power<T, 10, 20>::value;
   if (value < next_pow10) {
     return version::Digits<number_base, version>(value);
   }

@@ -33,7 +33,7 @@ namespace nx {
 /// @brief A class used to hold platform-specific data that is sometimes
 /// pertinent that would typically be obtained in a traditional main()
 /// function.
-#ifdef NX_OS_WINDOWS
+#ifdef NX_TARGET_WINDOWS
 struct PlatformData {
   // These members are named matching winapi documentation.
 

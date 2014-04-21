@@ -22,14 +22,12 @@
 #ifndef INCLUDE_NX_CORE_INTEGER_H_
 #define INCLUDE_NX_CORE_INTEGER_H_
 
-#ifndef OS_WINDOWS_
+#ifndef NX_EMBEDDED
+#ifndef NX_TARGET_WINDOWS
 #include <sys/types.h>  // pid_t
 #endif
+#endif
 
-#include <type_traits>
-#include <limits>
-
-#include "nx/core/os.h"
 #include "nx/core/mpl.h"
 
 /// @brief Library namespace.
@@ -97,32 +95,27 @@ class PreferIntegralSign
 template <
     bool kSigned,
     unsigned int kBitMin,
-    unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
+    unsigned int kBitMax = ~0u>
 class IntegralLeastRangeSearch
     : public PreferIntegralSign<
         kSigned,
         Invoke<PreferIntegralType<
           Invoke<PreferIntegralType<
             Conditional<
-              InRange<BitSize<char>::value, kBitMin, kBitMax>,
+              BitRange<char, kBitMin, kBitMax>,
               char,
               Conditional<
-                InRange<
-                  BitSize<short>::value,  // NOLINT(runtime/int)
-                  kBitMin, kBitMax>,
+                BitRange<short, kBitMin, kBitMax>,  // NOLINT(runtime/int)
                 short,  // NOLINT(runtime/int)
                 Conditional<
-                  InRange<BitSize<int>::value, kBitMin, kBitMax>,
+                  BitRange<int, kBitMin, kBitMax>,
                   int,
                   Conditional<
-                    InRange<
-                      BitSize<long>::value,  // NOLINT(runtime/int)
-                      kBitMin, kBitMax>,
+                    BitRange<long, kBitMin, kBitMax>,  // NOLINT(runtime/int)
                     long,  // NOLINT(runtime/int)
                     Conditional<
-                      InRange<
-                        BitSize<long long>::value,  // NOLINT(runtime/int)
-                        kBitMin, kBitMax>,
+                      BitRange<long long,  // NOLINT(runtime/int)
+                          kBitMin, kBitMax>,
                       long long,  // NOLINT(runtime/int)
                       InvalidType>
                   >
@@ -147,7 +140,7 @@ class IntegralLeastRangeSearch
 template <
     bool kSigned,
     unsigned int kBitMin,
-    unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
+    unsigned int kBitMax = ~0u>
 class IntegralLeastRangeTraits
     : public AssertValidType<
         Invoke<IntegralLeastRangeSearch<kSigned, kBitMin, kBitMax>>,
@@ -166,7 +159,7 @@ class IntegralLeastRangeTraits
 template <
     bool kSigned,
     unsigned int kBitMin,
-    unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
+    unsigned int kBitMax = ~0u>
 using integral_least_range_t =
     Invoke<IntegralLeastRangeTraits<kSigned, kBitMin, kBitMax>>;
 
@@ -175,7 +168,7 @@ using integral_least_range_t =
 template <
     bool kSigned,
     unsigned int kBitMin,
-    unsigned int kBitMax = std::numeric_limits<unsigned int>::max()>
+    unsigned int kBitMax = ~0u>
 using integral_least_range_search_t =
     Invoke<IntegralLeastRangeSearch<kSigned, kBitMin, kBitMax>>;
 
@@ -299,7 +292,9 @@ typedef std::ptrdiff_t ptrdiff_t;
 /// theoretically possible object of any type (including array).
 typedef std::size_t size_t;
 
-#ifdef OS_WINDOWS_
+#ifndef NX_EMBEDDED
+
+#ifdef NX_TARGET_WINDOWS
 /// @brief A type capable of holding a process identifier.
 typedef DWORD pid_t;
 #else
@@ -312,6 +307,8 @@ typedef uint_least_t<BitSize<pid_t>::value> uintpid_t;
 
 /// @brief A signed integer type of the same bit size as that of a pid_t.
 typedef int_least_t<BitSize<pid_t>::value> intpid_t;
+
+#endif
 
 }  // namespace nx
 

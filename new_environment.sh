@@ -18,6 +18,8 @@
 
 cd "$(dirname "$0")"
 
+root_dir="$PWD"
+
 function die() {
   echo "$@" 1>&2
   exit 1
@@ -25,7 +27,8 @@ function die() {
 
 # defaults
 debug=0
-cross=0
+mingw32=0
+avr=0
 dest_dir=""
 use_clang=0
 
@@ -34,8 +37,10 @@ for arg in "$@"
 do
   if [ "$arg" == "--clang" ]; then
     use_clang=1
-  elif [ "$arg" == "--cross" ]; then
-    cross=1
+  elif [ "$arg" == "--mingw32" ]; then
+    mingw32=1
+  elif [ "$arg" == "--avr" ]; then
+    avr=1
   elif [ "$arg" == "--debug" ]; then
     debug=1
   elif [ "${arg:0:1}" == "-" ]; then
@@ -51,6 +56,9 @@ do
     die "Multiple destination directories found."
   fi
 done
+if [ "$mingw32" -ne 0 -a "$avr" -ne 0 ]; then
+  die "Multiple cross-compilation toolchains specified (mingw32 and avr)"
+fi
 
 # default
 if [ -z "$dest_dir" ]; then
@@ -66,9 +74,17 @@ else
   cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Release"
 fi
 
-if [ "$cross" -ne 0 ]; then
-  toolchain="-DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32_toolchain.cmake"
+toolchain=""
+if [ "$mingw32" -ne 0 ]; then
+  toolchain="-DCMAKE_TOOLCHAIN_FILE=$root_dir/cmake/mingw32_toolchain.cmake"
   cmake_flags="$cmake_flags $toolchain -DSTATIC_RUNTIME=1"
+elif [ "$avr" -ne 0 ]; then
+  toolchain="-DCMAKE_TOOLCHAIN_FILE=$root_dir/cmake/avr_toolchain.cmake"
+  cmake_flags="$cmake_flags $toolchain"
+fi
+
+if [ -n "$toolchain" -a "$use_clang" -ne 0 ]; then
+  die "Cannot use clang and a cross-compilation toolchain at the same time."
 fi
 
 # Make a new build environment
@@ -76,9 +92,9 @@ fi
 if mkdir "$dest_dir" && pushd "$dest_dir"; then
   echo "Attempting to create build environment."
   if [ "$use_clang" -ne 0 ]; then
-    CC=clang CXX=clang++ cmake $cmake_flags ..
+    CC=clang CXX=clang++ cmake $cmake_flags "$root_dir"
   else
-    cmake $cmake_flags ..
+    cmake $cmake_flags "$root_dir"
   fi
   popd  # build
   echo

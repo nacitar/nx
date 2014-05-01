@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 Jacob McIntosh <nacitar at ubercpp dot com>
+# Copyright (C) 2014 Jacob McIntosh <nacitar at ubercpp dot com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+include(cmake/build_utils.cmake)
+
 ########################################################################
 #
 # Project-wide settings
@@ -21,18 +23,6 @@
 project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 enable_testing()
-
-# Appends values to a space-delimited string
-macro(Append var)
-  foreach(value ${ARGN})
-    set("${var}" "${${var}} ${value}")
-  endforeach()
-endmacro()
-
-# Creates a binary name from a given target
-macro(ExecutableName var target)
-  set("${var}" "${CMAKE_EXECUTABLE_PREFIX}${target}${CMAKE_EXECUTABLE_SUFFIX}")
-endmacro()
 
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
@@ -60,24 +50,17 @@ if(GCC_COMPAT)
   option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
 endif()
 
+
 # Compilation settings
 if(GCC_COMPAT)
-  set(flags "-O3 -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE "${flags}")
-  set(CMAKE_CXX_FLAGS_RELEASE "${flags}")
+  Append(C_FLAGS "-std=gnu99 -Wstrict-prototypes")
+  Append(CXX_FLAGS "-std=gnu++11 -Wold-style-cast")
+  Append(CC_FLAGS_RELEASE "-O3 -DNDEBUG")
+  Append(CC_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
+  Append(CC_FLAGS "-Werror -Wall -Wno-unused-function -Wno-unused-value -g3")
 
-  set(flags "-O0 -fno-inline -DDEBUG")
-  set(CMAKE_C_FLAGS_DEBUG "${flags}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${flags}")
-
-  set(flags "-Wall -Wno-unused-function -Wno-unused-value -g3")
-  Append(CMAKE_C_FLAGS "${flags}")
-  Append(CMAKE_CXX_FLAGS "${flags} -Wold-style-cast -std=c++11")
   if (STATIC_RUNTIME)
-    set(flags "-static-libstdc++ -static-libgcc")
-    Append(CMAKE_EXE_LINKER_FLAGS "${flags}")
-    Append(CMAKE_SHARED_LINKER_FLAGS "${flags}")
-    Append(CMAKE_MODULE_LINKER_FLAGS "${flags}")
+    Append(LINK_FLAGS "-static-libstdc++ -static-libgcc")
   endif()
 endif()
 
@@ -94,23 +77,21 @@ add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
 # Defines the nx & nx libraries.  User projects should link with one of them.
 
 # Maintained libraries/binaries
-if(GCC_COMPAT)
-  # Treat warnings as errors
-  set(flags "-Werror")
-  Append(CMAKE_C_FLAGS "${flags}")
-  Append(CMAKE_CXX_FLAGS "${flags}")
-endif()
-
 include_directories("${nx_SOURCE_DIR}/include")
 
-add_library(nx
-    "src/application.cc"
-    "src/sigslot.cc"
-    "src/string_util.cc"
+# sources
+ListSet(CXX_SOURCES
+  "src/application.cc"
+  "src/sigslot.cc"
+  "src/string_util.cc"
 	"src/handler.cc"
 	"src/looper.cc"
 	"src/message.cc")
-add_library(nx_main "src/nx_main.cc")
+AddLibrary(nx)
+
+ListSet(CXX_SOURCES "src/nx_main.cc")
+AddLibrary(nx_main)
+
 if (UNIX)
   target_link_libraries(nx rt)
 endif()
@@ -121,10 +102,12 @@ target_link_libraries(nx_main nx)
 #
 # Samples on how to link applications with nx or nx_main
 
-add_executable(hello_world "samples/hello_world/main.cc")
+ListSet(CXX_SOURCES "samples/hello_world/main.cc")
+AddExecutable(hello_world)
 target_link_libraries(hello_world nx_main)
 
-add_executable(handler "samples/handler/main.cc")
+ListSet(CXX_SOURCES "samples/handler/main.cc")
+AddExecutable(handler)
 target_link_libraries(handler nx_main)
 
 ########################################################################
@@ -133,14 +116,17 @@ target_link_libraries(handler nx_main)
 
 include_directories(SYSTEM "${gtest_SOURCE_DIR}/include")
 
-add_executable(digits_unittest "test/digits_unittest.cc")
+ListSet(CXX_SOURCES "test/digits_unittest.cc")
+AddExecutable(digits_unittest)
 target_link_libraries(digits_unittest nx gtest_main)
 AddTest(digits_unittest)
 
-add_executable(core_unittest "test/core_unittest.cc")
+ListSet(CXX_SOURCES "test/core_unittest.cc")
+AddExecutable(core_unittest)
 target_link_libraries(core_unittest nx gtest_main)
 AddTest(core_unittest)
 
-add_executable(sigslot_unittest "test/sigslot_unittest.cc")
+ListSet(CXX_SOURCES "test/sigslot_unittest.cc")
+AddExecutable(sigslot_unittest)
 target_link_libraries(sigslot_unittest nx gtest_main)
 AddTest(sigslot_unittest)

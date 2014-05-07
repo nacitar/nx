@@ -26,7 +26,7 @@ function die() {
 }
 
 # Get 3rdparty libraries
-pushd 3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
+pushd external/3rdparty || die "Missing 3rdparty directory; this shouldn't happen!"
 # Get googletest
 gtest_dir="googletest"
 if pushd "$gtest_dir"; then

@@ -23,7 +23,7 @@ project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 enable_testing()
 
-include(cmake/build_utils.cmake)
+include(external/cmake/build_utils.cmake)
 
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
@@ -56,16 +56,14 @@ endif()
 # Build 3rdparty libraries
 
 # GoogleTest
-if (!TARGET_EMBEDDED)
-  add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
-endif()
+add_subdirectory("external/3rdparty/googletest")
 
 
 ########################################################################
 #
-# Defines the nx & nx libraries.  User projects should link with one of them.
+# Build nx libraries
 
-# Maintained libraries/binaries
+include_directories("${nx_SOURCE_DIR}/external/nx-core/include")
 include_directories("${nx_SOURCE_DIR}/include")
 
 # sources

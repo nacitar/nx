@@ -19,6 +19,7 @@
 cd "$(dirname "$0")"
 
 root_dir="$PWD"
+cmake_repo_dir="$root_dir/external/cmake"
 
 function die() {
   echo "$@" 1>&2
@@ -76,10 +77,10 @@ fi
 
 toolchain=""
 if [ "$mingw32" -ne 0 ]; then
-  toolchain="-DCMAKE_TOOLCHAIN_FILE=$root_dir/cmake/mingw32_toolchain.cmake"
+  toolchain="-DCMAKE_TOOLCHAIN_FILE=$cmake_repo_dir/mingw32_toolchain.cmake"
   cmake_flags="$cmake_flags $toolchain -DSTATIC_RUNTIME=1"
 elif [ "$avr" -ne 0 ]; then
-  toolchain="-DCMAKE_TOOLCHAIN_FILE=$root_dir/cmake/avr_toolchain.cmake"
+  toolchain="-DCMAKE_TOOLCHAIN_FILE=$cmake_repo_dir/avr_toolchain.cmake"
   cmake_flags="$cmake_flags $toolchain"
 fi
 

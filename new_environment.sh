@@ -68,7 +68,6 @@ fi
 
 # flag preparation
 cmake_flags=""
-clang_flags=""
 if [ "$debug" -ne 0 ]; then
   cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=Debug"
 else

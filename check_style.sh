@@ -25,11 +25,11 @@ function die() {
   exit 1
 }
 
-cpplint="3rdparty/google-styleguide/cpplint/cpplint.py"
+cpplint="external/3rdparty/google-styleguide/cpplint/cpplint.py"
 
 [ -x "$cpplint" ] || die "ERROR: 3rdparty google-styleguide is required."
 
-code_dirs="src/ test/ include/nx/"
+code_dirs="src/ test/ include/nx/ external/nx-core/include/nx"
 
 find $code_dirs -type f -name "*.cc" -o -name "*.h" | sort | while read fn; do
   "$cpplint" "$fn" 2>&1 | grep -v "^Total errors found: 0$"

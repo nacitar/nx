@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-include(cmake/build_utils.cmake)
 
 ########################################################################
 #
@@ -23,6 +22,8 @@ include(cmake/build_utils.cmake)
 project (nx CXX)
 cmake_minimum_required(VERSION 2.6.2)
 enable_testing()
+
+include(cmake/build_utils.cmake)
 
 # Adds a test from the target name, using WINE if necessary
 function(AddTest target)
@@ -35,26 +36,12 @@ function(AddTest target)
   endif()
 endfunction()
 
-# Clang support
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	set(CMAKE_COMPILER_IS_CLANG "1")
-endif()
-
-# GCC support
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANG)
-	set(GCC_COMPAT "1")
-endif()
-
-# Options
-if(GCC_COMPAT)
-  option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
-endif()
-
-
 # Compilation settings
-if(GCC_COMPAT)
-  Append(C_FLAGS "-std=gnu99 -Wstrict-prototypes")
-  Append(CXX_FLAGS "-std=gnu++11 -Wold-style-cast")
+if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
+  option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
+
+  Append(C_FLAGS "-std=c99 -Wstrict-prototypes")
+  Append(CXX_FLAGS "-std=c++11 -Wold-style-cast")
   Append(CC_FLAGS_RELEASE "-O3 -DNDEBUG")
   Append(CC_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
   Append(CC_FLAGS "-Werror -Wall -Wno-unused-function -Wno-unused-value -g3")
@@ -69,7 +56,9 @@ endif()
 # Build 3rdparty libraries
 
 # GoogleTest
-add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
+if (!TARGET_EMBEDDED)
+  add_subdirectory("3rdparty/googletest") # using its own CMakeLists.txt
+endif()
 
 
 ########################################################################
@@ -92,7 +81,7 @@ AddLibrary(nx)
 ListSet(CXX_SOURCES "src/nx_main.cc")
 AddLibrary(nx_main)
 
-if (UNIX)
+if (TARGET_LINUX)
   target_link_libraries(nx rt)
 endif()
 target_link_libraries(nx_main nx)

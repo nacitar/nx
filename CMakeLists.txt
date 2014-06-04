@@ -51,6 +51,7 @@ if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
   endif()
 endif()
 
+
 ########################################################################
 #
 # Build 3rdparty libraries
@@ -96,6 +97,7 @@ target_link_libraries(hello_world nx_main)
 ListSet(CXX_SOURCES "samples/handler/main.cc")
 AddExecutable(handler)
 target_link_libraries(handler nx_main)
+
 
 ########################################################################
 #

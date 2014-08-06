@@ -73,8 +73,6 @@ class MyHandler : public nx::Handler {
       looper()->quit();
     }
   }
-
-
 };
 
 

@@ -66,41 +66,41 @@ constexpr const uint_least8_t de_bruijn_64bit[64] = {
 /// @brief Indexing into this yields 10 to the power of the index as a type
 /// that is at least 32-bits.
 constexpr const uint_least32_t power_10_32bit[10] = {
-    mpl::Power<uint_least32_t, 10, 0>::value,
-    mpl::Power<uint_least32_t, 10, 1>::value,
-    mpl::Power<uint_least32_t, 10, 2>::value,
-    mpl::Power<uint_least32_t, 10, 3>::value,
-    mpl::Power<uint_least32_t, 10, 4>::value,
-    mpl::Power<uint_least32_t, 10, 5>::value,
-    mpl::Power<uint_least32_t, 10, 6>::value,
-    mpl::Power<uint_least32_t, 10, 7>::value,
-    mpl::Power<uint_least32_t, 10, 8>::value,
-    mpl::Power<uint_least32_t, 10, 9>::value
+    bits::Power<uint_least32_t, 10, 0>(),
+    bits::Power<uint_least32_t, 10, 1>(),
+    bits::Power<uint_least32_t, 10, 2>(),
+    bits::Power<uint_least32_t, 10, 3>(),
+    bits::Power<uint_least32_t, 10, 4>(),
+    bits::Power<uint_least32_t, 10, 5>(),
+    bits::Power<uint_least32_t, 10, 6>(),
+    bits::Power<uint_least32_t, 10, 7>(),
+    bits::Power<uint_least32_t, 10, 8>(),
+    bits::Power<uint_least32_t, 10, 9>()
 };
 
 /// @brief Indexing into this yields 10 to the power of the index as a type
 /// that is at least 64-bits.
 constexpr const uint_least64_t power_10_64bit[20] = {
-    mpl::Power<uint_least64_t, 10, 0>::value,
-    mpl::Power<uint_least64_t, 10, 1>::value,
-    mpl::Power<uint_least64_t, 10, 2>::value,
-    mpl::Power<uint_least64_t, 10, 3>::value,
-    mpl::Power<uint_least64_t, 10, 4>::value,
-    mpl::Power<uint_least64_t, 10, 5>::value,
-    mpl::Power<uint_least64_t, 10, 6>::value,
-    mpl::Power<uint_least64_t, 10, 7>::value,
-    mpl::Power<uint_least64_t, 10, 8>::value,
-    mpl::Power<uint_least64_t, 10, 9>::value,
-    mpl::Power<uint_least64_t, 10, 10>::value,
-    mpl::Power<uint_least64_t, 10, 11>::value,
-    mpl::Power<uint_least64_t, 10, 12>::value,
-    mpl::Power<uint_least64_t, 10, 13>::value,
-    mpl::Power<uint_least64_t, 10, 14>::value,
-    mpl::Power<uint_least64_t, 10, 15>::value,
-    mpl::Power<uint_least64_t, 10, 16>::value,
-    mpl::Power<uint_least64_t, 10, 17>::value,
-    mpl::Power<uint_least64_t, 10, 18>::value,
-    mpl::Power<uint_least64_t, 10, 19>::value,
+    bits::Power<uint_least64_t, 10, 0>(),
+    bits::Power<uint_least64_t, 10, 1>(),
+    bits::Power<uint_least64_t, 10, 2>(),
+    bits::Power<uint_least64_t, 10, 3>(),
+    bits::Power<uint_least64_t, 10, 4>(),
+    bits::Power<uint_least64_t, 10, 5>(),
+    bits::Power<uint_least64_t, 10, 6>(),
+    bits::Power<uint_least64_t, 10, 7>(),
+    bits::Power<uint_least64_t, 10, 8>(),
+    bits::Power<uint_least64_t, 10, 9>(),
+    bits::Power<uint_least64_t, 10, 10>(),
+    bits::Power<uint_least64_t, 10, 11>(),
+    bits::Power<uint_least64_t, 10, 12>(),
+    bits::Power<uint_least64_t, 10, 13>(),
+    bits::Power<uint_least64_t, 10, 14>(),
+    bits::Power<uint_least64_t, 10, 15>(),
+    bits::Power<uint_least64_t, 10, 16>(),
+    bits::Power<uint_least64_t, 10, 17>(),
+    bits::Power<uint_least64_t, 10, 18>(),
+    bits::Power<uint_least64_t, 10, 19>(),
 };
 
 /// @brief Indexing with an 8-bit value yields the log2 of that value.

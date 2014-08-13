@@ -169,42 +169,22 @@ TEST(CoreTest, IsValidType) {
 }
 
 TEST(CoreTest, BitSize) {
-  EXPECT_EQ(nx::BitSize<int>::value,
+  EXPECT_EQ(nx::bits::Size<int>(),
       sizeof(int)*CHAR_BIT);
-  EXPECT_EQ(nx::BitSize<float>::value,
+  EXPECT_EQ(nx::bits::Size<float>(),
       sizeof(float)*CHAR_BIT);
-  EXPECT_EQ(nx::BitSize<char>::value,
+  EXPECT_EQ(nx::bits::Size<char>(),
       sizeof(char)*CHAR_BIT);
 }
 
-TEST(CoreTest, LowBitMask) {
-  EXPECT_EQ((nx::mpl::LowBitMask<int, 0, true>::value), 0);
-  EXPECT_EQ((nx::mpl::LowBitMask<int, 1, true>::value), 1);
-  EXPECT_EQ((nx::mpl::LowBitMask<int, 5, true>::value), 0x1F);
-  EXPECT_EQ((nx::mpl::LowBitMask<int, 7, true>::value), 0x7F);
-  constexpr unsigned int uint_bits = nx::BitSize<unsigned int>::value;
-  EXPECT_EQ((nx::mpl::LowBitMask<unsigned int, uint_bits, true>::value), ~0u);
-  // Overflow
-  EXPECT_EQ((nx::mpl::LowBitMask<unsigned int, uint_bits+1, true>::value), ~0u);
-}
-
 TEST(CoreTest, BitRange) {
-  constexpr unsigned int bits = nx::BitSize<int>::value;
-  EXPECT_TRUE((nx::BitRange<int, bits, bits>::value));
-  EXPECT_FALSE((nx::BitRange<int, bits+2, bits+5>::value));
-  EXPECT_FALSE((nx::BitRange<int, bits+1, bits+4>::value));
-  EXPECT_TRUE((nx::BitRange<int, bits, bits+3>::value));
-  EXPECT_TRUE((nx::BitRange<int, bits-2, bits+2>::value));
-  EXPECT_FALSE((nx::BitRange<int, bits-1, bits-1>::value));
-}
-
-TEST(CoreTest, IntegerFits) {
-  typedef char small;
-  typedef long long large;  // NOLINT(runtime/int)
-  ASSERT_NE(sizeof(small), sizeof(large));
-  EXPECT_TRUE((nx::IntegerFits<small, large>::value));
-  EXPECT_FALSE((nx::IntegerFits<large, small>::value));
-  EXPECT_TRUE((nx::IntegerFits<int, int>::value));
+  constexpr unsigned int bits = nx::bits::Size<int>();
+  EXPECT_TRUE((nx::bits::InRange<int, bits, bits>()));
+  EXPECT_FALSE((nx::bits::InRange<int, bits+2, bits+5>()));
+  EXPECT_FALSE((nx::bits::InRange<int, bits+1, bits+4>()));
+  EXPECT_TRUE((nx::bits::InRange<int, bits, bits+3>()));
+  EXPECT_TRUE((nx::bits::InRange<int, bits-2, bits+2>()));
+  EXPECT_FALSE((nx::bits::InRange<int, bits-1, bits-1>()));
 }
 
 TEST(CoreTest, SetSigned) {
@@ -220,19 +200,19 @@ TEST(CoreTest, SetSigned) {
   EXPECT_TYPE(char_signed_to_unsigned, unsigned char);
 }
 
-TEST(CoreTest, OverflowMult) {
+TEST(CoreTest, MultiplicationOverflow) {
   constexpr unsigned char high_bit = ~(static_cast<unsigned char>(~0)>>1);
   EXPECT_EQ(high_bit, 0x80);
   // Oveflow by 1
-  EXPECT_TRUE((nx::OverflowMult<unsigned char, high_bit, 2>::value));
-  EXPECT_FALSE((nx::OverflowMult<unsigned char, 5, 5>::value));
+  EXPECT_TRUE((nx::bits::MultiplicationOverflow<unsigned char, high_bit, 2>()));
+  EXPECT_FALSE((nx::bits::MultiplicationOverflow<unsigned char, 5, 5>()));
 }
 
 TEST(CoreTest, Power) {
   constexpr unsigned char high_bit = ~(static_cast<unsigned char>(~0)>>1);
-  constexpr unsigned int bitsize = nx::BitSize<unsigned char>::value;
-  EXPECT_EQ((nx::mpl::Power<int, 9, 0>::value), 1);
-  EXPECT_EQ((nx::mpl::Power<int, 9, 1>::value), 9);
-  EXPECT_EQ((nx::mpl::Power<int, 9, 2>::value), 81);
-  EXPECT_EQ((nx::mpl::Power<unsigned char, 2, bitsize-1>::value), high_bit);
+  constexpr unsigned int bitsize = nx::bits::Size<unsigned char>();
+  EXPECT_EQ((nx::bits::Power<int, 9, 0>()), 1);
+  EXPECT_EQ((nx::bits::Power<int, 9, 1>()), 9);
+  EXPECT_EQ((nx::bits::Power<int, 9, 2>()), 81);
+  EXPECT_EQ((nx::bits::Power<unsigned char, 2, bitsize-1>()), high_bit);
 }

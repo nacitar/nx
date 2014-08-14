@@ -53,19 +53,19 @@ template <unsigned int number_base, unsigned int version, class T>
 constexpr EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 32>>,
 unsigned int> Digits(T value) {
-  return  (value < bits::Power<T, 10, 5>()) ?
-      (value < bits::Power<T, 10, 2>()) ?
-        (value < bits::Power<T, 10, 1>()) ? 1 : 2
+  return  (value < Bits<T>::template Power<10, 5>()) ?
+      (value < Bits<T>::template Power<10, 2>()) ?
+        (value < Bits<T>::template Power<10, 1>()) ? 1 : 2
       :
-      (value < bits::Power<T, 10, 4>()) ?
-        (value < bits::Power<T, 10, 3>()) ? 3 : 4
+      (value < Bits<T>::template Power<10, 4>()) ?
+        (value < Bits<T>::template Power<10, 3>()) ? 3 : 4
       : 5
     :
-    (value < bits::Power<T, 10, 7>()) ?
-      (value < bits::Power<T, 10, 6>()) ? 6 : 7
+    (value < Bits<T>::template Power<10, 7>()) ?
+      (value < Bits<T>::template Power<10, 6>()) ? 6 : 7
     :
-    (value < bits::Power<T, 10, 9>()) ?
-      (value < bits::Power<T, 10, 8>()) ? 8 : 9
+    (value < Bits<T>::template Power<10, 9>()) ?
+      (value < Bits<T>::template Power<10, 8>()) ? 8 : 9
     : 10;
 }
 
@@ -74,22 +74,22 @@ template <unsigned int number_base, unsigned int version, class T>
 constexpr EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 64>>,
 unsigned int> Digits(T value) {
-  return  (value < bits::Power<T, 10, 10>()) ?
+  return  (value < Bits<T>::template Power<10, 10>()) ?
       Digits<number_base, 32>(value)
     :
-    (value < bits::Power<T, 10, 15>()) ?
-      (value < bits::Power<T, 10, 12>()) ?
-        (value < bits::Power<T, 10, 11>()) ? 11 : 12
+    (value < Bits<T>::template Power<10, 15>()) ?
+      (value < Bits<T>::template Power<10, 12>()) ?
+        (value < Bits<T>::template Power<10, 11>()) ? 11 : 12
       :
-      (value < bits::Power<T, 10, 14>()) ?
-        (value < bits::Power<T, 10, 13>()) ? 13 : 14
+      (value < Bits<T>::template Power<10, 14>()) ?
+        (value < Bits<T>::template Power<10, 13>()) ? 13 : 14
       : 15
     :
-    (value < bits::Power<T, 10, 17>()) ?
-      (value < bits::Power<T, 10, 16>()) ? 16 : 17
+    (value < Bits<T>::template Power<10, 17>()) ?
+      (value < Bits<T>::template Power<10, 16>()) ? 16 : 17
     :
-    (value < bits::Power<T, 10, 19>()) ?
-      (value < bits::Power<T, 10, 18>()) ? 18 : 19
+    (value < Bits<T>::template Power<10, 19>()) ?
+      (value < Bits<T>::template Power<10, 18>()) ? 18 : 19
     : 20;
 }
 
@@ -98,7 +98,7 @@ template <unsigned int number_base, unsigned int version, class T>
 EnableIf<All<
     std::is_unsigned<T>, Bool<number_base == 10>, Bool<version == 0>>,
 unsigned int> Digits(T value) {
-  constexpr const T next_pow10 = bits::Power<T, 10, 20>();
+  constexpr const T next_pow10 = Bits<T>::template Power<10, 20>();
   if (value < next_pow10) {
     return version::Digits<number_base, version>(value);
   }
@@ -137,7 +137,7 @@ unsigned int> Digits(T value) {
 /// @brief [0,32]-bit selector
 template <unsigned int number_base, class T>
 inline constexpr EnableIf<All<
-    Bool<number_base == 10>, Bool<bits::InRange<T, 0, 32>()>>,
+    Bool<number_base == 10>, Bool<Bits<T>::template InRange<0, 32>()>>,
 unsigned int> Digits(T value) {
   return version::Digits<number_base, 32>(value);
 }
@@ -145,7 +145,7 @@ unsigned int> Digits(T value) {
 /// @brief [33,64]-bit selector
 template <unsigned int number_base, class T>
 inline constexpr EnableIf<All<
-    Bool<number_base == 10>, Bool<bits::InRange<T, 33, 64>()>>,
+    Bool<number_base == 10>, Bool<Bits<T>::template InRange<33, 64>()>>,
 unsigned int> Digits(T value) {
   return version::Digits<number_base, 64>(value);
 }
@@ -153,7 +153,7 @@ unsigned int> Digits(T value) {
 /// @brief Large generic selector
 template <unsigned int number_base, class T>
 inline EnableIf<All<
-    Bool<number_base == 10>, Bool<bits::InRange<T, 65>()>>,
+    Bool<number_base == 10>, Bool<Bits<T>::template InRange<65>()>>,
 unsigned int> Digits(T value) {
   return version::Digits<number_base, 0>(value);
 }
@@ -172,7 +172,7 @@ unsigned int> Digits(T value) {
 /// digits in a decimal number.  This does not count any negative sign.
 template <unsigned int number_base = 10, class T>
 constexpr EnableIf<
-    Bool<bits::InRange<T, 0, 64>()>,
+    Bool<Bits<T>::template InRange<0, 64>()>,
 unsigned int> Digits(T value) {
   return detail::Digits<number_base>(value);
 }
@@ -188,7 +188,7 @@ unsigned int> Digits(T value) {
 /// digits in a decimal number.  This does not count any negative sign.
 template <unsigned int number_base = 10, class T>
 EnableIf<
-    Bool<bits::InRange<T, 65>()>,
+    Bool<Bits<T>::template InRange<65>()>,
 unsigned int> Digits(T value) {
   return detail::Digits<number_base>(value);
 }

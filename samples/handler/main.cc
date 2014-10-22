@@ -37,15 +37,16 @@ class TimeTracker {
   time_point start_;
 
  public:
+  typedef std::chrono::milliseconds::rep elapsed_type;
   TimeTracker() {
     reset();
   }
 
  void reset() {
-    using namespace std::chrono;
+   using namespace std::chrono;
    start_ = steady_clock::now();
  }
- unsigned long long elapsed() {
+ elapsed_type elapsed() {
     using namespace std::chrono;
     time_point now = steady_clock::now();
     return duration_cast<milliseconds>(now-start_).count();

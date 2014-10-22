@@ -43,8 +43,9 @@ if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
   Append(C_FLAGS "-std=c99 -Wstrict-prototypes")
   Append(CXX_FLAGS "-std=c++11 -Wold-style-cast")
   Append(CC_FLAGS_RELEASE "-O3 -DNDEBUG")
-  Append(CC_FLAGS_DEBUG "-O0 -fno-inline -DDEBUG")
-  Append(CC_FLAGS "-Werror -Wall -Wno-unused-function -Wno-unused-value -g3")
+  Append(CC_FLAGS_DEBUG "-g3 -O0 -fno-inline -DDEBUG")
+  Append(CC_FLAGS "-Werror -Wall -Wno-unused-function -Wno-unused-value")
+  Append(CC_FLAGS "-Wconversion -Wsign-conversion -funit-at-a-time")
 
   if (STATIC_RUNTIME)
     Append(LINK_FLAGS "-static-libstdc++ -static-libgcc")
@@ -97,6 +98,10 @@ target_link_libraries(hello_world nx_main)
 ListSet(CXX_SOURCES "samples/handler/main.cc")
 AddExecutable(handler)
 target_link_libraries(handler nx_main)
+
+#ListSet(CXX_SOURCES "samples/sandbox/main.cc")
+#AddExecutable(sandbox)
+#target_link_libraries(sandbox nx_main)
 
 
 ########################################################################

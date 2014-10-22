@@ -48,7 +48,8 @@ do
     die "Unknown argument $arg"
   elif [ -z "$dest_dir" ]; then
     cwd_real_path="$(readlink -f .)"
-    dest_real_path="$(readlink -f "$arg")"
+    dest_real_path="$(readlink -m "$arg")"
+    [ -d "$cwd_real_path" ] || die "PWD is somehow not a valid directory... ?"
     if [ "${dest_real_path:0:${#cwd_real_path}}" != "$cwd_real_path" ]; then
       die "Build directory must be a child of the CWD, for safety."
     fi
@@ -88,8 +89,8 @@ if [ -n "$toolchain" -a "$use_clang" -ne 0 ]; then
 fi
 
 # Make a new build environment
-[ -d "$dest_dir" ] && rm -rf "$dest_dir"
-if mkdir "$dest_dir" && pushd "$dest_dir"; then
+! [ -d "$dest_dir" ] || rm -rf "$dest_dir" || die "Couldn't delete $dest_dir"
+if mkdir -p "$dest_dir" && pushd "$dest_dir"; then
   echo "Attempting to create build environment."
   if [ "$use_clang" -ne 0 ]; then
     CC=clang CXX=clang++ cmake $cmake_flags "$root_dir"

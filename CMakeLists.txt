@@ -66,7 +66,7 @@ add_subdirectory("external/3rdparty/googletest")
 # Build nx libraries
 
 if (TARGET_WINDOWS)
-  include_directories("${nx_SOURCE_DIR}/external/mingw-std-threads")
+  include_directories("${nx_SOURCE_DIR}/external/3rdparty/mingw-std-threads")
 endif()
 
 include_directories("${nx_SOURCE_DIR}/external/nx-core/include")

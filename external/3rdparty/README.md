@@ -4,3 +4,4 @@ folder.
 Currently expected:
 - googletest
 - google-styleguide
+- mingw-std-threads

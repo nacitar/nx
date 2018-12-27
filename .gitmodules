@@ -10,3 +10,6 @@
 [submodule "external/3rdparty/google-styleguide"]
 	path = external/3rdparty/google-styleguide
 	url = https://github.com/google/styleguide.git
+[submodule "external/mingw-std-threads"]
+	path = external/mingw-std-threads
+	url = git@github.com:nacitar/mingw-std-threads.git

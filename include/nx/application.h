@@ -26,6 +26,7 @@
 #include <thread>
 
 #include "nx/core.h"
+#include "nx/thread_compat.h"
 
 /// @brief Library namespace.
 namespace nx {

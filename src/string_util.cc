@@ -95,7 +95,7 @@ std::vector<std::string> ArgumentParser(const std::string&argument_string) {
     // add the final string
     arguments.push_back(std::move(buffer));
   }
-  return std::move(arguments);
+  return arguments;
 }
 
 }  // namespace nx

@@ -22,12 +22,14 @@
 
 #include <chrono>
 #include <string>
+#include <memory>
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-#include <memory>
 
 #include "nx/message.h"
+#include "nx/thread_compat.h"
 
 /// @brief Library namespace.
 namespace nx {

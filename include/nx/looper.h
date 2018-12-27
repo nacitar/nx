@@ -23,13 +23,15 @@
 
 #include <chrono>
 #include <map>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <atomic>
 #include <memory>
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 #include "nx/message.h"
+#include "nx/thread_compat.h"
 
 /// @brief Library namespace.
 namespace nx {

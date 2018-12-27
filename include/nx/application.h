@@ -70,7 +70,7 @@ class Application {
   /// @brief The driver function of the application.  Must be overridden.
   ///
   /// @return The exit code of the application.
-  virtual int main()=0;
+  virtual int main() = 0;
 
   /// @brief Populates the stored arguments with the ones provided.
   ///

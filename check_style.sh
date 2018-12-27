@@ -32,5 +32,12 @@ cpplint="external/3rdparty/google-styleguide/cpplint/cpplint.py"
 code_dirs="src/ test/ include/nx/ external/nx-core/include/nx"
 
 find $code_dirs -type f -name "*.cc" -o -name "*.h" | sort | while read fn; do
-  "$cpplint" "$fn" 2>&1 | grep -v "^Total errors found: 0$"
+  # submodules use their own roots
+  if [[ "$fn" == "external/"* ]]; then
+    rootarg="$(echo "$fn" | cut -d'/' -f1-2)"
+  else
+    rootarg="."
+  fi
+  "$cpplint" --filter=-build/c++11 --root="$rootarg" "$fn" 2>&1 \
+      | grep -v "^Total errors found: 0$"
 done

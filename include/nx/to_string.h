@@ -21,6 +21,7 @@
 #define INCLUDE_NX_TO_STRING_H_
 
 #include <string>
+#include <utility>
 #include "nx/core.h"
 #include "nx/digits.h"
 
@@ -104,7 +105,7 @@ unsigned int> ToString(T value, std::string*buffer, unsigned int digits = 0) {
     // add the size of textual data and the -
     buffer->resize(offset + digits + 1);
     // offset into the buffer
-    char*offset_buffer=&((*buffer)[offset]);
+    char*offset_buffer = &((*buffer)[offset]);
     // add the -
     *offset_buffer = '-';
     // advance

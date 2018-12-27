@@ -82,7 +82,7 @@ ListSet(CXX_SOURCES "src/nx_main.cc")
 AddLibrary(nx_main)
 
 if (TARGET_LINUX)
-  target_link_libraries(nx rt)
+  target_link_libraries(nx rt pthread)
 endif()
 target_link_libraries(nx_main nx)
 

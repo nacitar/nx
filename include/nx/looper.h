@@ -40,7 +40,7 @@ class MessageEnvelope {
   Handler* const handler_;
   const Message message_;
  public:  // TODO(nacitar): for now?
-  MessageEnvelope(Handler* handler, Message message = Message());
+  explicit MessageEnvelope(Handler* handler, Message message = Message());
   Handler* handler() const;
   const Message* message() const;
 };

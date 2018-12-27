@@ -27,7 +27,7 @@ class Message {
   unsigned int id_;
   void* data_;
  public:
-  Message(unsigned int id = 0, void* data = nullptr);
+  explicit Message(unsigned int id = 0, void* data = nullptr);
   Message(const Message& message);
   void* data() const;
   void setData(void* data);

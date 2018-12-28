@@ -18,6 +18,8 @@
 /// @brief A single file containing all implementations for cases where it is
 /// convenient to build a single file (a Unity Build).
 
-#include "application.cc"
-#include "string_util.cc"
-#include "time.cc"
+// This is for a Unity build, which is of course a special case.  Ignoring
+// cpplint about including source files.
+#include "application.cc"  // NOLINT(build/include)
+#include "string_util.cc"  // NOLINT(build/include)
+#include "time.cc"  // NOLINT(build/include)

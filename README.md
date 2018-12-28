@@ -75,3 +75,9 @@ their test cases under wine.
         build/*.xml, winbuild/*.xml
 
 
+Gentoo Setup
+============
+
+        sudo crossdev --stable --target x86_64-w64-mingw32 --ex-gcc --ex-gdb
+
+

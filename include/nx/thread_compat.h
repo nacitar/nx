@@ -20,14 +20,18 @@
 #ifndef INCLUDE_NX_THREAD_COMPAT_H_
 #define INCLUDE_NX_THREAD_COMPAT_H_
 
+#include <thread>
+
 #include "nx/core.h"
 
-#include <thread>
 #ifdef NX_MINGW
-#include <mingw.thread.h>
-#include <mingw.mutex.h>
-#include <mingw.mutex.h>
-#include <mingw.condition_variable.h>
+// These files are 3rdparty, and they reference each other via include
+// using quotations, which is compiler dependent, and without any qualifying
+// path.  I'm not going to change the folder structure to appease cpplint.
+#include "mingw.thread.h"  // NOLINT(build/include)
+#include "mingw.mutex.h"  // NOLINT(build/include)
+#include "mingw.shared_mutex.h"  // NOLINT(build/include)
+#include "mingw.condition_variable.h"  // NOLINT(build/include)
 #endif
 
 #endif  // INCLUDE_NX_THREAD_COMPAT_H_

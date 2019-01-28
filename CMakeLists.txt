@@ -49,7 +49,7 @@ if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
   option(STATIC_RUNTIME "Statically link libstdc++ and libgcc" OFF)
 
   Append(C_FLAGS "-std=c99 -Wstrict-prototypes")
-  Append(CXX_FLAGS "-std=c++11 -Wold-style-cast")
+  Append(CXX_FLAGS "-std=c++17 -Wold-style-cast")
   Append(CC_FLAGS_RELEASE "-O3 -DNDEBUG")
   Append(CC_FLAGS_DEBUG "-g3 -O0 -fno-inline -DDEBUG")
   Append(CC_FLAGS "-Werror -Wall -Wno-unused-function -Wno-unused-value")

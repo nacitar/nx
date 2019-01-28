@@ -20,7 +20,10 @@
 # Project-wide settings
 
 project (nx CXX)
-cmake_minimum_required(VERSION 2.6.2)
+
+# support feature detection; needs cmake 3.1+
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+
 enable_testing()
 
 include(external/cmake/build_utils.cmake)
@@ -35,6 +38,11 @@ function(AddTest target)
     add_test("${target}" "${target_binary}" "${GTEST_XML_ARGS}" ${ARGN})
   endif()
 endfunction()
+
+# Projects rely upon: http://open-std.org/JTC1/SC22/WG21/docs/papers/2014/n4268.html
+# for this reason, we need c++1z support and as a consequence can only
+# currently use clang. =/
+# See bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67991
 
 # Compilation settings
 if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
@@ -51,6 +59,20 @@ if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
     Append(LINK_FLAGS "-static-libstdc++ -static-libgcc")
   endif()
 endif()
+
+#get_property(cxx_known_features GLOBAL PROPERTY CMAKE_CXX_KNOWN_FEATURES)
+#list(SORT cxx_known_features)
+#message("Out of all possible C++ compiler features CMake knows about:")
+#foreach(i ${cxx_known_features})
+#  message("  ${i}")
+#endforeach()
+#message("")
+#set(cxx_compile_features "${CMAKE_CXX_COMPILE_FEATURES}")
+#list(SORT cxx_compile_features)
+#message("your C++ compiler supports these features:")
+#foreach(i ${cxx_compile_features})
+#  message("  ${i}")
+#endforeach()
 
 
 ########################################################################
@@ -86,7 +108,7 @@ ListSet(CXX_SOURCES "src/nx_main.cc")
 AddLibrary(nx_main)
 
 if (TARGET_LINUX)
-  target_link_libraries(nx rt pthread)
+  target_link_libraries(nx rt pthread) # stdc++
 endif()
 target_link_libraries(nx_main nx)
 

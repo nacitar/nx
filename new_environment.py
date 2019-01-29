@@ -61,7 +61,7 @@ def main():
     args = parser.parse_args()
     abs_cwd = os.path.abspath(os.path.curdir)
     abs_dest_dir = os.path.abspath(args.dest_dir)
-    if not abs_dest_dir.startswith(abs_cwd):
+    if not abs_dest_dir.startswith(abs_cwd) or abs_dest_dir == abs_cwd:
         raise RuntimeError('Build directory must be a child of the CWD, for safety.')
 
     c_compiler = 'gcc'

@@ -11,33 +11,42 @@ import re
 import subprocess
 
 import argparse
+import shutil
 
-_gcc_version_pattern = re.compile('\d+\.\d+\.\d+')
-def gcc_version(path):
+_get_version_pattern = re.compile(r'\d+\.\d+\.\d+')
+def get_version(path):
     # can't use dumpversion because clang pretends to be an old gcc
-    output = subprocess.check_output(
-            [path, "--version"]).decode(
-                    sys.getdefaultencoding())
-    parts = _gcc_version_pattern.search(output).group(0).split('.')
-    return (int(parts[0])*10000 + int(parts[1])*100 + int(parts[2]))
+    if os.access(path, os.X_OK):
+        output = subprocess.check_output(
+                [path, "--version"]).decode(
+                        sys.getdefaultencoding())
+        parts = _get_version_pattern.search(output).group(0).split('.')
+        return (int(parts[0])*10000 + int(parts[1])*100 + int(parts[2]))
+    return 0
 
-def get_gcc(base_gcc_binary, min_version=None):
+def get_versioned_binary(base_binary, min_version=0):
     # if the default doesn't meet our needs, find the highest we have
-    binary_pattern=re.compile(f'{re.escape(base_gcc_binary)}-\d')
-    current_name = base_gcc_binary
-    current_version = gcc_version(current_name)
-    if min_version != None and current_version < min_version:
-        for path in os.getenv('PATH').split(os.path.pathsep):
-            path = path.rstrip(os.path.sep)
-            if os.path.isdir(path):
-                for filename in os.listdir(path):
-                    full_path = f"{path}{os.path.sep}{filename}"
-                    if (binary_pattern.match(filename) and os.access(
-                            full_path, os.X_OK)):
-                        version = gcc_version(filename)
-                        if version > current_version:
-                            current_name = filename
-                            current_version = version
+    binary_pattern=re.compile('{}{}'.format(re.escape(base_binary),r'-\d'))
+    current_name = shutil.which(base_binary)
+    if current_name:
+        current_version = get_version(current_name)
+        if current_version >= min_version:
+            return current_name
+    else:
+        current_version = 0
+    for path in os.getenv('PATH').split(os.path.pathsep):
+        path = path.rstrip(os.path.sep)
+        if os.path.isdir(path):
+            for filename in os.listdir(path):
+                if binary_pattern.match(filename):
+                    full_name = os.path.join(path, filename)
+                    version = get_version(full_name)
+                    if version > current_version:
+                        current_name = full_name
+                        current_version = version
+    if min_version > current_version:
+        raise RuntimeError(
+                f'{base_binary} Version: {current_version}, Minimum Required: {min_version}')
     return current_name
 
 
@@ -58,6 +67,7 @@ def main():
     c_compiler = 'gcc'
     cxx_compiler = 'g++'
     base_prefix = ''
+    base_prefix_dash = ''
     min_version = 80100
 
     cmake_cmd = [ 'cmake' ]
@@ -66,37 +76,54 @@ def main():
     else:
         cmake_cmd.append('-DCMAKE_BUILD_TYPE=Release')
 
+    # TODO: .exe?
     if args.mingw32:
-        base_prefix="x86_64-w64-mingw32-"
+        base_prefix='x86_64-w64-mingw32'
+        rc_binary = shutil.which(f'{base_prefix}-windres')
         cmake_cmd.extend([
-            f'-DCMAKE_TOOLCHAIN_FILE={cmake_repo_dir}/mingw32_toolchain.cmake',
+            '-DCMAKE_SYSTEM_NAME=Windows',
+            f'-DCMAKE_RC_COMPILER={rc_binary}',
             '-DSTATIC_RUNTIME=1'])
+
     elif args.avr:
-        base_prefix = "avr-"
-        cmake_cmd.append(f'-DCMAKE_TOOLCHAIN_FILE={cmake_repo_dir}/avr_toolchain.cmake')
+        base_prefix = "avr"
+        objcopy_binary = shutil.which(f'{base_prefix}-objcopy')
+        size_tool_binary = shutil.which(f'{base_prefix}-size')
+        cmake_cmd.extend([
+            '-DCMAKE_SYSTEM_NAME=Generic',
+            f'-DCMAKE_OBJCOPY={objcopy_binary}',
+            f'-DAVR_SIZE_TOOL={size_tool_binary}'])
     elif args.clang:
         c_compiler = 'clang'
         cxx_compiler = 'clang++'
         min_version = 50000
+    if base_prefix:
+        base_prefix_dash = f'{base_prefix}-'
+    else:
+        base_prefix_dash = ''
 
-    cc_binary = get_gcc(f'{base_prefix}{c_compiler}', min_version)
-    cxx_binary = get_gcc(f'{base_prefix}{cxx_compiler}', min_version)
+    cc_binary = get_versioned_binary(f'{base_prefix_dash}{c_compiler}', min_version)
+    cxx_binary = get_versioned_binary(f'{base_prefix_dash}{cxx_compiler}', min_version)
 
     # TODO: recursively delete abs_dest_dir
-    os.mkdir(abs_dest_dir)
+    if not os.path.exists(abs_dest_dir):
+        os.makedirs(abs_dest_dir)
     my_env = os.environ.copy()
     my_env['CC'] = cc_binary
     my_env['CXX'] = cxx_binary
 
-    # undocumented cmake args to let me 
-    #cmake_cmd.extend([f'-B{args.dest_dir}', f'-H{this_dir}'])
+    cmake_cmd.extend([
+            f'-DCMAKE_C_COMPILER={cc_binary}',
+            f'-DCMAKE_CXX_COMPILER={cxx_binary}',
+            f'-DCMAKE_FIND_ROOT_PATH=/usr/{base_prefix}',
+            '-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER',
+            '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
+            '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY'])
+
     cmake_cmd.extend([this_dir])
 
     print(repr(cmake_cmd))
-    code = subprocess.call(cmake_cmd, env=my_env, cwd=args.dest_dir)
-    print(f'Code: {code}')
-    print(cc_binary)
-    print(cxx_binary)
+    sys.exit(subprocess.call(cmake_cmd, env=my_env, cwd=args.dest_dir))
 
 if __name__== '__main__':
     main()

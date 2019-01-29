@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./new_environment.sh build/native
-./new_environment.sh --clang build/clang
-./new_environment.sh --mingw32 build/win
-./new_environment.sh --avr build/avr
+./new_environment.py build/native
+./new_environment.py --clang build/clang
+./new_environment.py --mingw32 build/win
+./new_environment.py --avr build/avr

@@ -57,7 +57,7 @@ def main():
     compiler.add_argument('--mingw32', action='store_true')
     compiler.add_argument('--avr', action='store_true')
     parser.add_argument('--debug', action='store_true')
-    parser.add_argument('dest_dir', type=str, default='build', nargs='?')
+    parser.add_argument('dest_dir', type=str)
     args = parser.parse_args()
     abs_cwd = os.path.abspath(os.path.curdir)
     abs_dest_dir = os.path.abspath(args.dest_dir)

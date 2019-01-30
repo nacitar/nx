@@ -60,6 +60,13 @@ if (TOOLCHAIN_CXX_GNU_COMPATIBLE)
   endif()
 endif()
 
+# MSVC standard conformance is too bad to use, but this helps..
+if (MSVC_VERSION GREATER_EQUAL "1900")
+  add_compile_options("/std:c++latest")
+  add_compile_options("/Zc:__cplusplus")
+  add_compile_options("/permissive-")
+endif()
+
 #get_property(cxx_known_features GLOBAL PROPERTY CMAKE_CXX_KNOWN_FEATURES)
 #list(SORT cxx_known_features)
 #message("Out of all possible C++ compiler features CMake knows about:")

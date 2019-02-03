@@ -3,13 +3,10 @@
 #python 3.6+ required
 
 import inspect, os
-this_dir = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
-cmake_repo_dir = os.path.join(this_dir, 'external', 'cmake')
 import sys
 import os
 import re
 import subprocess
-
 import argparse
 import shutil
 
@@ -50,15 +47,19 @@ def get_versioned_binary(base_binary, min_version=0):
     return current_name
 
 
-def main():
+def main(argv = None, CMakeLists_dir = None):
+    if argv is None:
+        argv = sys.argv
+    if CMakeLists_dir is None:
+        CMakeLists_dir = os.path.abspath(os.path.dirname(inspect.getfile(inspect.currentframe())))
     parser = argparse.ArgumentParser(description='Create a new environment', allow_abbrev=False)
+    parser.add_argument('--debug', action='store_true')
     compiler = parser.add_mutually_exclusive_group()
     compiler.add_argument('--clang', action='store_true')
     compiler.add_argument('--mingw32', action='store_true')
     compiler.add_argument('--avr', action='store_true')
-    parser.add_argument('--debug', action='store_true')
     parser.add_argument('dest_dir', type=str)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     abs_cwd = os.path.abspath(os.path.curdir)
     abs_dest_dir = os.path.abspath(args.dest_dir)
     if not abs_dest_dir.startswith(abs_cwd) or abs_dest_dir == abs_cwd:
@@ -120,11 +121,11 @@ def main():
             '-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY',
             '-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY'])
 
-    cmake_cmd.extend([this_dir])
+    cmake_cmd.extend([CMakeLists_dir])
 
     print(repr(cmake_cmd))
-    sys.exit(subprocess.call(cmake_cmd, env=my_env, cwd=args.dest_dir))
+    return subprocess.call(cmake_cmd, env=my_env, cwd=args.dest_dir)
 
 if __name__== '__main__':
-    main()
+    sys.exit(main())
 

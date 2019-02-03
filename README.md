@@ -1,7 +1,7 @@
 nx
 ==
 
-A library project to enhance C++11.
+A library project to enhance C++.
 
 
 License
@@ -10,7 +10,7 @@ License
 Where possible, the license has been placed
 at the beginning of all files in this repository.  The license is as follows.
 
-        Copyright (C) 2013 Jacob McIntosh <nacitar at ubercpp dot com>
+        Copyright (C) 2019 Jacob McIntosh <nacitar at ubercpp dot com>
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -35,11 +35,10 @@ available in doc/html/index.html
 Compilation
 ===========
 
-Look at prepare.sh, particularly where it makes build environments, if you wish
-to manually setup your build environment.  Within the environment, building can
-be performed simply with "make" and then "make test".  Otherwise, you can build
-it by executing the "Build" commands listed under the Configuring Jenkins
-section below.
+Look at new\_environment.py if you wish to manually setup your build
+environment.  Within the environment, building can be performed simply with
+"make" and then "make test".  Otherwise, you can build it by executing the
+"Build" commands listed under the Configuring Jenkins section below.
 
 
 Configuring Jenkins
@@ -61,8 +60,7 @@ their test cases under wine.
 
 - Build - Execute Shell (for compilation)
 
-        ./prepare_3rdparty.sh
-        ./release_builds.sh
+        ./release_builds.py
         ./jenkins_build.sh
 
 - Build - Execute Shell (for test execution)
@@ -79,5 +77,14 @@ Gentoo Setup
 ============
 
         sudo crossdev --stable --target x86_64-w64-mingw32 --ex-gcc --ex-gdb
+        sudo crossdev --stable --target cross-avr --ex-gcc --ex-gdb
 
+        # package.accept_keywords
+        #
+        # need gcc-8.1.0+ to fix a bug
+        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67991
+        =sys-devel/gcc-8.2.0-r6 ~amd64
+        =cross-avr/gcc-8.2.0-r6 ~amd64
+        =cross-x86_64-w64-mingw32/gcc-8.2.0-r6 ~amd64
+        cross-x86_64-w64-mingw32/mingw64-runtime ~amd64
 

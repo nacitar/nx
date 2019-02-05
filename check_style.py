@@ -52,18 +52,21 @@ def main():
                                 *full_path.parts[:len(this_file.parts)+1])
                     else:
                         cpplint_repository = this_file.parent
-                    sys.argv = [
-                            str(cpplint_path),
-                            '--quiet',
-                            '--filter=-build/c++11',
-                            f'--repository={cpplint_repository}',
-                            str(full_path)
-                    ]
                     try:
+                        original_argv = sys.argv
+                        sys.argv = [
+                                str(cpplint_path),
+                                '--quiet',
+                                '--filter=-build/c++11',
+                                f'--repository={cpplint_repository}',
+                                str(full_path)
+                        ]
                         cpplint.main()
                     except SystemExit as exit:
                         if exit.code != 0:
                             retval += 1
+                    finally:
+                        sys.argv = original_argv
     return retval
 
 if __name__== '__main__':

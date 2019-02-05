@@ -7,9 +7,6 @@
 [submodule "external/3rdparty/googletest"]
 	path = external/3rdparty/googletest
 	url = https://github.com/google/googletest.git
-[submodule "external/3rdparty/google-styleguide"]
-	path = external/3rdparty/google-styleguide
-	url = https://github.com/google/styleguide.git
 [submodule "external/3rdparty/mingw-std-threads"]
 	path = external/3rdparty/mingw-std-threads
 	url = https://github.com/meganz/mingw-std-threads.git

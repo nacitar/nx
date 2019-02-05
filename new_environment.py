@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-#python 3.6+ required
+import sys
+if sys.version_info < (3, 6):
+    raise RuntimeError('Python 3.6+ is required.')
 
 import inspect, os
-import sys
 import os
 import re
 import subprocess

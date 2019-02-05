@@ -10,3 +10,6 @@
 [submodule "external/3rdparty/mingw-std-threads"]
 	path = external/3rdparty/mingw-std-threads
 	url = https://github.com/meganz/mingw-std-threads.git
+[submodule "external/3rdparty/cpplint"]
+	path = external/3rdparty/cpplint
+	url = https://github.com/cpplint/cpplint.git

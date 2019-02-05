@@ -28,10 +28,10 @@
 // These files are 3rdparty, and they reference each other via include
 // using quotations, which is compiler dependent, and without any qualifying
 // path.  I'm not going to change the folder structure to appease cpplint.
-#include "mingw.thread.h"  // NOLINT(build/include)
-#include "mingw.mutex.h"  // NOLINT(build/include)
-#include "mingw.shared_mutex.h"  // NOLINT(build/include)
-#include "mingw.condition_variable.h"  // NOLINT(build/include)
+#include "mingw.thread.h"  // NOLINT(build/include_subdir)
+#include "mingw.mutex.h"  // NOLINT(build/include_subdir)
+#include "mingw.shared_mutex.h"  // NOLINT(build/include_subdir)
+#include "mingw.condition_variable.h"  // NOLINT(build/include_subdir)
 #endif
 
 #endif  // INCLUDE_NX_THREAD_COMPAT_H_

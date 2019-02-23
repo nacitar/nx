@@ -61,16 +61,16 @@ their test cases under wine.
 - Build - Execute Shell (for compilation)
 
         ./release_builds.py
-        ./jenkins_build.sh
+        ./jenkins_build.py
 
 - Build - Execute Shell (for test execution)
 
-        ./jenkins_build.sh test
-        ./label_results.sh
+        ./jenkins_build.py --test
+        ./label_results.py
 
 - Post Build - Public JUnit Test Results Report
 
-        build/*.xml, winbuild/*.xml
+        build/native/*.xml, build/clang/*.xml, build/mingw32/*.xml
 
 
 Gentoo Setup

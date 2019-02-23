@@ -60,7 +60,7 @@ def main(argv = None, CMakeLists_dir = None):
     compiler.add_argument('--mingw32', action='store_true')
     compiler.add_argument('--avr', action='store_true')
     parser.add_argument('dest_dir', type=str)
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv[1:])
     abs_cwd = os.path.abspath(os.path.curdir)
     abs_dest_dir = os.path.abspath(args.dest_dir)
     if not abs_dest_dir.startswith(abs_cwd) or abs_dest_dir == abs_cwd:
